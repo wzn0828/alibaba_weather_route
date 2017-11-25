@@ -1,0 +1,12 @@
+# Compiled Python
+*.pyc
+
+# JetBrains IDEs
+.idea
+*.xml
+
+# weights
+*.hdf5
+
+/Figures
+
