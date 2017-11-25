@@ -48,6 +48,7 @@ def process(cf):
                 wind = int(wind_real_df_day_hour.iloc[idx]['wind'])
                 wind_real_day_hour[x_loc, y_loc] = wind
 
+            # plot figures here
             plt.close()
             plt.figure()
             plt.imshow(wind_real_day_hour, cmap='jet')
