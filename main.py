@@ -1,16 +1,36 @@
 import argparse
 import time
 from datetime import datetime
-import matplotlib
-matplotlib.use('TkAgg')
 
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
-from tools.visualisation import plot_real_wind
+from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
+from tools.A_star_alibaba import A_star_serach
+from tools.simpleSub import submit_phase
 
 
 def process(cf):
-    plot_real_wind(cf)
+    if cf.plot_real_wind:
+        print('plot_real_wind')
+        plot_real_wind(cf)
+    if cf.plt_forecast_wind_train:
+        print('plot_forecast_wind_train')
+        plt_forecast_wind_train(cf)
+    if cf.plt_forecast_wind_test:
+        print('plt_forecast_wind_test')
+        plt_forecast_wind_test(cf)
+    if cf.draw_weather:
+        print('Draw weather')
+        plot_all_wind(cf)
+
+    if cf.A_star_serach:
+        print('A_star_serach')
+        A_star_serach(cf)
+
+    if cf.submission:
+        print("submission")
+        submit_phase(cf)
+
 
 
 def main():
