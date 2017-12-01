@@ -56,5 +56,40 @@ def submit_phase(cf):
     sub_csv.xid = sub_csv.xid.astype(np.int32)
     sub_csv.yid = sub_csv.yid.astype(np.int32)
 
-    sub_csv.to_csv(os.path.join(cf.submission_path, datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+'.csv'), sep='\t')
+    sub_csv.to_csv(os.path.join(cf.submission_path, datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+'.csv'),
+                   header=False, index=False)
     return sub_csv
+
+
+def a_star_submission(day, goal_city, start_loc, goal_loc, total_path):
+    #### create one submit path
+    # A random time to get the time string right
+    ti = datetime(2017, 11, 21, 3, 0)
+    row_list = []
+    dict = {'target': goal_city,
+            'date': day,
+            'time': ti.strftime('%H:%M'),
+            'xid': start_loc[0]+1,
+            'yid': start_loc[1]+1}
+    ti = ti + timedelta(minutes=2)
+    row_list.append(dict)
+
+    for p in total_path:
+        for ip in p[::-1]:
+            dict = {'target': goal_city,
+                    'date': day,
+                    'time': ti.strftime('%H:%M'),
+                    'xid': ip[0]+1,
+                    'yid': ip[1]+1}
+            ti = ti + timedelta(minutes=2)
+            row_list.append(dict)
+
+    dict = {'target': goal_city,
+            'date': day,
+            'time': ti.strftime('%H:%M'),
+            'xid': goal_loc[0]+1,
+            'yid': goal_loc[1]+1}
+    row_list.append(dict)
+
+    sub_df = pd.DataFrame(row_list)
+    return sub_df

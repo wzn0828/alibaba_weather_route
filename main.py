@@ -5,7 +5,7 @@ from datetime import datetime
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
-from tools.A_star_alibaba import A_star_serach
+from tools.A_star_alibaba import A_star_2d_hourly_update_route
 from tools.simpleSub import submit_phase
 
 
@@ -23,14 +23,13 @@ def process(cf):
         print('Draw weather')
         plot_all_wind(cf)
 
-    if cf.A_star_serach:
+    if cf.A_star_search:
         print('A_star_serach')
-        A_star_serach(cf)
+        A_star_2d_hourly_update_route(cf)
 
-    if cf.submission:
+    if cf.submission_dummy:
         print("submission")
         submit_phase(cf)
-
 
 
 def main():
