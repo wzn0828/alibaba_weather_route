@@ -1,4 +1,5 @@
-import os
+import os, sys
+from datetime import datetime
 
 
 def HMS(sec):
@@ -18,8 +19,10 @@ def configurationPATH(cf):
     :param cf: config file
     :return: Print some paths
     '''
-
+    # Enable log file
     print("\n###########################")
     print(' > Save Path = "%s"' % (cf.savepath))
     print(' > Dataset PATH = "%s"' % (os.path.join(cf.dataroot_dir)))
     print("###########################\n")
+
+

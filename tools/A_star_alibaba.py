@@ -81,7 +81,7 @@ def A_star_2d_hourly_update_route(cf):
                 else:
                     weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.np.npy' % (cf.model_number, day, hour)
                 print('Day: %d, city: %d, hour: %d' % (day, goal_city, hour))
-                wind_real_day_hour = np.load(os.path.join(cf.savepath, weather_name))
+                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
 
                 # construct the 2d diagram
                 diagram = GridWithWeights(wind_real_day_hour.shape[0], wind_real_day_hour.shape[1])
@@ -151,10 +151,9 @@ def A_star_2d_hourly_update_route(cf):
                         sub_df = a_star_submission(day, goal_city, start_loc, goal_loc, total_path)
                         sub_csv = pd.concat([sub_csv, sub_df], axis=0)
                     break
-    if cf.submission:
-        sub_csv.to_csv(os.path.join(cf.submission_path, datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'),
-                       header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
 
+    if cf.submission:
+        sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
         print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
     return sub_csv
