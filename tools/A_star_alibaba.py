@@ -63,9 +63,8 @@ def A_star_2d_hourly_update_route(cf):
         plt.clf()
         mng = plt.get_current_fig_manager()
         mng.resize(*mng.window.maxsize())
-    if cf.submission:
-        sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
 
+    sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     start_time = timer()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
@@ -144,18 +143,18 @@ def A_star_2d_hourly_update_route(cf):
                             plt.scatter(r[1], r[0], c=cf.colors[np.mod(c, len(cf.colors))], s=10)
 
                     plt.waitforbuttonpress(1)
-
-                if not len(undoable_path):
+                if len(route_list) <= 31:
                     print('We reach the goal in hour: %d, using %.2f sec!' % (hour, timer() - city_start_time))
                     if cf.submission:
                         sub_df = a_star_submission(day, goal_city, start_loc, goal_loc, total_path)
                         sub_csv = pd.concat([sub_csv, sub_df], axis=0)
                     break
 
-    if cf.submission:
-        sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-        print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
+            if len(route_list) > 31:
+                print('Sadly, we never reached the goal')
+                print('#' * 20 + '5' * 20 + '#' * 20)
+    sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
+    print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
-    return sub_csv
 
 

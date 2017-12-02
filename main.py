@@ -1,12 +1,14 @@
 import argparse
 import time
 from datetime import datetime
+import numpy as np
 
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
 from tools.A_star_alibaba import A_star_2d_hourly_update_route
 from tools.simpleSub import submit_phase
+from tools.evaluation import evaluation
 
 
 def process(cf):
@@ -30,6 +32,12 @@ def process(cf):
     if cf.submission_dummy:
         print("submission")
         submit_phase(cf)
+
+    if cf.evaluation:
+        print('evaluation')
+        total_penalty = evaluation(cf, cf.csv_for_evaluation)
+        print(np.sum(np.sum(total_penalty)))
+        print(total_penalty)
 
 
 def main():

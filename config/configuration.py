@@ -29,17 +29,18 @@ class Configuration():
 
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-        elif cf.day_list[0] == 1:
+        else:
             cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 
-        # Enable log file
-        os.mkdir(cf.exp_dir)
-        cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
-        sys.stdout = Logger(cf.log_file)
-        # we print the configuration file here so that the configuration is traceable
-        print(help(cf))
+        if not cf.evaluation:
+            # Enable log file
+            os.mkdir(cf.exp_dir)
+            cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+            sys.stdout = Logger(cf.log_file)
+            # we print the configuration file here so that the configuration is traceable
+            print(help(cf))
 
-        cf.csv_file_name = os.path.join(cf.exp_dir, cf.model_description + '.csv')
+            cf.csv_file_name = os.path.join(cf.exp_dir, cf.model_description + '.csv')
 
         return cf
 
