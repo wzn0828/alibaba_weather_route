@@ -1,0 +1,133 @@
+%%%% ijcai18.tex
+
+\typeout{IJCAI-18 Instructions for Authors}
+
+% These are the instructions for authors for IJCAI-18.
+% They are the same as the ones for IJCAI-11 with superficical wording
+%   changes only.
+
+\documentclass{article}
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+% The file ijcai18.sty is the style file for IJCAI-18 (same as ijcai08.sty).
+\usepackage{ijcai18}
+\usepackage{hyperref}
+% Use the postscript times font!
+\usepackage{times}
+\usepackage{xcolor}
+\usepackage{soul}
+\usepackage[utf8]{inputenc}
+\usepackage[small]{caption}
+\usepackage{booktabs}
+\usepackage{tabu,multirow}% the following package is optional:
+%\usepackage{latexsym}
+
+% Following comment is from ijcai97-submit.tex:
+% The preparation of these files was supported by Schlumberger Palo Alto
+% Research, AT\&T Bell Laboratories, and Morgan Kaufmann Publishers.
+% Shirley Jowell, of Morgan Kaufmann Publishers, and Peter F.
+% Patel-Schneider, of AT\&T Bell Laboratories collaborated on their
+% preparation.
+
+% These instructions can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+% Neither Shirley Jowell nor Peter F. Patel-Schneider can be listed as
+% contacts for providing assistance without their prior permission.
+
+% To use for other conferences, change references to files and the
+% conference appropriate and use other authors, contacts, publishers, and
+% organizations.
+% Also change the deadline and address for returning papers and the length and
+% page charge instructions.
+% Put where the files are available in the appropriate places.
+
+\title{IJCAI--18}
+
+% Single author syntax
+
+\author{Di Wu, Zhennan Wang, Wenbin Zou, Xia Li, Chen Xu\\
+Shenzhen University\thanks{Shenzhen Key Lab of Advanced Telecommunication and Information Processing, College of Information Engineering, Shenzhen University.}\\
+{\tt\small dwu,...@szu.edu.cn}}
+
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  The {\it IJCAI--18 Proceedings} will be printed from electronic
+  manuscripts submitted by the authors. The electronic manuscript will
+  also be included in the online version of the proceedings. This paper
+  provides the style instructions.
+\end{abstract}
+
+\section{Introduction}
+
+The {\it IJCAI--18 Proceedings} will be printed from electronic
+manuscripts submitted by the authors. These must be PDF ({\em Portable
+Document Format}) files formatted for 8-1/2$''$ $\times$ 11$''$ paper.
+
+
+
+\subsection{A* search algorithm}
+
+The following is an excerpt from Wikipedia \url{https://en.wikipedia.org/wiki/A*_search_algorithm}.
+
+A* is an informed search algorithm, or a best-first search, meaning that it solves problems by searching among all possible paths to the solution (goal) for the one that incurs the smallest cost (least distance travelled, shortest time, etc.). It is an extension of Edsger Dijkstra's 1959 algorithm. A* selects the path that minimses:
+
+\begin{equation}
+f(n) = g(n) + h(n)
+\end{equation}
+where $n$ is the last node on the path, $g(n)$ is the cost of the path from the start node to $n$, and $h(n)$ is a heuristic that estimates the cost of the cheapest path from $n$ to the goal.
+The heuristic is problem-specific. For the algorithm to find the actual shortest path, the heuristic function must be admissible, meaning that it never overestimates the actual cost to get to the nearest goal node.
+
+Typical implementation of A* use a priority queue to perform the repeated selection of minimum (estimated) cost nodes to expand.
+
+
+
+
+\section{dataset}
+ \subsection{real weather update}
+ Real weather is updated not on an hourly basis--: but 4-2-4-2-4-2: 3-6, 7-8, 9-12, 13-14, 15-18, 19-20.
+
+\section{Experiments}
+
+\subsection{Baselines}
+\subsubsection{Straight lines}
+\subsubsection{A* 2D}
+\subsubsection{A* 3D: risky scheme}
+\subsubsection{A* 3D: conservative scheme}
+
+
+
+\begin{table}[t]
+\small
+   \centering
+        \begin{tabu}{@{}cccc@{}}\toprule
+        [-1pt] \tabucline[1pt]{1-4}
+
+        \multirow{2}{*}{Configuration}                            &  \multicolumn{2}{c}{train}      & test   \\
+                                                    &   mins                &  crash          & min     \\
+            \hline
+            {\small Straight Line }                 &   51318               &  31              &  69376   \\
+            {\small A* 2D  }                        &   51318	            &  31              &  65656 \\
+            {\small \textbf{A* 3D}(risky)}          &   \textbf{43010}      &  \textbf{21}     &     \\
+            {\small \textbf{A* 3D}(conservative)}   &                       &                  &     \\
+          [-1pt] \tabucline[1pt]{1-4}   
+        \end{tabu}
+        %\end{tabular}
+
+    \caption{ {\small
+    Results of 3D performance evaluation on mean coverage (higher is better) and center error (lower is better).
+     }
+          } \label{table_baseline_3d}
+\end{table}
+
+
+\bibliographystyle{named}
+\bibliography{ijcai18}
+
+\end{document}
+
