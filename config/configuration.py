@@ -27,10 +27,19 @@ class Configuration():
         print(self.config_path)
         cf = imp.load_source('config', self.config_path)
 
-        if cf.day_list[0] > 5:  # This is for submitting test file
-            cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+        if cf.risky:
+            cf.model_description += '_risky'
         else:
-            cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+            cf.model_description += '_conservative'
+        if cf.wall_wind:
+            cf.model_description += '_wall_wind_'+str(cf.wall_wind)
+
+        if cf.day_list[0] > 5:  # This is for submitting test file
+            cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_model' + str(cf.model_number) + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '_model' + str(cf.model_number) + '.csv')
+        else:
+            cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
 
         if not cf.evaluation:
             # Enable log file
@@ -40,7 +49,6 @@ class Configuration():
             # we print the configuration file here so that the configuration is traceable
             print(help(cf))
 
-            cf.csv_file_name = os.path.join(cf.exp_dir, cf.model_description + '.csv')
 
         return cf
 

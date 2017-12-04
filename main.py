@@ -2,11 +2,13 @@ import argparse
 import time
 from datetime import datetime
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
-from tools.A_star_alibaba import A_star_2d_hourly_update_route
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_3d_hourly_update_route
 from tools.simpleSub import submit_phase
 from tools.evaluation import evaluation
 
@@ -25,9 +27,13 @@ def process(cf):
         print('Draw weather')
         plot_all_wind(cf)
 
-    if cf.A_star_search:
-        print('A_star_serach')
+    if cf.A_star_search_2D:
+        print('A_star_search_2D')
         A_star_2d_hourly_update_route(cf)
+
+    if cf.A_star_search_3D:
+        print('A_star_search_3D')
+        A_star_3d_hourly_update_route(cf)
 
     if cf.submission_dummy:
         print("submission")
@@ -36,8 +42,9 @@ def process(cf):
     if cf.evaluation:
         print('evaluation')
         total_penalty = evaluation(cf, cf.csv_for_evaluation)
-        print(np.sum(np.sum(total_penalty)))
-        print(total_penalty)
+        print(int(np.sum(np.sum(total_penalty))))
+        print(total_penalty.astype('int'))
+        print(np.sum(total_penalty.astype('int') == 1440))
 
 
 def main():

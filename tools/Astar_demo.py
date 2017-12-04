@@ -1,5 +1,6 @@
 from tools.Astar import *
-
+from tools.Astar_3D import GridWithWeights_3D, a_star_search_3D
+import numpy as np
 
 def main_article():
     # data from main article
@@ -36,7 +37,43 @@ def a_start_goal_not_reachable():
         print()
 
 
+def a_start_3d_demo():
+    diagram = GridWithWeights_3D(4, 4, 8, wall_wind=15)
+    diagram.weights = np.ones(shape=(4, 4, 8))
+    # we manually add some barriers here
+    wall_wind = 15
+    diagram.weights[2, 2, 2] = wall_wind
+    diagram.weights[2, 3, 2] = wall_wind
+    diagram.weights[3, 2, 2] = wall_wind
+    diagram.weights[2, 2, 3] = wall_wind
+    diagram.weights[2, 3, 3] = wall_wind
+    diagram.weights[3, 2, 3] = wall_wind
+    diagram.weights[2, 2, 4] = wall_wind
+    diagram.weights[2, 3, 4] = wall_wind
+    diagram.weights[3, 2, 4] = wall_wind
+    diagram.weights[2, 2, 5] = wall_wind
+    diagram.weights[2, 3, 5] = wall_wind
+    diagram.weights[3, 2, 5] = wall_wind
+
+    start_loc_3D = (1, 0, 0)
+    goal_loc_3D = [(3, 3, t) for t in range(8)]
+    came_from, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+
+
+    route_list = []
+    current_loc = list(set(goal_loc_3D) & set(came_from.keys()))
+
+    if not len(current_loc):
+        print('We cannot reach the goal, continue!')
+    else:
+        find_loc = current_loc[0]
+        while came_from[find_loc] is not None:
+            prev_loc = came_from[find_loc]
+            route_list.append(prev_loc)
+            find_loc = prev_loc
+    print(route_list)
+
 if __name__ == "__main__":
-    main_article()
+    a_start_3d_demo()
 
 

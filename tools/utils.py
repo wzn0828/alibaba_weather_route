@@ -20,8 +20,8 @@ def configurationPATH(cf):
     '''
     # Enable log file
     print("\n###########################")
-    print(' > Save Path = "%s"' % (cf.savepath))
-    print(' > Dataset PATH = "%s"' % (os.path.join(cf.dataroot_dir)))
+    print(' > Save Path = "%s"' % (cf.exp_dir))
+    #print(' > Dataset PATH = "%s"' % (os.path.join(cf.dataroot_dir)))
     print("###########################\n")
 
 
