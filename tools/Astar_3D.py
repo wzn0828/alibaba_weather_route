@@ -82,7 +82,7 @@ def a_star_search_3D(graph, start, goals):
             break
 
         for next in graph.neighbors(current):
-            #print(str(current) + '   ->   ' + str(next))
+            # print(str(current) + '   ->   ' + str(next))
             new_cost = cost_so_far[current] + graph.cost(next)
             if next not in cost_so_far or new_cost < cost_so_far[next]:
                 cost_so_far[next] = new_cost

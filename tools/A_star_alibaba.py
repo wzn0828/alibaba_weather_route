@@ -10,6 +10,7 @@ from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D
 
+
 def draw_path(wind_real_day_hour, city_data_df, weather_name, came_from, start_loc, goal_loc):
     # some plot here
     plt.figure(1)
@@ -144,9 +145,8 @@ def A_star_2d_hourly_update_route(cf):
                     plt.waitforbuttonpress(1)
                 if len(route_list) <= 31:
                     print('We reach the goal in hour: %d, using %.2f sec!' % (hour, timer() - city_start_time))
-                    if cf.submission:
-                        sub_df = a_star_submission(day, goal_city, start_loc, goal_loc, total_path)
-                        sub_csv = pd.concat([sub_csv, sub_df], axis=0)
+                    sub_df = a_star_submission(day, goal_city, start_loc, goal_loc, total_path)
+                    sub_csv = pd.concat([sub_csv, sub_df], axis=0)
                     break
 
             if len(route_list) > 31:
@@ -156,7 +156,7 @@ def A_star_2d_hourly_update_route(cf):
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
 
-def A_star_3d_hourly_update_route(cf):
+def A_star_search_3D(cf):
     """
     This is a 3D A star algorithm:
     The whole diagram is expanded with a third dimension T which has length 18*30 = 540
@@ -181,20 +181,19 @@ def A_star_3d_hourly_update_route(cf):
         wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
         for hour in range(3, 21):
             if day < 6:  # meaning this is a training day
-                weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
             else:
-                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.np.npy' % (cf.model_number, day, hour)
+                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (cf.model_number, day, hour)
             wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
             # we replicate the weather for the whole hour
             wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
             if cf.risky:
-                # this will greatly enhance the processing speed
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # should we have this?
+                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
             else:
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # should we have this?
+                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
                 wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
 
-            wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]
+            wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
 
         # construct the 3d diagram
         diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
@@ -207,6 +206,8 @@ def A_star_3d_hourly_update_route(cf):
             # initiate a star 3d search
             # start location is the first time
             start_loc_3D = (start_loc[0], start_loc[1], 0)
+            # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
+            # we say we have reached the goal
             goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
             came_from, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
@@ -266,9 +267,8 @@ def A_star_3d_hourly_update_route(cf):
 
             print('We reach the goal for day: %d, city: %d, using %.2f sec!' %
                   (day, goal_city, timer() - city_start_time))
-            if cf.submission:
-                sub_df = a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list)
-                sub_csv = pd.concat([sub_csv, sub_df], axis=0)
+            sub_df = a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list)
+            sub_csv = pd.concat([sub_csv, sub_df], axis=0)
 
     sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))

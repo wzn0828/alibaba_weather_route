@@ -51,8 +51,11 @@ def evaluation(cf, csv_for_evaluation):
             min = 0
             acc_min = 0
             hour = 3
-            weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
-            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+            if cf.evalation_12_05_data:
+                pass
+            else:
+                weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                wind_real_day_hour = np.load(os.path.join('/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy', weather_name))
             if cf.debug_draw:
                 plt.clf()
                 plt.imshow(wind_real_day_hour, cmap=cf.colormap)
@@ -98,11 +101,16 @@ def evaluation(cf, csv_for_evaluation):
                 if min >= 60:
                     min = 0
                     hour += 1
-                    weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
-                    wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    if cf.evalation_12_05_data:
+                        pass
+                    else:
+                        weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                        wind_real_day_hour = np.load(
+                            os.path.join('/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy', weather_name))
                     if cf.debug_draw:
-                        for p in route_list[:(hour-2)*30]:
-                            plt.scatter(p[1], p[0], c='red', s=10)
+                        for h in range(3, hour):
+                            for p in route_list[(h-3)*30:(h-2)*30]:
+                                plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
                         plt.waitforbuttonpress(0.1)
                         plt.clf()
                         plt.imshow(wind_real_day_hour, cmap=cf.colormap)
@@ -122,9 +130,14 @@ def evaluation(cf, csv_for_evaluation):
                         plt.clabel(CS, inline=1, fontsize=10)
                         plt.title(weather_name[:-7])
 
+            # plot the last bit route
             if cf.debug_draw:
-                for p in route_list:
-                    plt.scatter(p[1], p[0], c='red', s=10)
+                for h in range(3, hour):
+                    for p in route_list[(h - 3) * 30:(h - 2) * 30]:
+                        plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+
+                for p in route_list[(hour-3)*30:]:
+                    plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
                 plt.waitforbuttonpress(0.5)
 
             if predicted_df_idx < len(predicted_df):

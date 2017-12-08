@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
-from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_3d_hourly_update_route
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D
 from tools.simpleSub import submit_phase
 from tools.evaluation import evaluation
 
@@ -33,7 +33,7 @@ def process(cf):
 
     if cf.A_star_search_3D:
         print('A_star_search_3D')
-        A_star_3d_hourly_update_route(cf)
+        A_star_search_3D(cf)
 
     if cf.submission_dummy:
         print("submission")
