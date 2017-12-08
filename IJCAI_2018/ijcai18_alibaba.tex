@@ -93,9 +93,27 @@ Typical implementation of A* use a priority queue to perform the repeated select
  Real weather is updated not on an hourly basis--: but 4-2-4-2-4-2: 3-6, 7-8, 9-12, 13-14, 15-18, 19-20.
 
 \section{Experiments}
+\subsection{Notations}
+\begin{table}[t]
+\small
+   \centering
+        \begin{tabu}{@{}cc@{}}\toprule
+        [-1pt] \tabucline[1pt]{1-2}
+        Notation                       &   meaning        \\
+        \hline
+        xid, yid   & \\
+        [-1pt] \tabucline[1pt]{1-2}
+        \end{tabu}
+        %\end{tabular}
+
+    \caption{ {\small
+    Results of 3D performance evaluation on mean coverage (higher is better) and center error (lower is better).
+     }
+          } \label{table_baseline_3d}
+\end{table}
 
 \subsection{Baselines}
-\subsubsection{Straight lines}
+\subsubsection{Straight lines}:
 \subsubsection{A* 2D}
 \subsubsection{A* 3D: risky scheme}
 \subsubsection{A* 3D: conservative scheme}
@@ -108,14 +126,14 @@ Typical implementation of A* use a priority queue to perform the repeated select
         \begin{tabu}{@{}cccc@{}}\toprule
         [-1pt] \tabucline[1pt]{1-4}
 
-        \multirow{2}{*}{Configuration}                            &  \multicolumn{2}{c}{train}      & test   \\
+        \multirow{2}{*}{Configuration}       &  \multicolumn{2}{c}{train (prev 12-05)}      & test   \\
                                                     &   mins                &  crash          & min     \\
             \hline
             {\small Straight Line }                 &   51318               &  31              &  69376   \\
             {\small A* 2D  }                        &   51318	            &  31              &  65656 \\
-            {\small \textbf{A* 3D}(risky)}          &   \textbf{43010}      &  \textbf{21}     &     \\
-            {\small \textbf{A* 3D}(conservative)}   &                       &                  &     \\
-          [-1pt] \tabucline[1pt]{1-4}   
+            {\small \textbf{A* 3D}(risky)}          &   \textbf{43010}      &  \textbf{21}     &  65720       \\
+            {\small \textbf{A* 3D}(conservative)}   &   48874               &  29              &  \textbf{62766} \footnote{using only model 1 as forecast} \\
+          [-1pt] \tabucline[1pt]{1-4}
         \end{tabu}
         %\end{tabular}
 
