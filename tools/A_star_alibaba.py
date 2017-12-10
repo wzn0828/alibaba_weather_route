@@ -182,9 +182,17 @@ def A_star_search_3D(cf):
         for hour in range(3, 21):
             if day < 6:  # meaning this is a training day
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+
             else:
-                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (cf.model_number, day, hour)
-            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour_temp = []
+                for model_number in cf.model_number:
+                    # we average the result
+                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                    wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    wind_real_day_hour_temp.append(wind_real_day_hour_model)
+                wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
+                wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
             # we replicate the weather for the whole hour
             wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
             if cf.risky:
@@ -215,7 +223,7 @@ def A_star_search_3D(cf):
             current_loc = list(set(goal_loc_3D) & set(came_from.keys()))
 
             if not len(current_loc):
-                print('We cannot reach the goal, continue!')
+                print('We cannot reach the goal city: %d, continue!' % goal_city)
                 continue
 
             find_loc = current_loc[0]
@@ -230,11 +238,18 @@ def A_star_search_3D(cf):
                 for hour in range(3, 21):
                     if day < 6:  # meaning this is a training day
                         weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                        wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
                     else:
-                        weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.np.npy' % (
-                        cf.model_number, day, hour)
+                        wind_real_day_hour_temp = []
+                        for model_number in cf.model_number:
+                            # we average the result
+                            weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                            wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                            wind_real_day_hour_temp.append(wind_real_day_hour_model)
+                        wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
+                        wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+                        weather_name = 'Test_forecast_wind_model_count_%d_day_%d_hour_%d.npy' % (len(cf.model_number), day, hour)
 
-                    wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
                     plt.clf()
                     plt.imshow(wind_real_day_hour, cmap=cf.colormap)
                     plt.colorbar()
@@ -252,21 +267,20 @@ def A_star_search_3D(cf):
                     CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
 
                     plt.clabel(CS, inline=1, fontsize=10)
-                    plt.title(weather_name[:-7])
-                    done_path = route_list[: 30*(hour-2)]
-                    for p in done_path:
-                        plt.scatter(p[1], p[0], c='red', s=10)
+                    plt.title(weather_name[:-4])
+                    for h in range(3, hour+1):
+                        for p in route_list[(h - 3) * 30:(h - 2) * 30]:
+                            plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
 
-                    undone_path = route_list[30*(hour-2):]
-                    for p in undone_path:
-                        plt.scatter(p[1], p[0],  c='white', s=1)
+                    for p in route_list:
+                        plt.scatter(p[1], p[0],  c='yellow', s=1)
 
                     plt.waitforbuttonpress(1)
                     if 30*(hour-2) > len(route_list):
                         break
 
-            print('We reach the goal for day: %d, city: %d, using %.2f sec!' %
-                  (day, goal_city, timer() - city_start_time))
+            print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' %
+                  (day, goal_city, len(route_list), timer() - city_start_time))
             sub_df = a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list)
             sub_csv = pd.concat([sub_csv, sub_df], axis=0)
 

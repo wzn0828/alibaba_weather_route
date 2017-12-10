@@ -24,7 +24,7 @@ class GridWithWeights_3D():
         #if (x + y) % 2 == 0 : results.reverse()  # aesthetics
         results = filter(self.in_bounds, results)
         # we also need within the wall wind limit
-        results = filter(self.in_wind, results)
+        # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
         return results
 
     def cost(self, to_node):
