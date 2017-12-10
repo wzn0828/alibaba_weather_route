@@ -23,7 +23,7 @@ def process(cf):
     if cf.plt_forecast_wind_test:
         print('plt_forecast_wind_test')
         plt_forecast_wind_test(cf)
-    if cf.draw_weather:
+    if cf.plot_all_wind:
         print('Draw weather')
         plot_all_wind(cf)
 
@@ -31,6 +31,7 @@ def process(cf):
         print('A_star_search_2D')
         A_star_2d_hourly_update_route(cf)
 
+    # This is one of the core algorithm
     if cf.A_star_search_3D:
         print('A_star_search_3D')
         A_star_search_3D(cf)
