@@ -100,13 +100,6 @@ def a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list):
     # A random time to get the time string right
     ti = datetime(2017, 11, 21, 3, 0)
     row_list = []
-    dict = {'target': goal_city,
-            'date': day,
-            'time': ti.strftime('%H:%M'),
-            'xid': start_loc[0]+1,
-            'yid': start_loc[1]+1}
-    ti = ti + timedelta(minutes=2)
-    row_list.append(dict)
 
     for ip in route_list:
         dict = {'target': goal_city,
