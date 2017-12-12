@@ -23,10 +23,14 @@ submission_path             = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Sub
 
 # A star search
 A_star_search_2D            = False
-A_star_search_3D            = True
+A_star_search_3D            = False
+A_star_search_3D_multiprocessing = True
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
+wind_exp                    = True
+wind_exp_mean               = 5
+wind_exp_std                = 5
 grid_world_shape            = (548, 421)
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -44,7 +48,7 @@ wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
 # evaluation
-debug_draw                  = True
+debug_draw                  = False
 evalation_12_05_data        = False
 evaluation                  = False
 csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Submissions/Train_A_star_search_3D_conservative.csv'

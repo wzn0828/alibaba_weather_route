@@ -120,3 +120,18 @@ def a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list):
     sub_df = pd.DataFrame(row_list)
     return sub_df
 
+
+def collect_csv_for_submission(cf):
+    """
+    This script is used to collect all the generated csv files (days, cities) to generate the required submission file
+    :param cf:
+    :return:
+    """
+    frames = []
+    for day in [6]:
+        for goal_city in cf.goal_city_list:
+            csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+            city_data_hour_df = pd.read_csv(csv_file_name, index_col=None, header=None)
+            frames.append(city_data_hour_df)
+    sub_csv = pd.concat(frames, axis=0)
+    sub_csv.to_csv(cf.csv_file_name, header=False, index=False)

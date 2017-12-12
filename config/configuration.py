@@ -29,6 +29,8 @@ class Configuration():
 
         if cf.risky:
             cf.model_description += '_risky'
+        elif cf.wind_exp:
+            cf.model_description += '_wind_exp_mean_' + str(cf.wind_exp_mean) + '_std_' + str(cf.wind_exp_std)
         else:
             cf.model_description += '_conservative'
         if cf.wall_wind:
