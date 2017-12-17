@@ -368,7 +368,7 @@ def A_star_3D_worker(cf, day, goal_city):
     if cf.debug_draw:
         for hour in range(3, 21):
             if day < 6:  # meaning this is a training day
-                weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
             else:
                 wind_real_day_hour_temp = []

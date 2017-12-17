@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import multiprocessing
+from multiprocessing import Pool
 import matplotlib
 #matplotlib.use('Agg')
 matplotlib.use('TkAgg')
@@ -69,6 +71,111 @@ def plt_forecast_wind_train(cf):
 
                     np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)),
                             wind_real_day_hour)
+
+
+def plt_forecast_wind_train_workers(cf, wind_real_df_model_day_hour, m_unique, d_unique, h_unique, x_unique, y_unique):
+    start_time = timer()
+    if not len(x_unique) * len(y_unique) == wind_real_df_model_day_hour.index.__len__():
+        print('There are some missing data or redudant data: pixel range: %d, given wind pixel range: %d.' %
+              (len(x_unique) * len(y_unique), wind_real_df_model_day_hour.index.__len__()))
+
+    wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    for idx in range(wind_real_df_model_day_hour.index.__len__()):
+        x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
+        y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
+        wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+        wind_real_day_hour[x_loc, y_loc] = wind
+
+    np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)),wind_real_day_hour)
+    print('Finish writing Train weather, using %.2f sec!' % (timer() - start_time))
+
+
+def plt_forecast_wind_train_multiprocessing(cf):
+    # Create the data generators
+    start_time = timer()
+    wind_real_df = pd.read_csv(os.path.join(cf.dataroot_dir, cf.TrainForecastFile))
+    x_unique = pd.unique(wind_real_df['xid'])
+    y_unique = pd.unique(wind_real_df['yid'])
+    #model_unique = pd.unique(wind_real_df['model'])
+    # we use multiprocessing here
+    jobs = []
+    multiprocessing.log_to_stderr()
+
+    for m_unique in cf.model_unique:
+        for d_unique in cf.day_list:
+            for h_unique in range(cf.hour_unique[0], cf.hour_unique[1]+1):
+                if not os.path.exists(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))):
+                    print('Processing forecast data for model: %d,  date: %d, hour: %d' % (m_unique, d_unique, h_unique))
+
+                    wind_real_df_model = wind_real_df.loc[wind_real_df['model'] == m_unique]
+                    wind_real_df_model_day = wind_real_df_model.loc[wind_real_df_model['date_id'] == d_unique]
+                    wind_real_df_model_day_hour = wind_real_df_model_day.loc[wind_real_df_model_day['hour'] == h_unique]
+                    p = multiprocessing.Process(target=plt_forecast_wind_train_workers, args=(cf, wind_real_df_model_day_hour, m_unique, d_unique, h_unique, x_unique, y_unique))
+                    p.start()
+                    jobs.append(p)
+            # because of the memory constraint, we need to wait for the previous to finish to finish in order
+            # to initiate another function...
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+
+    print('Finish writing Train weather, using %.2f sec!' % (timer() - start_time))
+
+
+def plt_forecast_wind_test_workers(cf, wind_real_df_model_day_hour, m_unique, d_unique, h_unique, x_unique, y_unique):
+
+    start_time = timer()
+    if not len(x_unique) * len(y_unique) == wind_real_df_model_day_hour.index.__len__():
+        print('There are some missing data or redudant data: pixel range: %d, given wind pixel range: %d.' %
+              (len(x_unique) * len(y_unique), wind_real_df_model_day_hour.index.__len__()))
+
+    wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    for idx in range(wind_real_df_model_day_hour.index.__len__()):
+        x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
+        y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
+        wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+        wind_real_day_hour[x_loc, y_loc] = wind
+
+    np.save(os.path.join(cf.wind_save_path, 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' %
+                         (m_unique, d_unique, h_unique)), wind_real_day_hour)
+    print('Finish writing one hour wind data saving, using %.2f sec!' % (timer() - start_time))
+
+
+def plt_forecast_wind_test_multiprocessing(cf):
+    # Create the data generators
+    start_time = timer()
+    wind_real_df = pd.read_csv(os.path.join(cf.dataroot_dir, cf.TestForecastFile))
+    x_unique = pd.unique(wind_real_df['xid'])
+    y_unique = pd.unique(wind_real_df['yid'])
+    # we use multiprocessing here
+    jobs = []
+    multiprocessing.log_to_stderr()
+
+    for m_unique in cf.model_unique:
+        for d_unique in cf.day_list:
+            for h_unique in range(cf.hour_unique[0], cf.hour_unique[1]+1):
+                if not os.path.exists(os.path.join(cf.wind_save_path,'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))):
+                    print('Processing forecast data for model: %d,  date: %d, hour: %d' % (m_unique, d_unique, h_unique))
+
+                    wind_real_df_model = wind_real_df.loc[wind_real_df['model'] == m_unique]
+                    wind_real_df_model_day = wind_real_df_model.loc[wind_real_df_model['date_id'] == d_unique]
+                    wind_real_df_model_day_hour = wind_real_df_model_day.loc[wind_real_df_model_day['hour'] == h_unique]
+                    p = multiprocessing.Process(target=plt_forecast_wind_test_workers, args=(cf, wind_real_df_model_day_hour, m_unique, d_unique, h_unique, x_unique, y_unique))
+                    p.start()
+                    jobs.append(p)
+            # because of the memory constraint, we need to wait for the previous to finish to finish in order
+            # to initiate another function...
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+
+    print('Finish writing Test weather, using %.2f sec!' % (timer() - start_time))
 
 
 def plt_forecast_wind_test(cf):

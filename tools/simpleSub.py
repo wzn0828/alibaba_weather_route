@@ -128,10 +128,10 @@ def collect_csv_for_submission(cf):
     :return:
     """
     frames = []
-    for day in [6]:
+    for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
-            city_data_hour_df = pd.read_csv(csv_file_name, index_col=None, header=None)
+            csv_file_name_hour = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+            city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)
             frames.append(city_data_hour_df)
     sub_csv = pd.concat(frames, axis=0)
     sub_csv.to_csv(cf.csv_file_name, header=False, index=False)

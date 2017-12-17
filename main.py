@@ -7,7 +7,7 @@ matplotlib.use('TkAgg')
 
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
-from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind
+from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
 from tools.simpleSub import submit_phase
 from tools.evaluation import evaluation
@@ -20,9 +20,15 @@ def process(cf):
     if cf.plt_forecast_wind_train:
         print('plot_forecast_wind_train')
         plt_forecast_wind_train(cf)
+    if cf.plt_forecast_wind_train_multiprocessing:
+        print('plt_forecast_wind_train_multiprocessing')
+        plt_forecast_wind_train_multiprocessing(cf)
     if cf.plt_forecast_wind_test:
         print('plt_forecast_wind_test')
         plt_forecast_wind_test(cf)
+    if cf.plt_forecast_wind_test_multiprocessing:
+        print('plt_forecast_wind_test_multiprocessing')
+        plt_forecast_wind_test_multiprocessing(cf)
     if cf.plot_all_wind:
         print('Draw weather')
         plot_all_wind(cf)
