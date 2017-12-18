@@ -1,8 +1,8 @@
-savepath                    = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Experiments'
+savepath                    = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments'
 dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/downloaded_data/'
-fig_save_path               = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Figures/Figure_post_12_05'
-fig_save_train_path         = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Figures/train_models_post_12_05'
-fig_save_test_path          = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Figures/test_models_post_12_05'
+fig_save_path               = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
+fig_save_train_path         = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
+fig_save_test_path          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
 wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing'
 
 TrainRealFile               = 'In_situMeasurementforTraining_201712.csv'
@@ -22,13 +22,13 @@ hour_unique                 = (3, 20)
 # submission
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
-submission_path             = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Submissions'
+submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
 num_threads                 = 12
 
 # A star search
 A_star_search_2D            = False
 A_star_search_3D            = False
-A_star_search_3D_multiprocessing = True
+A_star_search_3D_multiprocessing = False
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
@@ -54,6 +54,6 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 
 # evaluation
 debug_draw                  = False
-evalation_12_05_data        = False
-evaluation                  = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/gitlab-u4188/Submissions/Train_A_star_search_3D_conservative.csv'
+evalation_12_05_data        = True
+evaluation                  = True
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_A_star_search_3D_conservative.csv'

@@ -52,7 +52,8 @@ def evaluation(cf, csv_for_evaluation):
             acc_min = 0
             hour = 3
             if cf.evalation_12_05_data:
-                pass
+                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
             else:
                 weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join('/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy', weather_name))
