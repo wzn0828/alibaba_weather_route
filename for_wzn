@@ -1,0 +1,2 @@
+1. A* heuristic only take time into account, rather than x,y,time;
+2. Different cost in different velocity;
