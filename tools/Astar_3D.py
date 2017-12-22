@@ -91,4 +91,4 @@ def a_star_search_3D(graph, start, goals):
                 frontier.put(next, priority)
                 came_from[next] = current
 
-    return came_from, cost_so_far
+    return came_from, cost_so_far, [current]
