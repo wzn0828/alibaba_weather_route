@@ -92,3 +92,22 @@ def a_star_search_3D(graph, start, goals):
                 came_from[next] = current
 
     return came_from, cost_so_far
+
+
+def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from):
+    """
+    A helper function to walk the whole grid world
+    :return:
+    """
+    go_to_all = {}
+    GOAL_STATE = set(GOAL_STATES).intersection(came_from.keys())
+    currentState = list(GOAL_STATE)[0]
+    steps = 0
+    while not currentState == START_STATE:
+        # track the steps
+        steps += 1
+        prev = came_from[currentState]
+        go_to_all[prev] = currentState
+        currentState = prev
+
+    return go_to_all, steps

@@ -51,7 +51,8 @@ def evaluation(cf, csv_for_evaluation):
             min = 0
             acc_min = 0
             hour = 3
-            if cf.evalation_12_05_data:
+            if True:
+            #if cf.evalation_12_05_data:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
             else:
@@ -102,8 +103,11 @@ def evaluation(cf, csv_for_evaluation):
                 if min >= 60:
                     min = 0
                     hour += 1
-                    if cf.evalation_12_05_data:
-                        pass
+                    if True:
+                    #if cf.evalation_12_05_data:
+                        weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                        wind_real_day_hour = np.load(
+                            os.path.join(cf.wind_save_path, weather_name))
                     else:
                         weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
                         wind_real_day_hour = np.load(
@@ -158,4 +162,78 @@ def evaluation(cf, csv_for_evaluation):
     return total_penalty
 
 
+def a_star_length(cf, csv_for_evaluation):
+    """
+    This is a script for evaluating predicted route's length
+    :param cf:
+    :param csv_for_evaluation:
+    :return:
+    """
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    predicted_df = pd.read_csv(csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid'])
+    predicted_df_idx = 0
+    total_penalty = np.ones(shape=(5, 10)) * 24 * 60
 
+    for day in [1, 2, 3, 4, 5]:
+        for goal_city in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+            print('Day: %d, city: %d' % (day, goal_city))
+            route_list = []
+            start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))
+            goal_loc = (int(city_data_df.iloc[goal_city]['xid']), int(city_data_df.iloc[goal_city]['yid']))
+
+            if predicted_df_idx >= len(predicted_df) - 1:
+                # meaining the rest of the goals are not reached (e.g., day 4, and 5)
+                break
+
+            start_loc_pred = (predicted_df.iloc[predicted_df_idx]['xid'], predicted_df.iloc[predicted_df_idx]['yid'])
+            day_pred = predicted_df.iloc[predicted_df_idx]['date']
+            target_pred = predicted_df.iloc[predicted_df_idx]['target']
+
+            if goal_city != predicted_df.iloc[predicted_df_idx]['target']:
+                print('Sadly, we never reached the goal: %d' % goal_city)
+                total_penalty[day - 1, goal_city - 1] = 24 * 60
+                print('#' * 20 + '5' * 20 + '#' * 20)
+                continue
+
+            assert start_loc == start_loc_pred, "Starting x, y not the same!"
+            assert day_pred == day, "Starting day not the same!"
+            assert target_pred == goal_city, "Starting city not the same!"
+            min = 0
+            acc_min = 0
+            hour = 3
+
+            next_loc_pred = start_loc_pred
+
+            while not next_loc_pred == goal_loc:
+                route_list.append(next_loc_pred)
+                min += 2
+                acc_min += 2
+                predicted_df_idx += 1
+                next_loc_pred = (predicted_df.iloc[predicted_df_idx]['xid'], predicted_df.iloc[predicted_df_idx]['yid'])
+                day_pred_next = predicted_df.iloc[predicted_df_idx]['date']
+                target_pred_next = predicted_df.iloc[predicted_df_idx]['target']
+                assert day_pred_next == day_pred, "Predict day not the same!"
+                assert target_pred_next == target_pred, "Predict city not the same!"
+                assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
+
+                start_loc_pred = next_loc_pred
+
+                if min >= 60:
+                    min = 0
+                    hour += 1
+
+            if predicted_df_idx < len(predicted_df):
+                if next_loc_pred == goal_loc:
+                    total_penalty[day-1, goal_city-1] = acc_min
+                    print('Goal reached in %d mins' % acc_min)
+                    predicted_df_idx += 1
+                else:
+                    # it is a crash, we need to iterate
+                    if predicted_df_idx < len(predicted_df)-1:
+                        while predicted_df.iloc[predicted_df_idx+1]['target'] == predicted_df.iloc[predicted_df_idx]['target']:
+                            predicted_df_idx += 1
+                            if predicted_df_idx >= len(predicted_df)-1:
+                                break
+                        predicted_df_idx += 1
+
+    return total_penalty

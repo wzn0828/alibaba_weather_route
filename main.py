@@ -11,6 +11,7 @@ from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_for
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
 from tools.simpleSub import submit_phase
 from tools.evaluation import evaluation
+from tools.RL_alibaba import reinforcement_learning_solution
 
 
 def process(cf):
@@ -45,6 +46,10 @@ def process(cf):
     if cf.A_star_search_3D_multiprocessing:
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing(cf)
+
+    if cf.reinforcement_learning_solution:
+        print('reinforcement_learning_solution')
+        reinforcement_learning_solution(cf)
 
     if cf.submission_dummy:
         print("submission")
