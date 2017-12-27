@@ -108,7 +108,7 @@ def reinforcement_learning_solution(cf):
             steps = []
             # play for an episode
             while True:
-                steps.append(model.play())
+                steps.append(model.play(environ_step=True))
                 # print best action w.r.t. current state-action values
                 # printActions(currentStateActionValues, maze)
                 # check whether the (relaxed) optimal path is found

@@ -41,7 +41,7 @@ grid_world_shape            = (548, 421)
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+goal_city_list              = [9]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 
 real_hour                   = 3
@@ -64,7 +64,7 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 reinforcement_learning_solution = True
 return_to_start                 = False
 reward_goal                     = 1.0
-reward_move                     = 0.0
+reward_move                     = .0
 reward_obstacle                 = -24*30
 
 # Dyna model hyper

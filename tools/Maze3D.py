@@ -19,7 +19,7 @@ class Maze_3D:
                  reward_obstacle=-100.,
                  maxSteps=1e5,
                  wind_real_day_hour_total=None,
-                 cf=[]):
+                 cf={}):
 
         self.WORLD_WIDTH = width
         self.WORLD_HEIGHT = height
@@ -74,7 +74,7 @@ class Maze_3D:
              x, y = x, y
 
         current_loc_time_wind = self.wind_real_day_hour_total[self.cf.temp_model, x, y, t]
-        if current_loc_time_wind > self.cf.wall_wind:
+        if current_loc_time_wind >= self.cf.wall_wind:
             if self.return_to_start:
                 x, y, t = self.START_STATE
             else:
