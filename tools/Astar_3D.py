@@ -97,7 +97,7 @@ def a_star_search_3D(graph, start, goals):
     return came_from, cost_so_far
 
 
-def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from):
+def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, include_all=False):
     """
     A helper function to walk the whole grid world
     :return:
@@ -112,6 +112,17 @@ def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from):
         prev = came_from[currentState]
         go_to_all[prev] = currentState
         currentState = prev
+
+    if include_all:
+        others_got_to = {}
+        for k in came_from.keys():
+            if k not in go_to_all.keys():
+                if k not in others_got_to.keys():
+                    others_got_to[k] = [came_from[k]]
+                else:
+                    others_got_to[k].append(came_from[k])
+
+        go_to_all = dict(list(go_to_all.items())+list(others_got_to.items()))
 
     return go_to_all, steps
 

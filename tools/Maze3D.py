@@ -14,6 +14,7 @@ class Maze_3D:
                  start_state,
                  goal_states,
                  return_to_start=False,
+                 strong_wind_return=False,
                  reward_goal=0.0,
                  reward_move=-1.0,
                  reward_obstacle=-100.,
@@ -42,6 +43,7 @@ class Maze_3D:
 
         self.wind_real_day_hour_total = wind_real_day_hour_total
         self.return_to_start = return_to_start
+        self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
 
         self.cf = cf
@@ -77,8 +79,9 @@ class Maze_3D:
         if current_loc_time_wind >= self.cf.wall_wind:
             if self.return_to_start:
                 x, y, t = self.START_STATE
-            else:
+            elif self.strong_wind_return:
                 x, y, _ = state
+
             reward = self.reward_obstacle
 
         elif tuple([x, y, t]) in self.GOAL_STATES:

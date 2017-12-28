@@ -40,7 +40,7 @@ use_real_weather            = False
 grid_world_shape            = (548, 421)
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [3]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [9]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 
@@ -62,15 +62,17 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 
 # reinforcement_learning solution
 reinforcement_learning_solution = True
-return_to_start                 = False
+return_to_start                 = True
+strong_wind_return              = True    # will go back to the previous state
+include_all                     = False     # A flag indicating include all other A star heuristics
 reward_goal                     = 1.0
-reward_move                     = .0
-reward_obstacle                 = -24*30
+reward_move                     = 0.0
+reward_obstacle                 = -10.0
 
 # Dyna model hyper
 maxSteps                        = 1e5  # Maze maximum steps
 random_state                    = 0
-planningSteps                   = 100     # planning steps for Dyna model
+planningSteps                   = 5     # planning steps for Dyna model
 alpha                           = 0.5      # Learning step size
 gamma                           = 0.95
 theta                           = 1e-4
@@ -78,6 +80,8 @@ epsilon                         = 0.1
 qLearning                       = True  # flag for qLearning
 expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
+plus                            = True   # Dyna Plus algorithm
 temp_model                      = 1  # a flag saying the temporary model
 optimal_length_relax            = 1.5
 heuristic                       = False
+increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson

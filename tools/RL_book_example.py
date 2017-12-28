@@ -13,12 +13,13 @@ def main():
     cf = configuration.load()
     # get the original 6*9 maze
     time_length = 25
-    maze = Maze_3D(height=7,
+    maze = Maze_3D(height=9,
                    width=9,
                    time_length=time_length,
                    start_state=(2, 0, 0),
                     goal_states=[[0, 8]],
-                    return_to_start=False,
+                    return_to_start=cf.return_to_start,
+                    strong_wind_return=cf.strong_wind_return,
                     reward_goal=cf.reward_goal,
                     reward_move=cf.reward_move,
                     reward_obstacle=cf.reward_obstacle,
@@ -40,7 +41,7 @@ def main():
             maze.wind_real_day_hour_total[item[0], item[1], t] = cf.wall_wind
     for t in range(5, time_length-3):
         maze.wind_real_day_hour_total[1, 8, t] = cf.wall_wind
-    mazes = [maze]
+
     # Dyna model hyper
     rand = np.random.RandomState(0)
     planningSteps = 5
@@ -54,102 +55,109 @@ def main():
     numOfModels = 5
     backups = np.zeros((runs, numOfModels, numOfMazes))
 
-    for mazeIndex, maze in enumerate(mazes):
-        ############## A star search algorithm  ######################################
-        start_time = timer()
-        diagram = convert_3D_maze_to_grid(maze, cf)
-        came_from, cost_so_far = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
-        go_to_all, steps = walk_final_grid_go_to(tuple(maze.START_STATE), maze.GOAL_STATES, came_from)
-        if True:
-            draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),
-                         goal=tuple(maze.GOAL_STATES), title='A star')
-        print('Finish, using %.2f sec!' % (timer() - start_time))
-        # the following expand dims just to cater to challenge might have 10 models
-        maze.wind_real_day_hour_total = np.tile(maze.wind_real_day_hour_total, [10,1,1,1])
-        ##############End  A star search algorithm  ######################################
-        model_Dyna_Q = Dyna_3D(rand=rand,
-                             maze=maze,
-                             epsilon=epsilon,
-                             gamma=gamma,
-                             planningSteps=planningSteps,
-                             qLearning=True,
-                             expected=False,
-                             alpha=alpha,
-                             priority=False)
 
-        model_Dyna_Prioritized_Sweeping_ES = Dyna_3D(rand=rand,
-                                         maze=maze,
-                                         epsilon=epsilon,
-                                         gamma=gamma,
-                                         planningSteps=planningSteps,
-                                         qLearning=False,
-                                         expected=True,
-                                         alpha=alpha,
-                                         priority=True,
-                                         theta=theta)
+    ############## A star search algorithm  ######################################
+    start_time = timer()
+    diagram = convert_3D_maze_to_grid(maze, cf)
+    came_from, cost_so_far = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
+    go_to_all, steps = walk_final_grid_go_to(tuple(maze.START_STATE), maze.GOAL_STATES, came_from, include_all=cf.include_all)
+    if True:
+        draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),
+                     goal=tuple(maze.GOAL_STATES), title='A star')
+    print('Finish, using %.2f sec!' % (timer() - start_time))
+    # the following expand dims just to cater to challenge might have 10 models
+    maze.wind_real_day_hour_total = np.tile(maze.wind_real_day_hour_total, [10,1,1,1])
+    # we artificially added this
+    for t in range(time_length-2):
+        for item in [[0, 2]]:
+            maze.wind_real_day_hour_total[cf.temp_model, item[0], item[1], t] = cf.wall_wind
 
-        model_Dyna_Prioritized_Sweeping_Q = Dyna_3D(rand=rand,
-                                         maze=maze,
-                                         epsilon=epsilon,
-                                         gamma=gamma,
-                                         planningSteps=planningSteps,
-                                         qLearning=True,
-                                         expected=False,
-                                         alpha=alpha,
-                                         priority=True,
-                                         theta=theta)
+    ##############End  A star search algorithm  ######################################
+    model_Dyna_Q = Dyna_3D(rand=rand,
+                         maze=maze,
+                         epsilon=epsilon,
+                         gamma=gamma,
+                         planningSteps=planningSteps,
+                         qLearning=True,
+                         expected=False,
+                         alpha=alpha,
+                         priority=False)
 
-        model_Dyna_Prioritized_Sweeping_Q_A_star = Dyna_3D(rand=rand,
-                                                           maze=maze,
-                                                           epsilon=epsilon,
-                                                           gamma=gamma,
-                                                           planningSteps=planningSteps,
-                                                           qLearning=True,
-                                                           expected=False,
-                                                           alpha=alpha,
-                                                           priority=False,
-                                                           theta=theta,
-                                                           policy_init=go_to_all)
+    model_Dyna_Prioritized_Sweeping_ES = Dyna_3D(rand=rand,
+                                     maze=maze,
+                                     epsilon=epsilon,
+                                     gamma=gamma,
+                                     planningSteps=planningSteps,
+                                     qLearning=False,
+                                     expected=True,
+                                     alpha=alpha,
+                                     priority=True,
+                                     theta=theta)
 
-        model_Dyna_Prioritized_Sweeping_Q_heuristic = Dyna_3D(rand=rand,
-                                                           maze=maze,
-                                                           epsilon=epsilon,
-                                                           gamma=gamma,
-                                                           planningSteps=planningSteps,
-                                                           qLearning=True,
-                                                           expected=False,
-                                                           alpha=alpha,
-                                                           priority=True,
-                                                           theta=theta,
-                                                           heuristic=True)
+    model_Dyna_Prioritized_Sweeping_Q = Dyna_3D(rand=rand,
+                                     maze=maze,
+                                     epsilon=epsilon,
+                                     gamma=gamma,
+                                     planningSteps=planningSteps,
+                                     qLearning=True,
+                                     expected=False,
+                                     alpha=alpha,
+                                     priority=True,
+                                     theta=theta)
 
-        models = [model_Dyna_Prioritized_Sweeping_Q_heuristic, model_Dyna_Q, model_Dyna_Prioritized_Sweeping_Q_A_star,
-                  model_Dyna_Prioritized_Sweeping_Q, model_Dyna_Prioritized_Sweeping_ES]
+    model_Dyna_Prioritized_Sweeping_Q_A_star = Dyna_3D(rand=rand,
+                                                       maze=maze,
+                                                       epsilon=epsilon,
+                                                       gamma=gamma,
+                                                       planningSteps=planningSteps,
+                                                       qLearning=True,
+                                                       expected=False,
+                                                       alpha=alpha,
+                                                       priority=True,
+                                                       theta=theta,
+                                                       policy_init=go_to_all,
+                                                       plus=cf.plus,
+                                                       increase_epsilon=cf.increase_epsilon)
 
-        models = [model_Dyna_Q, model_Dyna_Prioritized_Sweeping_Q_A_star,
-                  model_Dyna_Prioritized_Sweeping_Q, model_Dyna_Prioritized_Sweeping_ES]
+    model_Dyna_Prioritized_Sweeping_Q_heuristic = Dyna_3D(rand=rand,
+                                                       maze=maze,
+                                                       epsilon=epsilon,
+                                                       gamma=gamma,
+                                                       planningSteps=planningSteps,
+                                                       qLearning=True,
+                                                       expected=False,
+                                                       alpha=alpha,
+                                                       priority=True,
+                                                       theta=theta,
+                                                       heuristic=True)
 
-        for m, model in enumerate(models):
-            for run in range(0, runs):
-                print('run:', run, model.name, 'maze size:', maze.WORLD_HEIGHT * maze.WORLD_WIDTH)
-                start_time = timer()
-                # track steps / backups for each episode
-                steps = []
-                # play for an episode
-                while True:
-                    steps.append(model.play())
-                    # print best action w.r.t. current state-action values
-                    # printActions(currentStateActionValues, maze)
-                    # check whether the (relaxed) optimal path is found
-                    came_from = model.checkPath(len(go_to_all.keys()))
-                    if came_from:
-                        draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),
-                                     goal=tuple(maze.GOAL_STATES), title=model.name)
-                        print(steps)
-                        break
+    models = [model_Dyna_Prioritized_Sweeping_Q_heuristic, model_Dyna_Q, model_Dyna_Prioritized_Sweeping_Q_A_star,
+              model_Dyna_Prioritized_Sweeping_Q, model_Dyna_Prioritized_Sweeping_ES]
 
-                backups[run][m][mazeIndex] = np.sum(steps)
-                print('Finish, using %.2f sec!' % (timer() - start_time))
+    models = [model_Dyna_Prioritized_Sweeping_Q_A_star,
+              model_Dyna_Prioritized_Sweeping_Q, model_Dyna_Prioritized_Sweeping_ES]
+
+    for m, model in enumerate(models):
+        for run in range(0, runs):
+            print('run:', run, model.name, 'maze size:', maze.WORLD_HEIGHT * maze.WORLD_WIDTH)
+            start_time = timer()
+            # track steps / backups for each episode
+            steps = []
+            # play for an episode
+            while True:
+                steps.append(model.play())
+                # print best action w.r.t. current state-action values
+                # printActions(currentStateActionValues, maze)
+                # check whether the (relaxed) optimal path is found
+                came_from = model.checkPath(len(go_to_all.keys()))
+                if came_from:
+                    draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),
+                                 goal=tuple(maze.GOAL_STATES), title=model.name)
+                    print(steps)
+                    break
+
+            backups[run][m] = np.sum(steps)
+            print('Finish, using %.2f sec!' % (timer() - start_time))
 
     # Dyna-Q performs several backups per step
     backups = np.sum(backups, axis=0)

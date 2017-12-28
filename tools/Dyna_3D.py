@@ -55,7 +55,8 @@ class Dyna_3D:
                  theta=1e-4,
                  policy_init=None,
                  optimal_length_relax=1.2,
-                 heuristic=False):
+                 heuristic=False,
+                 increase_epsilon=0):
         """
         :param rand: @rand: an instance of np.random.RandomState for sampling
         :param maze:
@@ -89,6 +90,9 @@ class Dyna_3D:
         self.timeWeight = 0
         # n-step planning
         self.planningSteps = planningSteps
+
+        # for every maxSteps fail to reach the goal, we increase the epilson
+        self.increase_epsilon = increase_epsilon
 
         # threshold for priority queue
         self.theta = theta
@@ -258,6 +262,8 @@ class Dyna_3D:
         if self.policy_init:
             if tuple(state) in self.policy_init.keys():
                 go_to = self.policy_init[tuple(state)]
+                if type(go_to)==list:
+                    go_to = random.choice(go_to)
                 return self.return_action(tuple(state), go_to)
 
         # we will execute the following if action was not selected by
@@ -324,6 +330,7 @@ class Dyna_3D:
 
             ######################## feed the model with experience ###############################
             self.feed(currentState, currentAction, newState, reward)
+            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
 
             if not self.qlearning:
                 if not self.expected:
@@ -409,6 +416,10 @@ class Dyna_3D:
             # check whether it has exceeded the step limit
             if steps > self.maze.maxSteps:
                 print(currentState)
+                # if self.increase_epsilon > 0:
+                #     self.epsilon *= self.increase_epsilon
+                #     self.epsilon = min(1, self.self.epsilon)
+                #     print('eplison now is: ' + str(self.epsilon))
                 break
 
         print(steps)
@@ -447,8 +458,12 @@ class Dyna_3D:
             bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
             nextState, _ = self.maze.takeAction(currentState, bestAction)
             came_from[tuple(nextState)] = tuple(currentState)
+
+            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
+
             currentState = nextState
             steps += 1
+
             if steps > maxSteps:
                 return False
 
