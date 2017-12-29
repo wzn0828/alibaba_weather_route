@@ -311,8 +311,18 @@ def A_star_3D_worker(cf, day, goal_city):
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
     for hour in range(3, 21):
         if day < 6:  # meaning this is a training day
-            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
-            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+            if cf.use_real_weather:
+                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+            else:
+                wind_real_day_hour_temp = []
+                for model_number in cf.model_number:
+                    # we average the result
+                    weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                    wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    wind_real_day_hour_temp.append(wind_real_day_hour_model)
+                wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
+                wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
         else:
             wind_real_day_hour_temp = []
             for model_number in cf.model_number:

@@ -1,4 +1,7 @@
 import heapq
+import numpy as np
+from matplotlib.patches import FancyArrowPatch
+from mpl_toolkits.mplot3d import proj3d
 
 
 class GridWithWeights_3D():
@@ -20,8 +23,8 @@ class GridWithWeights_3D():
     def neighbors(self, id):
         (x, y, t) = id
         # Voila, time only goes forward, but we can stay in the same position
-        results = [(x + 1, y, t+1), (x, y - 1, t+1), (x - 1, y, t+1), (x, y + 1, t+1), (x, y, t+1)]
-        #if (x + y) % 2 == 0 : results.reverse()  # aesthetics
+        results = [(x + 1, y, t + 1), (x, y - 1, t + 1), (x - 1, y, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
+        # if (x + y) % 2 == 0 : results.reverse()  # aesthetics
         results = filter(self.in_bounds, results)
         # we also need within the wall wind limit
         # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
@@ -90,5 +93,102 @@ def a_star_search_3D(graph, start, goals):
                 priority = new_cost + heuristic(goals[0], next)
                 frontier.put(next, priority)
                 came_from[next] = current
-
     return came_from, cost_so_far, [current]
+
+
+def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, include_all=False):
+    """
+    A helper function to walk the whole grid world
+    :return:
+    """
+    go_to_all = {}
+    GOAL_STATE = set(GOAL_STATES).intersection(came_from.keys())
+    currentState = list(GOAL_STATE)[0]
+    steps = 0
+    while not currentState == START_STATE:
+        # track the steps
+        steps += 1
+        prev = came_from[currentState]
+        go_to_all[prev] = currentState
+        currentState = prev
+
+    if include_all:
+        others_got_to = {}
+        for k in came_from.keys():
+            if k not in go_to_all.keys():
+                if k not in others_got_to.keys():
+                    others_got_to[k] = [came_from[k]]
+                else:
+                    others_got_to[k].append(came_from[k])
+
+        go_to_all = dict(list(go_to_all.items())+list(others_got_to.items()))
+
+    return go_to_all, steps
+
+
+def convert_3D_maze_to_grid(maze, cf):
+    """
+    This function is mainly for
+    :param maze:
+    :return:
+    """
+    # data from main article
+    diagram = GridWithWeights_3D(maze.WORLD_HEIGHT, maze.WORLD_WIDTH, maze.TIME_LENGTH, cf.wall_wind)
+    diagram.weights = maze.wind_real_day_hour_total
+    return diagram
+
+
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+
+
+def draw_grid_3d(graph, **style):
+    """
+    3D plot of a maze
+    :param graph:
+    :param style:
+    :return:
+    """
+
+    from matplotlib import pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.view_init(elev=11, azim=-19)
+
+    # plot the walls
+    walls_idx = np.where(graph.weights >= graph.wall_wind)
+    ax.scatter(walls_idx[2], walls_idx[1], graph.width-walls_idx[0], c='b', marker='^')
+    ax.set_xlim(0, graph.time_length); ax.set_xlabel('Time'); ax.set_xticks(range(0, graph.time_length))
+    ax.set_ylim(0, graph.height); ax.set_ylabel('Width'); ax.set_yticks(range(0, graph.height))
+    ax.set_zlim(0, graph.width); ax.set_zlabel('Height'); ax.set_zticks(range(0, graph.width))
+    # plot the start
+    ax.scatter(style['start'][2], style['start'][1], graph.width-style['start'][0], c='r', marker='o')
+    for g in style['goal']:
+        ax.scatter(g[2], g[1], graph.width-g[0], c='g', marker='o')
+
+    # plot the path
+    goal_reached = tuple(set(style['goal']).intersection(set(style['came_from'].keys())))[0]
+    current_state = goal_reached
+    while style['came_from'][current_state]:
+        x1, y1, t1 = current_state
+        x2, y2, t2 = style['came_from'][current_state]
+        current_state = x2, y2, t2
+        x2, x1 = graph.width-x2, graph.width-x1
+        a = Arrow3D([t2, t1], [y2, y1],
+                    [x2, x1], mutation_scale=10,
+                    lw=1, arrowstyle="-|>", color="r")
+        ax.add_artist(a)
+    if 'title' in style.keys():
+        plt.title(style['title'])
+
+    return
+
