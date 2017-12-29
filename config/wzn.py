@@ -35,6 +35,7 @@ risky_coeff                 = 15.  # This will only take effect is risky is set 
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
+use_real_weather            = False
 
 # search methods
 search_method               = 'dijkstra'  # ['a_star_search_3D','dijkstra']
@@ -56,7 +57,34 @@ wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = 24*60  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
 # evaluation
-debug_draw                  = True
-evalation_12_05_data        = True
-evaluation                  = True
+debug_draw                  = False
+evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation                  = False
 csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_A_star_search_3D_risky_wall_wind_15.csv'
+
+# reinforcement_learning solution
+reinforcement_learning_solution = True
+return_to_start                 = True
+strong_wind_return              = True    # will go back to the previous state
+include_all                     = False     # A flag indicating include all other A star heuristics
+reward_goal                     = 1.0
+reward_move                     = 0.0
+reward_obstacle                 = -10.0
+
+# Dyna model hyper
+maxSteps                        = 1e5  # Maze maximum steps
+random_state                    = 0
+planningSteps                   = 5     # planning steps for Dyna model
+alpha                           = 0.5      # Learning step size
+gamma                           = 0.95
+theta                           = 1e-4
+epsilon                         = 0.1
+qLearning                       = True  # flag for qLearning
+expected                        = False  # flag for expected Sarsa
+priority                        = True   # flag for prioritized sweeping
+plus                            = True   # Dyna Plus algorithm
+temp_model                      = 1  # a flag saying the temporary model
+optimal_length_relax            = 1.5
+heuristic                       = False
+increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson
