@@ -75,7 +75,7 @@ def evaluation(cf, csv_for_evaluation):
                 X, Y = np.meshgrid(x, y)
                 CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
                 plt.clabel(CS, inline=1, fontsize=10)
-                plt.title(weather_name[:-7])
+                plt.title(weather_name[:-7] + str(hour) + '_' + 'Goalcity' + str(goal_city))
 
             next_loc_pred = start_loc_pred
 
@@ -133,7 +133,7 @@ def evaluation(cf, csv_for_evaluation):
                         X, Y = np.meshgrid(x, y)
                         CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
                         plt.clabel(CS, inline=1, fontsize=10)
-                        plt.title(weather_name[:-7])
+                        plt.title(weather_name[:-7] + str(hour) + '_' + 'Goalcity' + str(goal_city))
 
             # plot the last bit route
             if cf.debug_draw:

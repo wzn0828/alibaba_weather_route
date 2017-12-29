@@ -93,8 +93,7 @@ def a_star_search_3D(graph, start, goals):
                 priority = new_cost + heuristic(goals[0], next)
                 frontier.put(next, priority)
                 came_from[next] = current
-
-    return came_from, cost_so_far
+    return came_from, cost_so_far, [current]
 
 
 def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, include_all=False):
@@ -192,3 +191,4 @@ def draw_grid_3d(graph, **style):
         plt.title(style['title'])
 
     return
+
