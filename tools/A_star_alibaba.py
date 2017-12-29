@@ -359,7 +359,10 @@ def A_star_3D_worker(cf, day, goal_city):
     # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
     # we say we have reached the goal
     goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
-    came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    if cf.search_method == 'a_star_search_3D':
+        came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    elif cf.search_method == 'dijkstra':
+        came_from, cost_so_far, current = dijkstra(diagram, start_loc_3D, goal_loc_3D)
 
     route_list = []
     current_loc = list(set(goal_loc_3D) & set(current))

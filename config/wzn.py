@@ -36,6 +36,9 @@ wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
 
+# search methods
+search_method               = 'dijkstra'  # ['a_star_search_3D','dijkstra']
+
 grid_world_shape            = (548, 421)
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_number                = [1]

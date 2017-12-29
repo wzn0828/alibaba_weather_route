@@ -96,6 +96,37 @@ def a_star_search_3D(graph, start, goals):
     return came_from, cost_so_far, [current]
 
 
+def dijkstra(graph, start, goals):
+    """
+    :param graph:
+    :param start: 3D, (x,y,0)
+    :param goal: 2D, spam 3D space
+    :return:
+    """
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+
+    while not frontier.empty():
+        current = frontier.get()
+
+        # we change to in because the goals are in time span now
+        if current in goals:
+            break
+
+        for next in graph.neighbors(current):
+            # print(str(current) + '   ->   ' + str(next))
+            new_cost = cost_so_far[current] + graph.cost(next)
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost
+                frontier.put(next, priority)
+                came_from[next] = current
+    return came_from, cost_so_far, [current]
+
 def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, include_all=False):
     """
     A helper function to walk the whole grid world
