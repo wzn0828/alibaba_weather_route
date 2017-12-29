@@ -57,7 +57,7 @@ def a_start_3d_demo():
 
     start_loc_3D = (1, 0, 0)
     goal_loc_3D = [(3, 3, t) for t in range(8)]
-    came_from, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
 
     route_list = []

@@ -13,6 +13,7 @@ from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D
 
 
+
 def draw_path(wind_real_day_hour, city_data_df, weather_name, came_from, start_loc, goal_loc):
     # some plot here
     plt.figure(1)
@@ -223,10 +224,10 @@ def A_star_search_3D(cf):
             # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
             # we say we have reached the goal
             goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
-            came_from, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+            came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
             route_list = []
-            current_loc = list(set(goal_loc_3D) & set(came_from.keys()))
+            current_loc = list(set(goal_loc_3D) & set(current)) # instead of came_from.keys() by current
 
             if not len(current_loc):
                 print('We cannot reach the goal city: %d, continue!' % goal_city)
@@ -334,7 +335,7 @@ def A_star_3D_worker(cf, day, goal_city):
         # we replicate the weather for the whole hour
         wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
         if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 2  # Every movement will have a unit cost
         elif cf.wind_exp:
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
@@ -358,10 +359,10 @@ def A_star_3D_worker(cf, day, goal_city):
     # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
     # we say we have reached the goal
     goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
-    came_from, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
     route_list = []
-    current_loc = list(set(goal_loc_3D) & set(came_from.keys()))
+    current_loc = list(set(goal_loc_3D) & set(current))
 
     if not len(current_loc):
         print('We cannot reach the goal city: %d, continue!' % goal_city)
