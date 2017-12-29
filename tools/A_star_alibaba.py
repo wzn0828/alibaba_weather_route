@@ -13,6 +13,7 @@ from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D
 
 
+
 def draw_path(wind_real_day_hour, city_data_df, weather_name, came_from, start_loc, goal_loc):
     # some plot here
     plt.figure(1)
@@ -324,7 +325,7 @@ def A_star_3D_worker(cf, day, goal_city):
         # we replicate the weather for the whole hour
         wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
         if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 2  # Every movement will have a unit cost
         elif cf.wind_exp:
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
@@ -413,7 +414,7 @@ def A_star_3D_worker(cf, day, goal_city):
             if 30*(hour-2) > len(route_list):
                 break
 
-    sub_df = a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list)
+    sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
