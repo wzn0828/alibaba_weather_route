@@ -12,6 +12,7 @@ from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D
 from tools.simpleSub import submit_phase
 from tools.evaluation import evaluation
 from tools.RL_alibaba import reinforcement_learning_solution
+#from FCN.FCN import fully_convolutional_wind_pred
 
 
 def process(cf):
@@ -50,6 +51,10 @@ def process(cf):
     if cf.reinforcement_learning_solution:
         print('reinforcement_learning_solution')
         reinforcement_learning_solution(cf)
+
+    if cf.fully_convolutional_wind_pred:
+        print('fully_convolutional_wind_pred')
+        #fully_convolutional_wind_pred(cf)
 
     if cf.submission_dummy:
         print("submission")
