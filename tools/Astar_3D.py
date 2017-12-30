@@ -96,14 +96,15 @@ def a_star_search_3D(graph, start, goals):
     return came_from, cost_so_far, [current]
 
 
-def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, include_all=False):
+def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, final_goal_time, include_all=False):
     """
     A helper function to walk the whole grid world
     :return:
     """
     go_to_all = {}
-    GOAL_STATE = set(GOAL_STATES).intersection(came_from.keys())
-    currentState = list(GOAL_STATE)[0]
+    #GOAL_STATE = set(GOAL_STATES).intersection(came_from.keys())
+    #currentState = list(GOAL_STATE)[0]
+    currentState = final_goal_time
     steps = 0
     while not currentState == START_STATE:
         # track the steps

@@ -35,6 +35,8 @@ class Configuration():
             cf.model_description += '_conservative'
         if cf.wall_wind:
             cf.model_description += '_wall_wind_'+str(cf.wall_wind)
+        if cf.model_number:
+            cf.model_description += '_model_number_' + str(cf.model_number)
 
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_model' + str(cf.model_number) + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
@@ -43,7 +45,9 @@ class Configuration():
             cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
 
-        if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing:
+        if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                and not cf.reinforcement_learning_solution and not cf.fully_convolutional_wind_pred and not cf.evaluation_plot:
             # Enable log file
             os.mkdir(cf.exp_dir)
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")

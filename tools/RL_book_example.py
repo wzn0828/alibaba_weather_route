@@ -59,8 +59,8 @@ def main():
     ############## A star search algorithm  ######################################
     start_time = timer()
     diagram = convert_3D_maze_to_grid(maze, cf)
-    came_from, cost_so_far = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
-    go_to_all, steps = walk_final_grid_go_to(tuple(maze.START_STATE), maze.GOAL_STATES, came_from, include_all=cf.include_all)
+    came_from, cost_so_far, [final_goal_time] = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
+    go_to_all, steps = walk_final_grid_go_to(tuple(maze.START_STATE), maze.GOAL_STATES, came_from, final_goal_time, include_all=cf.include_all)
     if True:
         draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),
                      goal=tuple(maze.GOAL_STATES), title='A star')
@@ -68,9 +68,9 @@ def main():
     # the following expand dims just to cater to challenge might have 10 models
     maze.wind_real_day_hour_total = np.tile(maze.wind_real_day_hour_total, [10,1,1,1])
     # we artificially added this
-    for t in range(time_length-2):
-        for item in [[0, 2]]:
-            maze.wind_real_day_hour_total[cf.temp_model, item[0], item[1], t] = cf.wall_wind
+    # for t in range(time_length-2):
+    #     for item in [[0, 2]]:
+    #         maze.wind_real_day_hour_total[cf.temp_model, item[0], item[1], t] = cf.wall_wind
 
     ##############End  A star search algorithm  ######################################
     model_Dyna_Q = Dyna_3D(rand=rand,
@@ -105,16 +105,16 @@ def main():
                                      priority=True,
                                      theta=theta)
 
-    model_Dyna_Prioritized_Sweeping_Q_A_star = Dyna_3D(rand=rand,
+    model_Dyna_Prioritized_Sweeping_Q_A_star = Dyna_3D(rand=cf.random_state,
                                                        maze=maze,
-                                                       epsilon=epsilon,
-                                                       gamma=gamma,
-                                                       planningSteps=planningSteps,
-                                                       qLearning=True,
-                                                       expected=False,
-                                                       alpha=alpha,
-                                                       priority=True,
-                                                       theta=theta,
+                                                       epsilon=cf.epsilon,
+                                                       gamma=cf.gamma,
+                                                       planningSteps=cf.planningSteps,
+                                                       qLearning=cf.qLearning,
+                                                       expected=cf.expected,
+                                                       alpha=cf.alpha,
+                                                       priority=cf.priority,
+                                                       theta=cf.theta,
                                                        policy_init=go_to_all,
                                                        plus=cf.plus,
                                                        increase_epsilon=cf.increase_epsilon)

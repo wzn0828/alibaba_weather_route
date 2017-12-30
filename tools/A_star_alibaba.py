@@ -335,7 +335,7 @@ def A_star_3D_worker(cf, day, goal_city):
         # we replicate the weather for the whole hour
         wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
         if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 2  # Every movement will have a unit cost
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
         elif cf.wind_exp:
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
             wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship

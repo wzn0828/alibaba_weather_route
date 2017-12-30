@@ -330,7 +330,7 @@ class Dyna_3D:
 
             ######################## feed the model with experience ###############################
             self.feed(currentState, currentAction, newState, reward)
-            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
+            print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
 
             if not self.qlearning:
                 if not self.expected:

@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import random
 from matplotlib import pyplot as plt
 from timeit import default_timer as timer
 import numpy as np
@@ -62,7 +63,6 @@ def reinforcement_learning_solution(cf):
         diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
         diagram.weights = wind_real_day_hour_total.mean(axis=0)
 
-        #wind_real_day_hour_total *= 0
         for goal_city in cf.goal_city_list:
             city_start_time = timer()
             start_loc = (int(city_data_df.iloc[0]['xid']) - 1, int(city_data_df.iloc[0]['yid']) - 1)
@@ -73,8 +73,8 @@ def reinforcement_learning_solution(cf):
             # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
             # we say we have reached the goal
             goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
-            came_from_a_star, cost_so_far = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
-            go_to_all, steps_a_star = walk_final_grid_go_to(start_loc_3D, goal_loc_3D, came_from_a_star, include_all=cf.include_all)
+            came_from_a_star, cost_so_far, [final_goal_time] = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+            go_to_all, steps_a_star = walk_final_grid_go_to(start_loc_3D, goal_loc_3D, came_from_a_star, final_goal_time, include_all=cf.include_all)
 
             # construct the 3d maze
             maze = Maze_3D(height=cf.grid_world_shape[0],
@@ -107,12 +107,17 @@ def reinforcement_learning_solution(cf):
             start_time = timer()
             # track steps / backups for each episode
             steps = []
+
+            # The following line is just for debugging use, no real usage!
+            model.maze.wind_real_day_hour_total *= 0
             # play for an episode
             while True:
+                model.maze.cf.temp_model = random.choice(range(10))
                 steps.append(model.play(environ_step=True))
                 # print best action w.r.t. current state-action values
                 # printActions(currentStateActionValues, maze)
                 # check whether the (relaxed) optimal path is found
+                model.maze.cf.temp_model = random.choice(range(10))
                 came_from = model.checkPath(steps_a_star)
                 if came_from:
                     break

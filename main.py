@@ -10,9 +10,9 @@ from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
 from tools.simpleSub import submit_phase
-from tools.evaluation import evaluation
+from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution
-#from FCN.FCN import fully_convolutional_wind_pred
+from FCN.FCN import fully_convolutional_wind_pred
 
 
 def process(cf):
@@ -54,7 +54,7 @@ def process(cf):
 
     if cf.fully_convolutional_wind_pred:
         print('fully_convolutional_wind_pred')
-        #fully_convolutional_wind_pred(cf)
+        fully_convolutional_wind_pred(cf)
 
     if cf.submission_dummy:
         print("submission")
@@ -67,11 +67,16 @@ def process(cf):
         print(total_penalty.astype('int'))
         print(np.sum(total_penalty.astype('int') == 1440))
 
+    if cf.evaluation_plot:
+        print('evaluation_plot')
+        evaluation_plot(cf)
+
+
 
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/stevenwudi/PycharmProjects/alibaba_weather_route/config/diwu.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
