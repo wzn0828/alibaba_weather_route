@@ -29,6 +29,7 @@ def evaluation(cf, csv_for_evaluation):
             print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
+            # For evaluation, we don't need to substract 1 here because we have add 1 one submission
             start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))
             goal_loc = (int(city_data_df.iloc[goal_city]['xid']), int(city_data_df.iloc[goal_city]['yid']))
 
@@ -87,16 +88,6 @@ def evaluation(cf, csv_for_evaluation):
                 assert target_pred_next == target_pred, "Predict city not the same!"
                 assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
 
-                # Now we check whether the aircraft crash or not
-                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
-                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
-                    crash_flag = True
-                    total_penalty[day-1, goal_city-1] = 24 * 60
-                    # we break the loop
-                    break
-                else:
-                    start_loc_pred = next_loc_pred
-
                 if min >= 60:
                     min = 0
                     hour += 1
@@ -124,6 +115,18 @@ def evaluation(cf, csv_for_evaluation):
                         CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
                         plt.clabel(CS, inline=1, fontsize=10)
                         plt.title(weather_name[:-7] + str(hour) + '_' + 'Goalcity' + str(goal_city))
+
+                # Now we check whether the aircraft crash or not
+                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
+                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    crash_flag = True
+                    total_penalty[day-1, goal_city-1] = 24 * 60
+                    # we break the loop
+                    break
+                else:
+                    start_loc_pred = next_loc_pred
+
+
 
             # plot the last bit route
             if cf.debug_draw:
@@ -311,20 +314,13 @@ def evaluation_plot(cf):
                 assert target_pred_next == target_pred, "Predict city not the same!"
                 assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
 
-                # Now we check whether the aircraft crash or not
-                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
-                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
-                    # we break the loop
-                    break
-                else:
-                    start_loc_pred = next_loc_pred
-
                 if min >= 60:
                     min = 0
                     hour += 1
                     weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
 
+                    # we plot every hour
                     for h in range(3, hour):
                         for p in route_list[(h-3)*30:(h-2)*30]:
                             plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
@@ -346,6 +342,14 @@ def evaluation_plot(cf):
                     CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
                     plt.clabel(CS, inline=1, fontsize=10)
                     plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
+
+                # Now we check whether the aircraft crash or not
+                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
+                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    # we break the loop
+                    break
+                else:
+                    start_loc_pred = next_loc_pred
 
             # plot the last bit route
             for h in range(3, hour):
