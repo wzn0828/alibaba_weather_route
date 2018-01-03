@@ -118,7 +118,7 @@ class Dyna_3D:
 
         # policy initilisation
         self.policy_init = policy_init
-        if self.policy_init:
+        if type(self.policy_init):
             self.name += '_A_star'
 
         # for checking the optimal path length and a stopping criterion
@@ -257,12 +257,15 @@ class Dyna_3D:
         :return:
         """
         if np.random.binomial(1, self.epsilon) == 1:
-            return np.random.choice(self.maze.actions)
+            action = np.random.choice(self.maze.actions)
+            # print(' Epsilon greedy effective. State: ' + str(state) + ', action: ' + str(action))
+            return action
 
-        if self.policy_init:
-            if tuple(state) in self.policy_init.keys():
-                go_to = self.policy_init[tuple(state)]
-                if type(go_to)==list:
+        if len(self.policy_init):
+            a_star_traj = self.policy_init[self.a_star_model]
+            if tuple(state) in a_star_traj.keys():
+                go_to = a_star_traj[tuple(state)]
+                if type(go_to) == list:
                     go_to = random.choice(go_to)
                 return self.return_action(tuple(state), go_to)
 
@@ -283,7 +286,8 @@ class Dyna_3D:
         """
         currentState = self.maze.START_STATE
         steps = 0
-        while tuple(currentState) not in self.maze.GOAL_STATES:
+        terminal_flag = False
+        while tuple(currentState) not in self.maze.GOAL_STATES and not terminal_flag:
             ######################## Interaction with the environment ###############################
             # track the steps
             # if steps % 1000 == 0:
@@ -293,7 +297,7 @@ class Dyna_3D:
             if steps == 1 or self.qlearning:
                 currentAction = self.chooseAction(currentState)
             # take action
-            newState, reward = self.maze.takeAction(currentState, currentAction)
+            newState, reward, terminal_flag = self.maze.takeAction(currentState, currentAction)
 
             if self.qlearning:
                 # Q-Learning update
@@ -330,7 +334,7 @@ class Dyna_3D:
 
             ######################## feed the model with experience ###############################
             self.feed(currentState, currentAction, newState, reward)
-            print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
+            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
 
             if not self.qlearning:
                 if not self.expected:
@@ -422,7 +426,7 @@ class Dyna_3D:
                 #     print('eplison now is: ' + str(self.epsilon))
                 break
 
-        print(steps)
+        #print('Exist in steps: %d' % steps)
         return steps
 
     def heuristic_fn(self, a, b):
@@ -456,7 +460,7 @@ class Dyna_3D:
         came_from[currentState] = None
         while tuple(currentState) not in self.maze.GOAL_STATES:
             bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
-            nextState, _ = self.maze.takeAction(currentState, bestAction)
+            nextState, _, _ = self.maze.takeAction(currentState, bestAction)
             came_from[tuple(nextState)] = tuple(currentState)
 
             #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
@@ -465,6 +469,6 @@ class Dyna_3D:
             steps += 1
 
             if steps > maxSteps:
-                return False
+                return came_from, tuple(currentState), False
 
-        return came_from
+        return came_from, tuple(currentState), True

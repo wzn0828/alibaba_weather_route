@@ -135,3 +135,21 @@ def collect_csv_for_submission(cf):
             frames.append(city_data_hour_df)
     sub_csv = pd.concat(frames, axis=0)
     sub_csv.to_csv(cf.csv_file_name, header=False, index=False)
+
+
+def collect_csv_for_submission_fraction(cf):
+    """
+    This script is used to collect all the generated csv files (days, cities) to generate the required submission file
+    :param cf:
+    :return:
+    """
+    frames = []
+    cf.csv_file_name ='/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_____2018-01-03-20-33-30/Train_reinforcement_learning_solution_multiprocessing'
+    for day in [1,2,3]:
+        for goal_city in cf.goal_city_list:
+            csv_file_name_hour = cf.csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+            if os.path.isfile(csv_file_name_hour):
+                city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)
+                frames.append(city_data_hour_df)
+    sub_csv = pd.concat(frames, axis=0)
+    sub_csv.to_csv(cf.csv_file_name+'.csv', header=False, index=False)

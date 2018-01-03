@@ -71,9 +71,10 @@ class Dataset_Generators():
                                            ])
                                            )
         val_dataset = ImageDataGenerator(dataset_split='valid', cf=cf,
-                                         transform=transforms.Compose([ToTensor()
-                                                                       ]))
-        self.dataloader['train'] = DataLoader(train_dataset, batch_size=cf.batch_size, shuffle=False, pin_memory=True)
+                                         transform=transforms.Compose([
+                                             RandomCrop(cf.random_crop_valid),
+                                             ToTensor()]))
+        self.dataloader['train'] = DataLoader(train_dataset, batch_size=cf.batch_size, shuffle=True, pin_memory=True)
         self.dataloader['valid'] = DataLoader(val_dataset, batch_size=1, pin_memory=True)
 
 
@@ -88,9 +89,10 @@ class ImageDataGenerator(Dataset):
             days = cf.valid_days
 
         for day in days:
-            for hour in range(cf.hour_unique[0], cf.hour_unique[1]):
-                for model_number in range(1, 11):
-                    img_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+            for hour in range(cf.hour_unique[0], cf.hour_unique[1]+1):
+                for model_number in range(0, 10):
+                    # Now we are not reading images, we are reading from NP file, hence, the range(1, 11)
+                    img_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number+1, day, hour)
                     self.image_files.append(os.path.join(cf.wind_save_path, img_name))
                 target_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 self.target_files.append(os.path.join(cf.wind_save_path, target_name))
@@ -101,7 +103,6 @@ class ImageDataGenerator(Dataset):
     def __getitem__(self, i):
         # Load images and perform augmentations with PIL
         wind_real_day_hour_temp = []
-        # Now we are not reading images, we are reading from NP file, hence, the range(0, 10)
         for model_number in range(0, 10):
             wind_real_day_hour_model = np.load(self.image_files[i*10 + model_number])
             wind_real_day_hour_temp.append(wind_real_day_hour_model)
@@ -114,5 +115,25 @@ class ImageDataGenerator(Dataset):
             sample = self.transform(sample)
         return sample
 
+
+class Dataset_Generators_no_crop():
+    """ Initially we use dataset"""
+
+    def __init__(self, cf):
+        self.cf = cf
+        self.dataloader = {}
+        # Load training set
+
+        print('\n > Loading training, valid, test set')
+        train_dataset = ImageDataGenerator(dataset_split='train', cf=cf,
+                                           transform=transforms.Compose([
+                                               ToTensor()
+                                           ])
+                                           )
+        val_dataset = ImageDataGenerator(dataset_split='valid', cf=cf,
+                                         transform=transforms.Compose([
+                                             ToTensor()]))
+        self.dataloader['train'] = DataLoader(train_dataset, batch_size=cf.batch_size, shuffle=True, pin_memory=True)
+        self.dataloader['valid'] = DataLoader(val_dataset, batch_size=1, pin_memory=True)
 
 

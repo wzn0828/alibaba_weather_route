@@ -227,7 +227,7 @@ def A_star_search_3D(cf):
             came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
             route_list = []
-            current_loc = list(set(goal_loc_3D) & set(current)) # instead of came_from.keys() by current
+            current_loc = list(set(goal_loc_3D) & set(current))  # instead of came_from.keys() by current
 
             if not len(current_loc):
                 print('We cannot reach the goal city: %d, continue!' % goal_city)

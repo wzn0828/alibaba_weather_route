@@ -1,5 +1,5 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -29,8 +29,8 @@ class Model_Factory_semantic_seg():
 
         # Construct optimiser
         if cf.train_model_path:
-            print('Not implemented')
-            pass
+            print('Loading model from: ' + cf.train_model_path)
+            self.net.load_state_dict(torch.load(cf.train_model_path))
 
         # self.net = DRNSegF(self.net, 20)
         params_dict = dict(self.net.named_parameters())
@@ -51,7 +51,7 @@ class Model_Factory_semantic_seg():
         elif cf.optimizer == 'adam':
             self.optimizer = optim.Adam(params, lr=cf.learning_rate, weight_decay=cf.weight_decay)
 
-        self.scores, self.mean_scores = [], []
+        self.mean_ious, self.mean_scores = [], []
 
         if torch.cuda.is_available():
             self.net = self.net.cuda()
@@ -60,25 +60,28 @@ class Model_Factory_semantic_seg():
         # TODO: write adjust learning rate
         #lr = self.adjust_learning_rate(self.cf.learning_rate, self.optimiser, epoch)
         lr = self.cf.learning_rate
-        print('learning rate:', lr)
+        # This has any effect only on modules such as Dropout or BatchNorm.
         self.net.train()
         for i, sample in enumerate(train_loader):
+            #  zero the parameter gradients
             self.optimizer.zero_grad()
             input, target = Variable(sample['image'].cuda(async=True), requires_grad=False), Variable(sample['target'].cuda(async=True), requires_grad=False)
             output = self.net(input)
             self.loss = self.crit(output, target)
-            print(epoch, i, self.loss.data[0])
             self.loss.backward()
             self.optimizer.step()
+        return lr, self.loss.data[0]
 
     def test(self, val_loader, epoch, cf):
+        # This has any effect only on modules such as Dropout or BatchNorm.
         self.net.eval()
         total_mse = []
-        for i, (input, target) in enumerate(val_loader):
-            input, target = Variable(input.cuda(async=True), volatile=True), Variable(target.cuda(async=True), volatile=True)
+        total_strong_wind_iou = []
+        for i, sample in enumerate(val_loader):
+            input, target = Variable(sample['image'].cuda(async=True), requires_grad=False), Variable(sample['target'].cuda(async=True), requires_grad=False)
             output = self.net(input)
-            # TODO: write error of predicting wind >= 15
             total_mse.append(self.crit(output, target))
+            total_strong_wind_iou.append(self.iou_strong_wind(output, target))
 
         if False:
             image = np.squeeze(input.data.cpu().numpy())
@@ -95,17 +98,89 @@ class Model_Factory_semantic_seg():
             print('Training testing')
 
         # Calculate average IoU
-        print(total_mse.mean())
-        self.scores.append(total_mse)
+        total_mse = np.array(total_mse)
+        total_mse_mean = total_mse.mean().cpu().data.numpy()
+        total_strong_wind_iou_mean = np.array(total_strong_wind_iou).mean()
+        print('MSE: %.4f, Strong wind IOU: %.4f' %(total_mse_mean, total_strong_wind_iou_mean))
 
         # Save weights and scores
-        torch.save(self.net.state_dict(), os.path.join(cf.exp_dir, 'epoch_' + str(epoch) + '_' + 'mIOU:.%4f' % total_mse.mean() + '_net.pth'))
+        torch.save(self.net.state_dict(), os.path.join(cf.exp_dir, 'epoch_' + str(epoch) + '_' +
+                                                       'mMSE:.%4f' % total_mse_mean + 'mIOU:.%4f' % total_strong_wind_iou_mean + '_net.pth'))
 
         # Plot scores
-        self.mean_scores.append(total_mse.mean())
+        self.mean_scores.append(total_mse_mean)
+        self.mean_ious.append(total_strong_wind_iou_mean)
+
         es = list(range(len(self.mean_scores)))
-        plt.switch_backend('agg')  # Allow plotting when running remotely
-        plt.plot(es, self.mean_scores, 'b-')
-        plt.xlabel('Epoch')
-        plt.ylabel('Mean IoU')
-        plt.savefig(os.path.join(self.exp_dir, 'ious.png'))
+
+        plt.close("all")
+        plt.switch_backend('agg')
+        fig, ax1 = plt.subplots()
+        ax1.plot(es, self.mean_scores, 'b-')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Mean Square Error')
+        ax1.tick_params('y', colors='b')
+
+        ax2 = ax1.twinx()
+        ax2.plot(es, self.mean_ious, color='r')
+        ax2.tick_params('y', colors='r')
+        fig.tight_layout()
+        plt.savefig(os.path.join(cf.exp_dir, 'MSE_IOU.png'))
+
+    def iou_strong_wind(self, output, target):
+        """
+        Calcluate class intersection over unions
+        :param output:
+        :param target:
+        :return:
+        """
+
+        pred_inds = output >= self.cf.wall_wind
+        target_inds = target >= self.cf.wall_wind
+        intersection = (pred_inds[target_inds]).long().sum().data.cpu()[0]  # Ca  # Cast to long to prevent overflows
+        union = pred_inds.long().sum().data.cpu()[0] + target_inds.long().sum().data.cpu()[0] - intersection
+        if union == 0:
+            return 0  # If there is no ground truth, do not include in evaluation
+        else:
+            return intersection / max(union, 1)
+
+    def collect_train_valid_mse_iou(self, DG):
+        """
+        Collect the MSE and IOU of the data
+        :param DG:
+        :return:
+        """
+
+        mse_all = []
+        iou_all = []
+        for i, sample in enumerate(DG.dataloader['train']):
+            #  zero the parameter gradients
+            images, target = sample['image'], sample['target']
+            mse, iou = self.calculate_mse_iou(images, target)
+            mse_all.append(mse)
+            iou_all.append(iou)
+
+        for i, sample in enumerate(DG.dataloader['valid']):
+            #  zero the parameter gradients
+            images, target = sample['image'], sample['target']
+            mse, iou = self.calculate_mse_iou(images, target)
+            mse_all.append(mse)
+            iou_all.append(iou)
+
+        return np.array(mse_all).mean(), np.array(iou_all).mean()
+
+    def calculate_mse_iou(self, images, target):
+        model_num = images.shape[1]
+        mse_all = []
+        iou_all = []
+        for m in range(model_num):
+            mse = (images[:, m] - target) **2
+            mse_all.append(mse.mean())
+
+            pred_inds = images[:, m] >= self.cf.wall_wind
+            target_inds = target >= self.cf.wall_wind
+            intersection = (pred_inds[target_inds]).long().sum()
+            union = pred_inds.long().sum() + target_inds.long().sum() - intersection
+            iou_all.append(intersection / max(union, 1))
+
+        return np.array(mse_all).mean(), np.array(iou_all).mean()

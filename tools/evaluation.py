@@ -126,8 +126,6 @@ def evaluation(cf, csv_for_evaluation):
                 else:
                     start_loc_pred = next_loc_pred
 
-
-
             # plot the last bit route
             if cf.debug_draw:
                 for h in range(3, hour):

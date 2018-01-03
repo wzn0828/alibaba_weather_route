@@ -41,7 +41,7 @@ def bn(planes):
 
 class ResNet_new(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1):
+    def __init__(self, block, layers):
         self.inplanes = 64
         super(ResNet_new, self).__init__()
         self.conv1 = nn.Conv2d(10, 64, kernel_size=3, stride=2, padding=1, bias=False)
@@ -81,7 +81,7 @@ class ResNet_new(nn.Module):
 
 class FeatureResNet(ResNet_new):
     def __init__(self):
-        super().__init__(BasicBlock, [3, 4, 6, 3], 1)
+        super().__init__(BasicBlock, [3, 4, 6, 3])
 
     def forward(self, x):
         x1 = self.conv1(x)
