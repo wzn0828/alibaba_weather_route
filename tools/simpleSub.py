@@ -144,7 +144,7 @@ def collect_csv_for_submission_fraction(cf):
     :return:
     """
     frames = []
-    cf.csv_file_name ='/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_____2018-01-03-20-33-30/Train_reinforcement_learning_solution_multiprocessing'
+    cf.csv_file_name ='/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_____2018-01-03-20-33-30/Train_reinforcement_learning_solution_multiprocessing'
     for day in [1,2,3]:
         for goal_city in cf.goal_city_list:
             csv_file_name_hour = cf.csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
