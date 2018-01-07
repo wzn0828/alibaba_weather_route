@@ -56,13 +56,15 @@ class Maze_3D:
         :return:
         """
         x, y, t = state
+        terminal_flag = False
         # the time always goes forward
         t += 1
         if t >= self.TIME_LENGTH:
-            # It will be a very undesirable state, we go back to the start state
+            # It will be a very undesirable state, we should stay here
             x, y, t = self.START_STATE
             reward = self.reward_obstacle
-            return [x, y, t], reward
+            terminal_flag = True
+            return [x, y, t], reward, terminal_flag
 
         if action == self.ACTION_UP:
             x = max(x - 1, 0)
@@ -75,10 +77,11 @@ class Maze_3D:
         elif action == self.ACTION_STAY:
              x, y = x, y
 
-        current_loc_time_wind = self.wind_real_day_hour_total[self.cf.temp_model, x, y, t]
+        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, t]
         if current_loc_time_wind >= self.cf.wall_wind:
             if self.return_to_start:
                 x, y, t = self.START_STATE
+                terminal_flag = True
             elif self.strong_wind_return:
                 x, y, _ = state
 
@@ -86,17 +89,19 @@ class Maze_3D:
 
         elif tuple([x, y, t]) in self.GOAL_STATES:
             reward = self.reward_goal
+            terminal_flag = True
         else:
-            if self.cf.risky:
-                reward = self.reward_move
-            elif self.cf.wind_exp:
-                current_loc_time_wind -= self.cf.wind_exp_mean
-                current_loc_time_wind /= self.cf.wind_exp_std
-                reward = self.reward_move + (-1) * np.exp(current_loc_time_wind).astype('int')
-            else:
-                current_loc_time_wind /= self.cf.risky_coeff
-                reward = self.reward_move + (-1) * current_loc_time_wind
+            reward = self.reward_move
+            # if self.cf.risky:
+            #     reward = self.reward_move
+            # elif self.cf.wind_exp:
+            #     current_loc_time_wind -= self.cf.wind_exp_mean
+            #     current_loc_time_wind /= self.cf.wind_exp_std
+            #     reward = self.reward_move + (-1) * np.exp(current_loc_time_wind).astype('int')
+            # else:
+            #     current_loc_time_wind /= self.cf.risky_coeff
+            #     reward = self.reward_move + (-1) * current_loc_time_wind
 
-        return [x, y, t], reward
+        return [x, y, t], reward, terminal_flag
 
 
