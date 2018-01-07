@@ -35,7 +35,7 @@ risky_coeff                 = 15.  # This will only take effect is risky is set 
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
-use_real_weather            = False
+use_real_weather            = True
 
 # search methods
 search_method               = 'dijkstra'  # ['a_star_search_3D','dijkstra']
@@ -45,7 +45,7 @@ time_length                 = 30 * 18  # total number of unit time (2 min is a u
 model_number                = [1]
 day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
+model_description           = search_method  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 
 real_hour                   = 3
 hourly_travel_distance      = 30
@@ -60,11 +60,11 @@ strong_wind_penalty_coeff   = 24*60  # this ensure that the wind hard threshold,
 debug_draw                  = False
 evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-evaluation                  = False
-csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_A_star_search_3D_risky_wall_wind_15.csv'
+evaluation                  = True
+csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_dijkstra_risky_wall_wind_15.csv'
 
 # reinforcement_learning solution
-reinforcement_learning_solution = True
+reinforcement_learning_solution = False
 return_to_start                 = True
 strong_wind_return              = True    # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
