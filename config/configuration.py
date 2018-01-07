@@ -48,8 +48,8 @@ class Configuration():
                 cf.model_description += '_ExpectedSarsa'
 
         if cf.day_list[0] > 5:  # This is for submitting test file
-            cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_model' + str(cf.model_number) + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-            cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '_model' + str(cf.model_number) + '.csv')
+            cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
         elif cf.fully_convolutional_wind_pred:
             cf.exp_dir = os.path.join(cf.savepath, 'FCN_' + cf.model_name + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
         else:

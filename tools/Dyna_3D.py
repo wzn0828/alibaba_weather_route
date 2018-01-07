@@ -462,9 +462,7 @@ class Dyna_3D:
             bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
             nextState, _, _ = self.maze.takeAction(currentState, bestAction)
             came_from[tuple(nextState)] = tuple(currentState)
-
             #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
-
             currentState = nextState
             steps += 1
 

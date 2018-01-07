@@ -20,6 +20,8 @@
 \usepackage[small]{caption}
 \usepackage{booktabs}
 \usepackage{tabu,multirow}% the following package is optional:
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{color}
 %\usepackage{latexsym}
 
 % Following comment is from ijcai97-submit.tex:
@@ -82,7 +84,6 @@ f(n) = g(n) + h(n)
 \end{equation}
 where $n$ is the last node on the path, $g(n)$ is the cost of the path from the start node to $n$, and $h(n)$ is a heuristic that estimates the cost of the cheapest path from $n$ to the goal.
 The heuristic is problem-specific. For the algorithm to find the actual shortest path, the heuristic function must be admissible, meaning that it never overestimates the actual cost to get to the nearest goal node.
-
 Typical implementation of A* use a priority queue to perform the repeated selection of minimum (estimated) cost nodes to expand.
 
 
@@ -90,7 +91,6 @@ Typical implementation of A* use a priority queue to perform the repeated select
 
 \section{dataset}
  \subsection{real weather update}
- Real weather is updated not on an hourly basis--: but 4-2-4-2-4-2: 3-6, 7-8, 9-12, 13-14, 15-18, 19-20.
 
 \section{Experiments}
 \subsection{Notations}
@@ -126,7 +126,7 @@ Typical implementation of A* use a priority queue to perform the repeated select
         \begin{tabu}{@{}cccc@{}}\toprule
         [-1pt] \tabucline[1pt]{1-4}
 
-        \multirow{2}{*}{Configuration}       &  \multicolumn{2}{c}{train (prev 12-05)}      & test   \\
+        \multirow{2}{*}{Configuration}       &  \multicolumn{2}{c}{train (prev 12-05)}      & test (prev 12-05)   \\
                                                     &   mins                &  crash          & min     \\
             \hline
             {\small Straight Line }                 &   51318               &  31              &  69376   \\
@@ -142,6 +142,60 @@ Typical implementation of A* use a priority queue to perform the repeated select
      }
           } \label{table_baseline_3d}
 \end{table}
+
+
+
+\begin{algorithm*}[t]
+\caption{3D A* Double{\color{red}(I haven't implemented double yet)} {\color{blue}Expected Sarsa} (Q-learning{\color{red}(which is better Q or ES?)}), Dyna model planning with prioritized sweeping}\label{main_algorithm}
+\LinesNumbered
+\SetAlgoLined
+\SetAlgoNoEnd
+\DontPrintSemicolon
+\SetKwFunction{zeroes}{zeroes}
+\KwData{\;
+         $L^s = \{x^s, y^s\}$: 2D location of the starting city \;
+         $L^g = \{x^g, y^g\}$: 2D location of the goal city \;
+         $W_m = \{w_{x,y,t}\}$: Wind predictions of model $m \in$ $\{1, 2, \ldots, M\}$ ($M$ is the number of models) with size as  $X \times Y \times T$ \;
+                                \hspace{1cm} where $X, Y$ are the grid world size and $T$ is the maximum allowed time\;
+}
+
+Generate $M$ trajectories: $J_m$ from 3D A* algorithm (conservative{\color{red}(?)}) and their corresponding policies: $\pi_m$ \;
+Initialise action-value function $Q : X \times Y \times T \leftarrow 0$, $Model(s,a)$ and $PQueue$ to empty \;
+Initialise starting states $S_S$ from $L^s$ as $(x^s, y^s, 0)$; goals states $S_G$ from $L_g$ as ${(x^s, y^s, t)}, t \in(1,2,\ldots T)$ and terminal states $S_T$ as ${(x, y, T)}, x \in(1,2,\ldots X), y \in(1,2,\ldots Y)$\;
+$L$ is the total A* looping number{\color{red}(How to choose the number?)}, $N$ is the number of planning steps, $\theta$ is the priority threshold, $\gamma$ is the discount rate, $\alpha$ is the learning rate \;
+
+\For{$l \leftarrow 1$ to $L$ }{
+    \SetAlgoVlined
+     $s_1 \leftarrow S_S$\;
+     With probability $\frac{1}{m}$ , uniformly select a random wind model number $m_w$ from $\{1, 2, \ldots, M\}$ \;
+     With probability $\frac{1}{m}$ , uniformly select a random policy number $m_{A*}$ from $\{1, 2, \ldots, M\}$ {\color{red}(Should $m_w, m_{A*}$ be the same?)}\;
+     \For{$t \leftarrow 1$ to $T$}{
+         $a_t \leftarrow \pi_{m_{A*}}$  (with probability $\epsilon$ randomly select an action, if $s_t$ is not in $\pi_{m_{A*}}$, then action is selected greedily according to $Q$) {\color{red}(How to handle expected sarsa action selectoin?)}\;
+         Execute action $a_t$; observe reward $r_t$ from wind model $W_{m_w}$, and state $s_{t+1}$ \;
+         $Model(s_t, a_t) \leftarrow r_t, s_{t+1}$ \; 
+         $P \leftarrow |r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t)|$ \;
+         {\color{blue}$P \leftarrow |r_t + \gamma \sum_a \pi_{\epsilon}(a | s_{t+1})  Q(s_{t+1}, a) - Q(s_t, a_t)|$} \;
+         if $P > \theta$, then insert $s_t, a_t$ into $PQueue$ with priority $P$ \;
+         \For{$n \leftarrow 1$ to $N$ while $PQueue$ is not empty}{
+             $s_n, a_n \leftarrow first(PQueue) $ \;
+             $r_n, s_{n+1} \leftarrow Model(s_n, a_n)$ \;
+             $Q(s_n, a_n) \leftarrow Q(s_n, a_n) + \alpha[r_n + \gamma \max_a Q(s_{n+1}, a) - Q(s_n, a_n)]  $ \;
+             {\color{blue}$Q(s_n, a_n) \leftarrow Q(s_n, a_n) + \alpha[r_n + \gamma \sum_a \pi_{\epsilon}(a | s_{n+1})  Q(s_{n+1}, a) - Q(s_n, a_n)]  $ (here, $\pi_{\epsilon}$ is $\epsilon$ soft policy)} \;
+             \For{all $\bar{s},\bar{a}$ predicted lead to $s_n$}{
+                 $\bar{r} \leftarrow$ predicted reward for $\bar{s}, \bar{a}, s_n$ \;
+                 $ P \leftarrow |\bar{r} + \gamma \max_a Q(s_n, a) - Q(\bar{s}, \bar{a})| $ \;
+                 {\color{blue}$ P \leftarrow |\bar{r} + \gamma \sum_a \pi_{\epsilon}(a | s_n)  Q(s_n, a) - Q(\bar{s}, \bar{a})|$} \;
+                  if $P > \theta$, then insert $\bar{s}, \bar{a}$ into $PQueue$ with priority $P$ \;
+             }
+         }
+     if $s_{t+1}$ is in terminal states $S_T$ or goal states $S_G$, break \;
+     }
+}
+ \;
+\KwResult{\;
+    Trajectory $J$ from the updated $Q$ using greedy action selection
+}
+\end{algorithm*}
 
 
 \bibliographystyle{named}

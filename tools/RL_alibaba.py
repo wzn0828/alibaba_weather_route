@@ -254,24 +254,18 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     wind_real_day_hour_total = np.zeros(shape=(len(cf.model_number), cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
 
     for hour in range(3, 21):
-        if day < 6:  # meaning this is a training day
-            wind_real_day_hour_temp = []
-            for model_number in cf.model_number:
-                # we average the result
+        wind_real_day_hour_temp = []
+        for model_number in cf.model_number:
+            # we average the result
+            if day < 6:  # meaning this is a training day
                 weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
-                wind_real_day_hour_temp.append(wind_real_day_hour_model)
-                wind_real_day_hour = np.asarray(wind_real_day_hour_temp)
-        else:
-            wind_real_day_hour_temp = []
-            for model_number in cf.model_number:
-                # we average the result
+            else:
                 weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
-                wind_real_day_hour_temp.append(wind_real_day_hour_model)
-            wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
-            wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
 
+            wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+            wind_real_day_hour_temp.append(wind_real_day_hour_model)
+
+        wind_real_day_hour = np.asarray(wind_real_day_hour_temp)
         wind_real_day_hour_total[:, :, :, (hour - 3) * 30:(hour - 2) * 30] = wind_real_day_hour[:, :, :, np.newaxis]  # we replicate the hourly data
 
     city_start_time = timer()
@@ -319,12 +313,6 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     num_episode = 0
     success_flag = False
     while num_episode < cf.a_star_loop or not success_flag:
-        if num_episode < 500:
-            model.qLearning = True
-            model.expected = False
-        else:
-            model.qLearning = cf.qLearning
-            model.expected = cf.expected
         num_episode += 1
         model.maze.wind_model = random.choice(range(10))
         model.a_star_model = random.choice(range(10))
@@ -337,10 +325,10 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
             print('Failed!')
             break
 
-    if success_flag:
-        print('Finish, using %.2f sec!, updating %d steps.' % (timer() - start_time, np.sum(steps)))
-        route_list = []
-        current_loc = list(set(goal_loc_3D) & set([currentState]))
+    print('Finish, using %.2f sec!, updating %d steps.' % (timer() - start_time, np.sum(steps)))
+    route_list = []
+    current_loc = list(set(goal_loc_3D) & set([currentState]))
+    if len(current_loc):
         find_loc = current_loc[0]
         while came_from[find_loc] is not None:
             prev_loc = came_from[find_loc]
@@ -349,8 +337,8 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
         # we reverse the route for plotting and saving
         route_list.reverse()
     else:
-        # We fail to find a route, choose a random one from
-        route_list = [start_loc]
+        route_list = came_from.values()
+
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
