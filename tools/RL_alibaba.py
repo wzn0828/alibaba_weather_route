@@ -44,8 +44,8 @@ def reinforcement_learning_solution(cf):
     # get the city locations
     cf.debug_draw = True
     cf.go_to_all_dir = True
-    cf.day_list = [2]
-    cf.goal_city_list = [8]
+    cf.day_list = [3]
+    cf.goal_city_list = [3]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -74,7 +74,7 @@ def reinforcement_learning_solution(cf):
                         weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
                         wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
                         wind_real_day_hour_temp.append(wind_real_day_hour_model)
-                        wind_real_day_hour = np.asarray(wind_real_day_hour_temp)
+                    wind_real_day_hour = np.asarray(wind_real_day_hour_temp)
             else:
                 wind_real_day_hour_temp = []
                 for model_number in cf.model_number:
@@ -207,10 +207,11 @@ def reinforcement_learning_solution(cf):
                     for m, go_to in enumerate(go_to_all):
                         for p in go_to.keys():
                             plt.scatter(p[1], p[0], c='black', s=1)
-                        anno_point = int(len(go_to.keys()) * (1+m) / 10)
+                        #anno_point = int(len(go_to.keys()) * (1+m) / 10)
+                        anno_point = int(len(go_to.keys()) /2 )
                         go_to_sorted = sorted(go_to)
                         p = go_to_sorted[anno_point]
-                        plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
+                        #plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
 
                     # we also plot the city location
                     for idx in range(city_data_df.index.__len__()):

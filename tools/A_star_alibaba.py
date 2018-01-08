@@ -461,3 +461,38 @@ def A_star_search_3D_multiprocessing(cf):
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
 
+def A_star_fix_missing(cf):
+    """
+    This is a 3D A star algorithm for fixing missing model, day, city because of the memory issue
+    :param cf:
+    :return:
+    """
+    start_time = timer()
+    jobs_all = []
+    jobs = []
+    # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
+    multiprocessing.log_to_stderr()
+    for model_number in range(10):
+        cf.model_number = [model_number+1]
+        name_prefix = cf.exp_dir.split('/')[-1][:61] + '['+str(model_number+1) +']'
+        dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
+        for day in cf.day_list:
+            for goal_city in cf.goal_city_list:
+                csv_file = os.path.join(cf.savepath, dir_name[0], name_prefix+'_day: %d, city: %d' % (day, goal_city) + '.csv')
+                if not os.path.isfile(csv_file):
+                    p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
+                    jobs.append(p)
+                    print("starting %s" % csv_file.split('/')[-1])
+                    p.start()
+        jobs_all.append(jobs)
+
+    for model_number in range(10):
+        cf.model_number = [model_number+1]
+        # waiting for the all the job to finish
+        for job in jobs_all:
+            for j in job:
+                j.join()
+        # sub_csv is for submission
+        collect_csv_for_submission(cf)
+        # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
+    print('Finish writing submission, using %.2f sec!' % (timer() - start_time))

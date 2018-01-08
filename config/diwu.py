@@ -30,12 +30,13 @@ num_threads                 = 12
 # A star search
 A_star_search_2D            = False
 A_star_search_3D            = False
-A_star_search_3D_multiprocessing = True
-model_number                = [10]
+A_star_search_3D_multiprocessing = False
+model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 hourly_travel_distance      = 30
+A_star_fix_missing          = True
 
 # important parameters
 day_list                    = [6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]

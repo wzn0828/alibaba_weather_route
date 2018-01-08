@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
-from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_fix_missing
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing
@@ -16,6 +16,7 @@ from FCN.FCN import fully_convolutional_wind_pred
 
 
 def process(cf):
+    ### Following is the plotting alogrithm #############
     if cf.plot_real_wind:
         print('plot_real_wind')
         plot_real_wind(cf)
@@ -35,6 +36,7 @@ def process(cf):
         print('Draw weather')
         plot_all_wind(cf)
 
+    ### Following is the A Star alogrithm #############
     if cf.A_star_search_2D:
         print('A_star_search_2D')
         A_star_2d_hourly_update_route(cf)
@@ -48,6 +50,11 @@ def process(cf):
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing(cf)
 
+    if cf.A_star_fix_missing:
+        print('A_star_fix_missing')
+        A_star_fix_missing(cf)
+
+    ### Following is the RL alogrithm #############
     if cf.reinforcement_learning_solution:
         print('reinforcement_learning_solution')
         reinforcement_learning_solution(cf)
@@ -56,10 +63,12 @@ def process(cf):
         print("reinforcement_learning_solution_multiprocessing")
         reinforcement_learning_solution_multiprocessing(cf)
 
+    ### Following is the FCN alogrithm #############
     if cf.fully_convolutional_wind_pred:
         print('fully_convolutional_wind_pred')
         fully_convolutional_wind_pred(cf)
 
+    ### Following is the submissio script #############
     if cf.submission_dummy:
         print("submission")
         submit_phase(cf)
