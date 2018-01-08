@@ -453,11 +453,15 @@ class Dyna_3D:
         # get the length of optimal path
         # optimal_length is the length of optimal path of the original maze
         # 1.2 means it's a relaxed optifmal path
+        # for the path, we also set the wind to zeros
+        wind_real_day_hour_total = self.maze.wind_real_day_hour_total
+        self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
         maxSteps = optimal_length * self.optimal_length_relax
         currentState = self.maze.START_STATE
         steps = 0
         came_from = {}
         came_from[currentState] = None
+        #
         while tuple(currentState) not in self.maze.GOAL_STATES:
             bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
             nextState, _, _ = self.maze.takeAction(currentState, bestAction)
@@ -467,6 +471,7 @@ class Dyna_3D:
             steps += 1
 
             if steps > maxSteps:
+                self.maze.wind_real_day_hour_total = wind_real_day_hour_total
                 return came_from, tuple(currentState), False
-
+        self.maze.wind_real_day_hour_total = wind_real_day_hour_total
         return came_from, tuple(currentState), True

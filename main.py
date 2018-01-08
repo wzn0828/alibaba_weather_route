@@ -11,7 +11,7 @@ from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_for
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_fix_missing
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
-from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing
+from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 from FCN.FCN import fully_convolutional_wind_pred
 
 
@@ -58,6 +58,10 @@ def process(cf):
     if cf.reinforcement_learning_solution:
         print('reinforcement_learning_solution')
         reinforcement_learning_solution(cf)
+
+    if cf.reinforcement_learning_solution_new:
+        print('reinforcement_learning_solution_new')
+        reinforcement_learning_solution_new(cf)
 
     if cf.reinforcement_learning_solution_multiprocessing:
         print("reinforcement_learning_solution_multiprocessing")

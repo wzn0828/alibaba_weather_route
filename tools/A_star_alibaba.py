@@ -478,20 +478,24 @@ def A_star_fix_missing(cf):
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         for day in cf.day_list:
             for goal_city in cf.goal_city_list:
-                csv_file = os.path.join(cf.savepath, dir_name[0], name_prefix+'_day: %d, city: %d' % (day, goal_city) + '.csv')
-                if not os.path.isfile(csv_file):
+                csv_file_name = os.path.join(cf.savepath, dir_name[0], name_prefix+'_day: %d, city: %d' % (day, goal_city) + '.csv')
+                cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
+                cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
+                if not os.path.isfile(csv_file_name):
                     p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
                     jobs.append(p)
-                    print("starting %s" % csv_file.split('/')[-1])
+                    print("starting %s" % csv_file_name.split('/')[-1])
                     p.start()
         jobs_all.append(jobs)
 
     for model_number in range(10):
         cf.model_number = [model_number+1]
-        # waiting for the all the job to finish
-        for job in jobs_all:
-            for j in job:
-                j.join()
+        name_prefix = cf.exp_dir.split('/')[-1][:61] + '['+str(model_number+1) +']'
+        dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
+        cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
+        cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
+        for j in jobs_all[model_number]:
+            j.join()
         # sub_csv is for submission
         collect_csv_for_submission(cf)
         # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
