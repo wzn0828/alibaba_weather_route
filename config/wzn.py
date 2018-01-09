@@ -73,7 +73,7 @@ eval_city                   = [9]
 ########################################################################################################################
 # reinforcement_learning solution
 reinforcement_learning_solution = False
-reinforcement_learning_solution_multiprocessing = True
+reinforcement_learning_solution_multiprocessing = False
 num_threads                     = 5
 return_to_start                 = True
 strong_wind_return              = True    # will go back to the previous state
