@@ -48,6 +48,10 @@ def process(cf):
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing(cf)
 
+    if cf.A_star_search_3D_multiprocessing_multicost:
+        print('A_star_search_3D_multiprocessing')
+        A_star_search_3D_multiprocessing_multicost(cf)
+
     if cf.reinforcement_learning_solution:
         print('reinforcement_learning_solution')
         reinforcement_learning_solution(cf)
