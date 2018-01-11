@@ -477,7 +477,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
-    for hour in range(3, 21):
+    for hour in range(3, 4):
         if day < 6:  # meaning this is a training day
             if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
@@ -487,7 +487,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
                 for model_number in cf.model_number:
                     # we average the result
                     weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                    wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    wind_real_day_hour_model = np.float64(np.load(os.path.join(cf.wind_save_path, weather_name)))
                     wind_real_day_hour_temp.append(wind_real_day_hour_model)
                 wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
                 wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
@@ -501,19 +501,19 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
 
-        # delta = 0.1
-        # min = wind_real_day_hour.min()
-        # max = wind_real_day_hour.max()
-        # data = min+delta
-        # counts = []
-        # datas = []
-        # while data < max:
-        #     counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
-        #     datas.append(data)
-        #     data += delta
-        # print(np.asarray(counts).sum())
-        # plt.plot(datas, counts)
-        # plt.show()
+        delta = 0.1
+        min = wind_real_day_hour.min()
+        max = wind_real_day_hour.max()
+        data = min+delta
+        counts = []
+        datas = []
+        while data < max:
+            counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
+            datas.append(data)
+            data += delta
+        print(np.asarray(counts).sum())
+        plt.plot(datas, counts)
+        plt.show()
 
         #--------set cost ---------#
         # we replicate the weather for the whole hour
@@ -530,12 +530,15 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
         costs = wind_real_day_hour.copy()
         costs.dtype = 'float64'
-        costs[wind_real_day_hour < 14] = (10 ** (100 * (-1)))
-        costs[wind_real_day_hour > 15.5] = (10 ** (100 * 0.5))
-        costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)] = 10 ** (
-            100 * (costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)] - 15))
+        costs[wind_real_day_hour <= 14] = np.float64(10 ** (100 * (-1)))
+        costs[wind_real_day_hour >= 15.5] = np.float64(10 ** (100 * 0.5))
+        costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] = np.float64(10 ** (
+            100 * (wind_real_day_hour[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] - 15)))
         # costs = (10 ** (50 * (wind_real_day_hour - 15)))
-        # print(costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)])
+
+        # print(costs[wind_real_day_hour <= 14])
+        print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]).min())
+        # print(costs[wind_real_day_hour >= 15.5])
 
 
         # print(wind_real_day_hour[14 <= wind_real_day_hour <= 16])
