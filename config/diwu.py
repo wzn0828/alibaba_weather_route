@@ -29,7 +29,7 @@ num_threads                 = 12
 ########################################################################################################################
 # A star search
 A_star_search_2D            = False
-A_star_search_3D            = False
+A_star_search_3D            = True
 A_star_search_3D_multiprocessing = False
 A_star_search_3D_multiprocessing_multicost = True
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -44,6 +44,7 @@ A_star_fix_missing          = False
 # important parameters
 day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 7, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
@@ -63,9 +64,11 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 
 ########################################################################################################################
 # evaluation
+
 debug_draw                  = False
 evaluation_days             = [3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 7, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 evaluation                  = False
 collect_csv_for_submission_fraction = False
 #csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
@@ -81,7 +84,7 @@ eval_city                   = [9]
 # reinforcement_learning solution
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
-reinforcement_learning_solution_multiprocessing = True
+reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 1000
 num_threads                     = 5
 return_to_start                 = False
