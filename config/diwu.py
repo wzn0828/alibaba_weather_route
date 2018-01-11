@@ -10,7 +10,7 @@ TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
 TestForecastFile            = 'ForecastDataforTesting_201712.csv'
 
 ########################################################################################################################
-plot_real_wind              = False
+plot_real_wind              = True
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
 plt_forecast_wind_train_multiprocessing = False
@@ -29,7 +29,7 @@ num_threads                 = 12
 ########################################################################################################################
 # A star search
 A_star_search_2D            = False
-A_star_search_3D            = True
+A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 model_number                = [3]
 grid_world_shape            = (548, 421)
