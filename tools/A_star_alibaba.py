@@ -11,6 +11,8 @@ import numpy as np
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
+from tools.evaluation import evaluation, evaluation_plot
+from decimal import Decimal
 
 
 
@@ -498,19 +500,50 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
                 wind_real_day_hour_temp.append(wind_real_day_hour_model)
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
-        # we replicate the weather for the whole hour
-        wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
-        if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
-        elif cf.wind_exp:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
-        else:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
 
-        wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
+        # delta = 0.1
+        # min = wind_real_day_hour.min()
+        # max = wind_real_day_hour.max()
+        # data = min+delta
+        # counts = []
+        # datas = []
+        # while data < max:
+        #     counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
+        #     datas.append(data)
+        #     data += delta
+        # print(np.asarray(counts).sum())
+        # plt.plot(datas, counts)
+        # plt.show()
+
+        #--------set cost ---------#
+        # we replicate the weather for the whole hour
+        # wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
+        # if cf.risky:
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+        # elif cf.wind_exp:
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+        # else:
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
+
+        costs = wind_real_day_hour.copy()
+        costs.dtype = 'float64'
+        costs[wind_real_day_hour < 14] = (10 ** (100 * (-1)))
+        costs[wind_real_day_hour > 15.5] = (10 ** (100 * 0.5))
+        costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)] = 10 ** (
+            100 * (costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)] - 15))
+        # costs = (10 ** (50 * (wind_real_day_hour - 15)))
+        # print(costs[np.logical_and(14 <= wind_real_day_hour, wind_real_day_hour <= 15.5)])
+
+
+        # print(wind_real_day_hour[14 <= wind_real_day_hour <= 16])
+        # print(costs[14 <= wind_real_day_hour <= 16])
+
+        wind_real_day_hour_total[:, :, (hour - 3) * 30:(hour - 2) * 30] = costs[:, :, np.newaxis]  # we replicate the hourly data
+
+        # wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
 
     # construct the 3d diagram
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
@@ -613,19 +646,27 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     # multiprocessing.
     #multiprocessing.log_to_stderr(logging.DEBUG)
+
     multiprocessing.log_to_stderr()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
+            p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
             p.start()
 
     # waiting for the all the job to finish
     for j in jobs:
         j.join()
+
     # sub_csv is for submission
     collect_csv_for_submission(cf)
     # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
+
+    print('evaluation')
+    total_penalty = evaluation(cf, cf.csv_file_name)
+    print(int(np.sum(np.sum(total_penalty))))
+    print(total_penalty.astype('int'))
+    print(np.sum(total_penalty.astype('int') == 1440))
 

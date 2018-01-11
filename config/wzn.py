@@ -40,8 +40,8 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 hourly_travel_distance      = 30
 
 # important parameters
-day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 7, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = True   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
@@ -60,11 +60,11 @@ strong_wind_penalty_coeff   = 24*60  # this ensure that the wind hard threshold,
 
 # evaluation
 debug_draw                  = False
-evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
-evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation_days             = [3]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [1, 2, 3, 4, 5, 7, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_dijkstra_risky_wall_wind_15.csv'
+csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
 
 # evalutation plot
 evaluation_plot             = False  # a flag for visualising predicted route
@@ -75,7 +75,7 @@ eval_city                   = [9]
 # reinforcement_learning solution
 reinforcement_learning_solution = False
 reinforcement_learning_solution_multiprocessing = False
-num_threads                     = 5
+num_threads                     = 12
 return_to_start                 = True
 strong_wind_return              = True    # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics

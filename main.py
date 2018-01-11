@@ -8,11 +8,11 @@ matplotlib.use('TkAgg')
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
-from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing
-from FCN.FCN import fully_convolutional_wind_pred
+# from FCN.FCN import fully_convolutional_wind_pred
 
 
 def process(cf):
@@ -60,9 +60,9 @@ def process(cf):
         print("reinforcement_learning_solution_multiprocessing")
         reinforcement_learning_solution_multiprocessing(cf)
 
-    if cf.fully_convolutional_wind_pred:
-        print('fully_convolutional_wind_pred')
-        fully_convolutional_wind_pred(cf)
+    # if cf.fully_convolutional_wind_pred:
+    #     print('fully_convolutional_wind_pred')
+    #     fully_convolutional_wind_pred(cf)
 
     if cf.submission_dummy:
         print("submission")
@@ -102,7 +102,9 @@ def main():
     configurationPATH(cf)
 
     # Train /test/predict with the network, depending on the configuration
-    process(cf)
+    for i in range(1, 11):
+        cf.model_number = list([i])
+        process(cf)
 
     # End Time
     end_time = time.time()
