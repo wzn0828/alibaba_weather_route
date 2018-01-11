@@ -29,9 +29,9 @@ num_threads                 = 12
 ########################################################################################################################
 # A star search
 A_star_search_2D            = False
-A_star_search_3D            = False
+A_star_search_3D            = True
 A_star_search_3D_multiprocessing = False
-model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+model_number                = [3]
 grid_world_shape            = (548, 421)
 hourly_travel_distance      = 30
 total_hours                 = 20-3+1  # 18 hours to travel
@@ -41,7 +41,7 @@ model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [1, 2, 3]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
@@ -61,7 +61,7 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 
 ########################################################################################################################
 # evaluation
-debug_draw                  = False
+debug_draw                  = True
 evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
@@ -79,7 +79,7 @@ eval_city                   = [9]
 # reinforcement_learning solution
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
-reinforcement_learning_solution_multiprocessing = True
+reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 1000
 num_threads                     = 5
 return_to_start                 = False

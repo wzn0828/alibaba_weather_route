@@ -5,12 +5,13 @@ from mpl_toolkits.mplot3d import proj3d
 
 
 class GridWithWeights_3D():
-    def __init__(self, width, height, time_length, wall_wind):
+    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance):
         self.width = width
         self.height = height
         self.time_length = time_length
         self.wall_wind = wall_wind
         self.weights = []
+        self.hourly_travel_distance = hourly_travel_distance
 
     def in_bounds(self, id):
         (x, y, t) = id
@@ -31,7 +32,8 @@ class GridWithWeights_3D():
         return results
 
     def cost(self, to_node):
-        return self.weights[to_node]
+        weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
+        return self.weights[weight_idx]
 
 
 class PriorityQueue:
