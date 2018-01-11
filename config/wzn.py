@@ -74,28 +74,34 @@ eval_city                   = [9]
 ########################################################################################################################
 # reinforcement_learning solution
 reinforcement_learning_solution = False
-reinforcement_learning_solution_multiprocessing = False
-num_threads                     = 12
-return_to_start                 = True
-strong_wind_return              = True    # will go back to the previous state
+reinforcement_learning_solution_new = False
+reinforcement_learning_solution_multiprocessing = True
+a_star_loop                     = 1000
+num_threads                     = 5
+return_to_start                 = False
+strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
-reward_goal                     = 1e5
+reward_goal                     = time_length * 1.0
 reward_move                     = 0.0
-reward_obstacle                 = -1e5
+reward_obstacle                 = time_length * -1.0
 
 # Dyna model hyper
 maxSteps                        = time_length  # Maze maximum steps
-random_state                    = 0
+random_state                    = 1
 planningSteps                   = time_length     # planning steps for Dyna model
 alpha                           = 1      # Learning step size
 gamma                           = 0.99
-theta                           = 10
-epsilon                         = 1.0 / time_length
-qLearning                       = False  # flag for qLearning
-expected                        = True  # flag for expected Sarsa
+theta                           = 1e-1
+epsilon                         = 0.01
+epsilon_start                   = 0.1
+epsilon_end                     = 0.001
+alpha_start                     = 0.1
+alpha_end                       = 0.01
+
+qLearning                       = True  # flag for qLearning
+expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
 plus                            = True   # Dyna Plus algorithm
-temp_model                      = 1  # a flag saying the temporary model
 optimal_length_relax            = 1.5
 heuristic                       = False
 increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson

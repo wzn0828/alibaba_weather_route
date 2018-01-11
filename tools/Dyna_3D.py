@@ -53,7 +53,7 @@ class Dyna_3D:
                  priority=False,
                  ucb=False,
                  theta=1e-4,
-                 policy_init=None,
+                 policy_init=[],
                  optimal_length_relax=1.2,
                  heuristic=False,
                  increase_epsilon=0):
@@ -272,7 +272,7 @@ class Dyna_3D:
         # we will execute the following if action was not selected by
         # (1) epsilon greedy (2) no Astar policy
         values = self.stateActionValues[state[0], state[1], state[2], :]
-        return np.random.choice([action for action, value in enumerate(values) if value == np.max(values)])
+        return self.rand.choice([action for action, value in enumerate(values) if value == np.max(values)])
 
     def play(self, environ_step=False):
         """
@@ -289,9 +289,6 @@ class Dyna_3D:
         terminal_flag = False
         while tuple(currentState) not in self.maze.GOAL_STATES and not terminal_flag:
             ######################## Interaction with the environment ###############################
-            # track the steps
-            # if steps % 1000 == 0:
-            #     print(steps)
             steps += 1
             # get action
             if steps == 1 or self.qlearning:
@@ -304,12 +301,12 @@ class Dyna_3D:
                 action_value_delta = reward + self.gamma * np.max(self.stateActionValues[newState[0], newState[1], newState[2], :]) - \
                                      self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
             else:
-                # sarsa or expected sarsa update
+                # sarsa update
                 if not self.expected:
                     newAction = self.chooseAction(newState)
                     valueTarget = self.stateActionValues[newState[0], newState[1], newState[2], newAction]
                 elif self.expected:
-                    # calculate the expected value of new state
+                    # expected sarsa update
                     valueTarget = 0.0
                     actionValues = self.stateActionValues[newState[0], newState[1], newState[2], :]
                     bestActions = np.argwhere(actionValues == np.max(actionValues))
@@ -319,7 +316,7 @@ class Dyna_3D:
                                            self.stateActionValues[newState[0], newState[1], newState[2], action]
                         else:
                             valueTarget += self.epsilon / len(self.maze.actions) * self.stateActionValues[newState[0], newState[1], newState[2], action]
-                # Sarsa update
+                # Sarsa and Expected sarsa update
                 action_value_delta = reward + self.gamma * valueTarget - self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
 
             if not self.priority:
@@ -334,7 +331,6 @@ class Dyna_3D:
 
             ######################## feed the model with experience ###############################
             self.feed(currentState, currentAction, newState, reward)
-            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
 
             if not self.qlearning:
                 if not self.expected:
@@ -347,7 +343,7 @@ class Dyna_3D:
             for t in range(0, self.planningSteps):
                 if self.priority:
                     if self.priorityQueue.empty():
-                        # although keep planning until the priority queue becomes empty will converge much faster
+                        #  keep planning until the priority queue becomes empty will converge much faster
                         break
                     else:
                         # get a sample with highest priority from the model
@@ -420,13 +416,7 @@ class Dyna_3D:
             # check whether it has exceeded the step limit
             if steps > self.maze.maxSteps:
                 print(currentState)
-                # if self.increase_epsilon > 0:
-                #     self.epsilon *= self.increase_epsilon
-                #     self.epsilon = min(1, self.self.epsilon)
-                #     print('eplison now is: ' + str(self.epsilon))
                 break
-
-        #print('Exist in steps: %d' % steps)
         return steps
 
     def heuristic_fn(self, a, b):
@@ -444,7 +434,7 @@ class Dyna_3D:
         (x2, y2, t2) = b[0]
         return abs(x1 - x2) + abs(y1 - y2)
 
-    def checkPath(self, optimal_length):
+    def checkPath(self, optimal_length, set_wind_to_zeros=False):
         """
         This function only apply to Sutton book Chapter 8.
         Check whether state-action values are already optimal
@@ -453,20 +443,32 @@ class Dyna_3D:
         # get the length of optimal path
         # optimal_length is the length of optimal path of the original maze
         # 1.2 means it's a relaxed optifmal path
+        # for the path, we also set the wind to zeros
+        if set_wind_to_zeros:
+            wind_real_day_hour_total = self.maze.wind_real_day_hour_total
+            self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
         maxSteps = optimal_length * self.optimal_length_relax
         currentState = self.maze.START_STATE
         steps = 0
         came_from = {}
         came_from[currentState] = None
+        total_Q = 0
+        total_reward = 0
+        #
         while tuple(currentState) not in self.maze.GOAL_STATES:
             bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
-            nextState, _, _ = self.maze.takeAction(currentState, bestAction)
+            total_Q += np.max(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
+            nextState, reward, terminal_flag = self.maze.takeAction(currentState, bestAction)
+            total_reward += reward
             came_from[tuple(nextState)] = tuple(currentState)
             #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
             currentState = nextState
             steps += 1
 
             if steps > maxSteps:
-                return came_from, tuple(currentState), False
-
-        return came_from, tuple(currentState), True
+                if set_wind_to_zeros:
+                    self.maze.wind_real_day_hour_total = wind_real_day_hour_total
+                return came_from, tuple(currentState), False, total_Q, total_reward, self.stateActionValues.sum()
+        if set_wind_to_zeros:
+            self.maze.wind_real_day_hour_total = wind_real_day_hour_total
+        return came_from, tuple(currentState), True, total_Q, total_reward, self.stateActionValues.sum()

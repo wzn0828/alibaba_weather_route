@@ -137,21 +137,21 @@ def collect_csv_for_submission(cf):
     sub_csv.to_csv(cf.csv_file_name, header=False, index=False)
 
 
-
-
-def collect_csv_for_submission_fraction(cf):
+def collect_csv_for_submission_fraction():
     """
     This script is used to collect all the generated csv files (days, cities) to generate the required submission file
     :param cf:
     :return:
     """
+    import pandas as pd
+    import os
     frames = []
-    cf.csv_file_name ='/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-01-10-14-20-33/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'
-    for day in [1,2,3]:
-        for goal_city in cf.goal_city_list:
-            csv_file_name_hour = cf.csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+    csv_file_name ='/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-01-10-14-20-33/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'
+    for day in [1, 2, 3]:
+        for goal_city in [1, 2, 3, 4, 5, 7, 9, 10]:
+            csv_file_name_hour = csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
             if os.path.isfile(csv_file_name_hour):
                 city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)
                 frames.append(city_data_hour_df)
     sub_csv = pd.concat(frames, axis=0)
-    sub_csv.to_csv(cf.csv_file_name+'.csv', header=False, index=False)
+    sub_csv.to_csv(csv_file_name+'.csv', header=False, index=False)
