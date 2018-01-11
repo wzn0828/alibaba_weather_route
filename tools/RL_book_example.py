@@ -9,7 +9,7 @@ from config.configuration import Configuration
 
 def main():
     # Load configuration files
-    configuration = Configuration('/home/stevenwudi/PycharmProjects/alibaba_weather_route/config/diwu.py')
+    configuration = Configuration('/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py')
     cf = configuration.load()
     # get the original 6*9 maze
     time_length = 25

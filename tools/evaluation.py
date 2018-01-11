@@ -24,8 +24,8 @@ def evaluation(cf, csv_for_evaluation):
         mng = plt.get_current_fig_manager()
         mng.resize(*mng.window.maxsize())
 
-    for day in [1, 2, 3, 4, 5]:
-        for goal_city in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+    for day in cf.evaluation_days:
+        for goal_city in cf.evaluation_goal_cities:
             print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
