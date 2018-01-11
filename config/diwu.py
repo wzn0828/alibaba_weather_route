@@ -33,20 +33,23 @@ A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
-time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
-model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 hourly_travel_distance      = 30
+total_hours                 = 20-3+1  # 18 hours to travel
+time_length                 = hourly_travel_distance * total_hours  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
+model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
+
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
-wind_exp_mean               = 5
+wind_exp_mean               = 10
 wind_exp_std                = 5
+low_wind_pass               = 10
 use_real_weather            = False
 
 
@@ -61,9 +64,11 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 debug_draw                  = False
 evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-evaluation                  = True
+evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning_10_loop.csv'
+#csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning.csv'
+
 
 # evalutation plot
 evaluation_plot             = False  # a flag for visualising predicted route
@@ -74,24 +79,29 @@ eval_city                   = [9]
 # reinforcement_learning solution
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
-reinforcement_learning_solution_multiprocessing = False
+reinforcement_learning_solution_multiprocessing = True
 a_star_loop                     = 1000
 num_threads                     = 5
-return_to_start                 = True
-strong_wind_return              = True    # will go back to the previous state
+return_to_start                 = False
+strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
-reward_goal                     = 1.0
+reward_goal                     = time_length * 1.0
 reward_move                     = 0.0
-reward_obstacle                 = -1.0
+reward_obstacle                 = time_length * -1.0
 
 # Dyna model hyper-parameters
 maxSteps                        = time_length  # Maze maximum steps
-random_state                    = 0
+random_state                    = 1
 planningSteps                   = time_length     # planning steps for Dyna model
 alpha                           = 1      # Learning step size
 gamma                           = 0.99
-theta                           = 1e-5
+theta                           = 1e-1
 epsilon                         = 0.01
+epsilon_start                   = 0.1
+epsilon_end                     = 0.001
+alpha_start                     = 0.1
+alpha_end                       = 0.01
+
 qLearning                       = True  # flag for qLearning
 expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
