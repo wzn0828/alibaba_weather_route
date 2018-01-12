@@ -234,7 +234,7 @@ def A_star_search_3D(cf):
             start_loc_3D = (start_loc[0], start_loc[1], 0)
             # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
             # we say we have reached the goal
-            goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
+            goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length + 1)]
             came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
             route_list = []
