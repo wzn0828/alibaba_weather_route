@@ -35,9 +35,11 @@ A_star_search_3D_multiprocessing_multicost = False
 search_method               = 'a_star_search_3D'  #search methods ['a_star_search_3D','dijkstra']
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
+total_hours                 = 20-3+1  # 18 hours to travel
+hourly_travel_distance      = 30
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_description           = search_method  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
-hourly_travel_distance      = 30
+
 
 A_star_fix_missing          = False
 
