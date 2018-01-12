@@ -146,9 +146,9 @@ def collect_csv_for_submission_fraction():
     import pandas as pd
     import os
     frames = []
-    csv_file_name ='/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-01-10-14-20-33/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'
+    csv_file_name ='/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather_____2018-01-11-18-10-09/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather'
     for day in [1, 2, 3]:
-        for goal_city in [1, 2, 3, 4, 5, 7, 9, 10]:
+        for goal_city in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
             csv_file_name_hour = csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
             if os.path.isfile(csv_file_name_hour):
                 city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)

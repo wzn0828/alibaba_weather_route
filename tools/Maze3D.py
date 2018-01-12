@@ -78,6 +78,15 @@ class Maze_3D:
         elif action == self.ACTION_STAY:
              x, y = x, y
 
+        # added lower cone (depending on the goal)
+        dist_manhantan = self.heuristic_fn((x, y, t), self.goal_states)
+        time_remain = self.TIME_LENGTH - t
+        if time_remain < dist_manhantan:
+            # we can no longer reach the goal from this point
+            reward = self.reward_obstacle
+            terminal_flag = True
+            return [x, y, t], reward, terminal_flag
+
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.cf.hourly_travel_distance)]
         if current_loc_time_wind >= self.cf.wall_wind:
             terminal_flag = True
@@ -92,7 +101,6 @@ class Maze_3D:
             reward = self.reward_goal
             terminal_flag = True
         else:
-            #reward = self.reward_move
             if self.cf.risky:
                 reward = self.reward_move
             elif self.cf.wind_exp:
@@ -102,11 +110,23 @@ class Maze_3D:
                 if self.cf.low_wind_pass:
                     if current_loc_time_wind <= self.cf.low_wind_pass:
                         reward = self.reward_move
-
             else:
                 current_loc_time_wind /= self.cf.risky_coeff
                 reward = self.reward_move + (-1) * current_loc_time_wind
 
         return [x, y, t], reward, terminal_flag
 
+    def heuristic_fn(self, a, b):
+        """
+        https://en.wikipedia.org/wiki/A*_search_algorithm
+         For the algorithm to find the actual shortest path, the heuristic function must be admissible,
+         meaning that it never overestimates the actual cost to get to the nearest goal node.
+         That's easy!
+        :param a:
+        :param b:
+        :return:
+        """
 
+        (x1, y1, t1) = a
+        (x2, y2, t2) = b[0]
+        return abs(x1 - x2) + abs(y1 - y2)

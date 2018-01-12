@@ -313,28 +313,23 @@ def A_star_3D_worker(cf, day, goal_city):
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.total_hours)))
     for hour in range(3, 21):
-        if day < 6:  # meaning this is a training day
-            if cf.use_real_weather:
-                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
-                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-            else:
-                wind_real_day_hour_temp = []
-                for model_number in cf.model_number:
-                    # we average the result
-                    weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                    wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
-                    wind_real_day_hour_temp.append(wind_real_day_hour_model)
-                wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
-                wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+        if cf.use_real_weather:
+            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
         else:
             wind_real_day_hour_temp = []
             for model_number in cf.model_number:
                 # we average the result
-                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                if day < 6:  # meaning this is a training day
+                    weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                else:
+                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+
                 wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
                 wind_real_day_hour_temp.append(wind_real_day_hour_model)
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+
         # we replicate the weather for the whole hour
         wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
         if cf.risky:
@@ -414,8 +409,6 @@ def A_star_search_3D_multiprocessing(cf):
         j.join()
     # sub_csv is for submission
     collect_csv_for_submission(cf)
-    # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
-    # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
 
@@ -638,9 +631,10 @@ def A_star_fix_missing(cf):
     jobs = []
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     multiprocessing.log_to_stderr()
-    for model_number in range(10):
+    #for model_number in range(10):
+    for model_number in cf.model_number:
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:61] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         for day in cf.day_list:
             for goal_city in cf.goal_city_list:
@@ -654,13 +648,14 @@ def A_star_fix_missing(cf):
                     p.start()
         jobs_all.append(jobs)
 
-    for model_number in range(10):
+    #for model_number in range(10):
+    for model_number in cf.model_number:
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:61] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
         cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
-        for j in jobs_all[model_number]:
+        for j in jobs_all[model_number-1]:
             j.join()
         # sub_csv is for submission
         collect_csv_for_submission(cf)
