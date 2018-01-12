@@ -39,7 +39,7 @@ hourly_travel_distance      = 30
 total_hours                 = 20-3+1  # 18 hours to travel
 time_length                 = hourly_travel_distance * total_hours  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
-A_star_fix_missing          = True
+A_star_fix_missing          = False
 
 # important parameters
 day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
@@ -68,10 +68,10 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 debug_draw                  = False
 evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-evaluation                  = False
+evaluation                  = True
 collect_csv_for_submission_fraction = False
 #csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_A_star_search_3D_conservative_wall_wind_15_model_number_[3].csv'
 
 
 # evalutation plot
