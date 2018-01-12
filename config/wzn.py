@@ -10,11 +10,11 @@ TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
 TestForecastFile            = 'ForecastDataforTesting_201712.csv'
 
 ########################################################################################################################
-plot_real_wind              = True
+plot_real_wind              = False
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
-plt_forecast_wind_train_multiprocessing = True
-plt_forecast_wind_test_multiprocessing = True
+plt_forecast_wind_train_multiprocessing = False
+plt_forecast_wind_test_multiprocessing = False
 plot_all_wind               = False
 plot_train_model            = False
 plot_test_model             = False
@@ -24,14 +24,14 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 12
+num_threads                 = 5
 
 ########################################################################################################################
 # A star search
 A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
-A_star_search_3D_multiprocessing_multicost = False
+A_star_search_3D_multiprocessing_multicost = True
 search_method               = 'a_star_search_3D'  #search methods ['a_star_search_3D','dijkstra']
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
@@ -42,15 +42,15 @@ hourly_travel_distance      = 30
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [1]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = True   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
-use_real_weather            = False
+use_real_weather            = True
 real_hour                   = 3
 
 
@@ -79,7 +79,7 @@ reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 1000
-num_threads                     = 5
+num_threads                     = 12
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics

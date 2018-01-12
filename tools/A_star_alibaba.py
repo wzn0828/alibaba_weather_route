@@ -477,7 +477,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
-    for hour in range(3, 4):
+    for hour in range(3, 21):
         if day < 6:  # meaning this is a training day
             if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
