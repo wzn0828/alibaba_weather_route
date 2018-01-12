@@ -12,8 +12,6 @@ from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
-# from FCN.FCN import fully_convolutional_wind_pred
-
 
 
 def process(cf):
@@ -51,7 +49,6 @@ def process(cf):
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing(cf)
 
-
     if cf.A_star_search_3D_multiprocessing_multicost:
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing_multicost(cf)
@@ -73,12 +70,7 @@ def process(cf):
         print("reinforcement_learning_solution_multiprocessing")
         reinforcement_learning_solution_multiprocessing(cf)
 
-    # if cf.fully_convolutional_wind_pred:
-    #     print('fully_convolutional_wind_pred')
-    #     fully_convolutional_wind_pred(cf)
-
-
-    ### Following is the submissio script #############
+    ### Following is the submission script #############
     if cf.submission_dummy:
         print("submission")
         submit_phase(cf)
@@ -87,6 +79,7 @@ def process(cf):
         print('collect_csv_for_submission_fraction')
         collect_csv_for_submission_fraction(cf)
 
+    ### Following is the evaluation script #############
     if cf.evaluation:
         print('evaluation')
         total_penalty = evaluation(cf, cf.csv_for_evaluation)
@@ -102,7 +95,7 @@ def process(cf):
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/stevenwudi/PycharmProjects/alibaba_weather_route/config/diwu.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
@@ -116,10 +109,7 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-    # Train /test/predict with the network, depending on the configuration
-    for i in range(1, 11):
-        cf.model_number = list([i])
-        process(cf)
+    process(cf)
 
     # End Time
     end_time = time.time()

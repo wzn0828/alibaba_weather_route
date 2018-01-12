@@ -13,9 +13,14 @@ class GridWithWeights_3D():
         self.weights = []
         self.hourly_travel_distance = hourly_travel_distance
 
-    def in_bounds(self, id):
+    def upper_cone(self, id):
         (x, y, t) = id
         return 0 <= x < self.width and 0 <= y < self.height and 0 <= t < self.time_length
+
+    def lower_cone(self, id):
+        dist_manhantan = heuristic(id, self.goal)
+        time_remain = self.time_length - id[2]
+        return time_remain >= dist_manhantan
 
     def in_wind(self, id):
         (x, y, t) = id
@@ -25,8 +30,10 @@ class GridWithWeights_3D():
         (x, y, t) = id
         # Voila, time only goes forward, but we can stay in the same position
         results = [(x + 1, y, t + 1), (x, y - 1, t + 1), (x - 1, y, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
-        # if (x + y) % 2 == 0 : results.reverse()  # aesthetics
-        results = filter(self.in_bounds, results)
+        # upper cone means the space allowed to traverse from starting point
+        results = filter(self.upper_cone, results)
+        # lower cone means the space allowed to explore in order to reach the goal
+        results = filter(self.lower_cone, results)
         # we also need within the wall wind limit
         # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
         return results
@@ -78,6 +85,7 @@ def a_star_search_3D(graph, start, goals):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
+    graph.goal = goals[0]
 
     while not frontier.empty():
         current = frontier.get()

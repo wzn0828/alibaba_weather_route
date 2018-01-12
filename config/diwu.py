@@ -3,14 +3,14 @@ dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/downloaded_
 fig_save_path               = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
 fig_save_train_path         = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
 fig_save_test_path          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
-wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing'
+wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing_float32'
 
 TrainRealFile               = 'In_situMeasurementforTraining_201712.csv'
 TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
 TestForecastFile            = 'ForecastDataforTesting_201712.csv'
 
 ########################################################################################################################
-plot_real_wind              = True
+plot_real_wind              = False
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
 plt_forecast_wind_train_multiprocessing = False
@@ -24,26 +24,26 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 12
+num_threads                 = 10
 
 ########################################################################################################################
 # A star search
+search_method               = 'a_star_search_3D'
 A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
-A_star_search_3D_multiprocessing_multicost = True
-model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+A_star_search_3D_multiprocessing_multicost = False
+model_number                = [0]
 grid_world_shape            = (548, 421)
 hourly_travel_distance      = 30
 total_hours                 = 20-3+1  # 18 hours to travel
 time_length                 = hourly_travel_distance * total_hours  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
-
-A_star_fix_missing          = False
+A_star_fix_missing          = True
 
 # important parameters
-day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1, 2, 3, 4, 5, 7, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
@@ -66,13 +66,12 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 # evaluation
 
 debug_draw                  = False
-evaluation_days             = [3]  # [1, 2, 3, 4, 5]
-evaluation_goal_cities      = [1, 2, 3, 4, 5, 7, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
+evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
 #csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather.csv'
 
 
 # evalutation plot
