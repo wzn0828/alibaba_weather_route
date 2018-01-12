@@ -109,7 +109,12 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
+
+    # Train /test/predict with the network, depending on the configuration
+    # for i in range(1, 11):
+    #     cf.model_number = list([i])
     process(cf)
+
 
     # End Time
     end_time = time.time()
