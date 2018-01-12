@@ -15,7 +15,7 @@ class GridWithWeights_3D():
 
     def upper_cone(self, id):
         (x, y, t) = id
-        return 0 <= x < self.width and 0 <= y < self.height and 0 < t <= self.time_length
+        return 0 <= x < self.width and 0 <= y < self.height and 0 < t < self.time_length
 
     def lower_cone(self, id):
         dist_manhantan = heuristic(id, self.goal)

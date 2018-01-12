@@ -79,7 +79,7 @@ class Maze_3D:
              x, y = x, y
 
         # added lower cone (depending on the goal)
-        dist_manhantan = self.heuristic_fn((x, y, t), self.goal_states)
+        dist_manhantan = self.heuristic_fn((x, y, t), self.GOAL_STATES)
         time_remain = self.TIME_LENGTH - t
         if time_remain < dist_manhantan:
             # we can no longer reach the goal from this point

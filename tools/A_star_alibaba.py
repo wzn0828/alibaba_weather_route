@@ -380,7 +380,8 @@ def A_star_3D_worker(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    print('Using model: %s, we reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!'
+          % (str(cf.model_number), day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -636,7 +637,7 @@ def A_star_fix_missing(cf):
     else:
         name_len = 61
 
-    for model_number in range(7):
+    for model_number in range(10):
         cf.model_number = [model_number+1]
         name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
@@ -652,7 +653,7 @@ def A_star_fix_missing(cf):
                     p.start()
         jobs_all.append(jobs)
 
-    for model_number in range(7):
+    for model_number in range(10):
         cf.model_number = [model_number+1]
         name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]

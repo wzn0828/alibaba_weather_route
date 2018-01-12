@@ -15,11 +15,11 @@ def load_a_star_precompute(cf):
     A_star_model_precompute_csv = []
     if cf.day_list[0] <= 5:
         for m in range(10):
-            csv_file = os.path.join(cf.savepath, 'Train_A_star_search_3D_conservative_wall_wind_15_model_number_[%d].csv'%(m+1))
+            csv_file = os.path.join(cf.A_star_precompute_path, 'Train_A_star_search_3D_conservative_wall_wind_15_model_number_[%d].csv'%(m+1))
             A_star_model_precompute_csv.append(pd.read_csv(csv_file, names=['target', 'date', 'time', 'xid', 'yid']))
     else:
         for m in range(10):
-            csv_file = os.path.join(cf.savepath, 'Test_A_star_search_3D_conservative_wall_wind_15_model_number_[%d].csv'%(m+1))
+            csv_file = os.path.join(cf.A_star_precompute_path, 'Test_A_star_search_3D_conservative_wall_wind_15_model_number_[%d].csv'%(m+1))
             A_star_model_precompute_csv.append(pd.read_csv(csv_file, names=['target', 'date', 'time', 'xid', 'yid']))
     return A_star_model_precompute_csv
 
