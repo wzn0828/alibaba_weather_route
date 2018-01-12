@@ -423,7 +423,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
-    for hour in range(3, 21):
+    for hour in range(3, 4):
         if day < 6:  # meaning this is a training day
             if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
@@ -447,19 +447,20 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
 
-        delta = 0.1
-        min = wind_real_day_hour.min()
-        max = wind_real_day_hour.max()
-        data = min+delta
-        counts = []
-        datas = []
-        while data < max:
-            counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
-            datas.append(data)
-            data += delta
-        print(np.asarray(counts).sum())
-        plt.plot(datas, counts)
-        plt.show()
+        # print(wind_real_day_hour)
+        # delta = 0.1
+        # min = wind_real_day_hour.min()
+        # max = wind_real_day_hour.max()
+        # data = min+delta
+        # counts = []
+        # datas = []
+        # while data < max:
+        #     counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
+        #     datas.append(data)
+        #     data += delta
+        # print(np.asarray(counts).sum())
+        # plt.plot(datas, counts)
+        # plt.show()
 
         #--------set cost ---------#
         # we replicate the weather for the whole hour
@@ -480,22 +481,22 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
         costs[wind_real_day_hour >= 15.5] = np.float64(10 ** (100 * 0.5))
         costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] = np.float64(10 ** (
             100 * (wind_real_day_hour[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] - 15)))
-        # costs = (10 ** (50 * (wind_real_day_hour - 15)))
+        # costss = (10 ** (50 * (wind_real_day_hour - 15)))
 
-        # print(costs[wind_real_day_hour <= 14])
-        print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]).min())
-        # print(costs[wind_real_day_hour >= 15.5])
+        print(costs[wind_real_day_hour <= 14])
+        print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
+        print(costs[wind_real_day_hour >= 15.5])
 
 
         # print(wind_real_day_hour[14 <= wind_real_day_hour <= 16])
         # print(costs[14 <= wind_real_day_hour <= 16])
 
-        wind_real_day_hour_total[:, :, (hour - 3) * 30:(hour - 2) * 30] = costs[:, :, np.newaxis]  # we replicate the hourly data
+        wind_real_day_hour_total[:, :, hour - 3] = costs[:, :]  # we replicate the hourly data
 
         # wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
 
     # construct the 3d diagram
-    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
+    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)
     diagram.weights = wind_real_day_hour_total
 
     city_start_time = timer()
@@ -506,7 +507,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     start_loc_3D = (start_loc[0], start_loc[1], 0)
     # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
     # we say we have reached the goal
-    goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
+    goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length + 1)]
     if cf.search_method == 'a_star_search_3D':
         came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
     elif cf.search_method == 'dijkstra':
@@ -614,6 +615,7 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
     print('evaluation')
+    print(cf.csv_file_name)
     total_penalty = evaluation(cf, cf.csv_file_name)
     print(int(np.sum(np.sum(total_penalty))))
     print(total_penalty.astype('int'))
