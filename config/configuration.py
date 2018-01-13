@@ -31,14 +31,16 @@ class Configuration():
             cf.model_description += '_risky'
         elif cf.wind_exp:
             cf.model_description += '_wind_exp_mean_' + str(cf.wind_exp_mean) + '_std_' + str(cf.wind_exp_std)
+        elif cf.detailCosts:
+            cf.model_description += '_detailCosts'
         else:
             cf.model_description += '_conservative'
-        if cf.wall_wind:
-            cf.model_description += '_wall_wind_'+str(cf.wall_wind)
+        # if cf.wall_wind:
+        #     cf.model_description += '_wall_wind_'+str(cf.wall_wind)
         if cf.use_real_weather:
             cf.model_description += '_use_real_weather'
-        elif cf.model_number:
-            cf.model_description += '_model_number_' + str(cf.model_number)
+        # elif cf.model_number:
+        #     cf.model_description += '_model_number_' + str(cf.model_number)
 
         if cf.reinforcement_learning_solution_multiprocessing:
             cf.model_description = 'reinforcement_learning_solution_multiprocessing'

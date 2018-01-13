@@ -44,28 +44,29 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [3]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = True   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
-use_real_weather            = True
+use_real_weather            = False
 real_hour                   = 3
+detailCosts                 = True  #costs
 
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
 colors                      = ['red', 'white']
 wind_penalty_coeff          = 1
-strong_wind_penalty_coeff   = 24*60  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
+strong_wind_penalty_coeff   = 540  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
 # evaluation
 debug_draw                  = False
-evaluation_days             = [3]  # [1, 2, 3, 4, 5]
-evaluation_goal_cities      = [3]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
 csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
