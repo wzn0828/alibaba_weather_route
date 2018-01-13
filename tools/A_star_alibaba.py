@@ -423,17 +423,19 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
-    for hour in range(3, 4):
+    for hour in range(3, 21):
         if day < 6:  # meaning this is a training day
             if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour = np.round(wind_real_day_hour, 2)
             else:
                 wind_real_day_hour_temp = []
                 for model_number in cf.model_number:
                     # we average the result
                     weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                    wind_real_day_hour_model = np.float64(np.load(os.path.join(cf.wind_save_path, weather_name)))
+                    wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    wind_real_day_hour_model = np.round(wind_real_day_hour_model, 2)
                     wind_real_day_hour_temp.append(wind_real_day_hour_model)
                 wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
                 wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
@@ -443,6 +445,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
                 # we average the result
                 weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
                 wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour_model = np.round(wind_real_day_hour_model, 2)
                 wind_real_day_hour_temp.append(wind_real_day_hour_model)
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
@@ -462,30 +465,30 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
         # plt.plot(datas, counts)
         # plt.show()
 
-        #--------set cost ---------#
+        # --------set cost ---------#
         # we replicate the weather for the whole hour
-        # wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
-        # if cf.risky:
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
-        # elif cf.wind_exp:
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
-        # else:
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-        #     wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
+        wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
+        if cf.risky:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+        elif cf.wind_exp:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+        else:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
 
         costs = wind_real_day_hour.copy()
-        costs.dtype = 'float64'
-        costs[wind_real_day_hour <= 14] = np.float64(10 ** (100 * (-1)))
-        costs[wind_real_day_hour >= 15.5] = np.float64(10 ** (100 * 0.5))
-        costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] = np.float64(10 ** (
-            100 * (wind_real_day_hour[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)] - 15)))
-        # costss = (10 ** (50 * (wind_real_day_hour - 15)))
+        # costs.dtype = 'float64'
+        # costs[wind_real_day_hour <= 13.5] = np.float64(10 ** (6 * (0)))
+        # costs[wind_real_day_hour >= 16] = np.float64(10 ** (6 * 2.5))
+        # costs[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(10 ** (
+        #     6 * (wind_real_day_hour[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] - 13.5)))
+        # # costss = (10 ** (50 * (wind_real_day_hour - 15)))
 
-        print(costs[wind_real_day_hour <= 14])
-        print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
-        print(costs[wind_real_day_hour >= 15.5])
+        # print(costs[wind_real_day_hour <= 14])
+        # print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
+        # print(costs[wind_real_day_hour >= 15.5])
 
 
         # print(wind_real_day_hour[14 <= wind_real_day_hour <= 16])
@@ -600,6 +603,10 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     multiprocessing.log_to_stderr()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
+            if day == 3 and goal_city == 6:
+                continue
+            if day == 3 and goal_city == 8:
+                continue
             p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
             p.start()

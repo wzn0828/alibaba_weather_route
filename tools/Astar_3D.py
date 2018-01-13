@@ -40,6 +40,7 @@ class GridWithWeights_3D():
 
     def cost(self, to_node):
         weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
+        weight_idx
         return self.weights[weight_idx]
 
 
@@ -119,6 +120,7 @@ def dijkstra(graph, start, goals):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
+    graph.goal = goals[0]
 
     while not frontier.empty():
         current = frontier.get()
