@@ -111,11 +111,13 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
+    # mean
+    process(cf)
 
     # Train /test/predict with the network, depending on the configuration
     for i in range(1, 2):
         cf.model_number = list([i])
-        cf.model_description += '_model_number_' + str(cf.model_number)
+        cf.model_description = 'model_number_' + str(cf.model_number)
         cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
             "%Y-%m-%d-%H-%M-%S"))
         cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
@@ -132,6 +134,7 @@ def main():
             print(help(cf))
 
         process(cf)
+
 
 
     # End Time
