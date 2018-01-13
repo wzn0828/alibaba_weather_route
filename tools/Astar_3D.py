@@ -119,6 +119,7 @@ def dijkstra(graph, start, goals):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
+    graph.goal = goals[0]
 
     while not frontier.empty():
         current = frontier.get()

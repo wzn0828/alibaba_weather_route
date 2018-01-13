@@ -26,6 +26,12 @@ def evaluation(cf, csv_for_evaluation):
 
     for day in cf.evaluation_days:
         for goal_city in cf.evaluation_goal_cities:
+
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
+
             print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
