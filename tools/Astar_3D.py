@@ -40,7 +40,14 @@ class GridWithWeights_3D():
 
     def cost(self, to_node):
         weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
-        return self.weights[weight_idx]
+        wind_speed = self.weights[weight_idx]
+        cost = wind_speed
+        ###
+        minutes = np.mod(to_node[2], self.hourly_travel_distance)
+        if minutes > 55 or minutes < 5:
+            cost += function(minutes, wind_speed)
+
+        return cost
 
 
 class PriorityQueue:

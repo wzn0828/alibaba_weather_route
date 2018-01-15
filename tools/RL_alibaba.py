@@ -121,30 +121,25 @@ def draw_predicted_route(cf, day, go_to_all, city_data_df, route_list):
     for hour in range(3, 21):
         if day < 6:  # meaning this is a training day
             weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
-            title = weather_name[:-4]
             wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
         else:
-            wind_real_day_hour_temp = []
-            for model_number in cf.model_number:
-                # we average the result
-                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
-                wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
-                wind_real_day_hour_temp.append(wind_real_day_hour_model)
-            wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
-            wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+            # wind_real_day_hour_temp = []
+            # for model_number in cf.model_number:
+            #     # we average the result
+            #     weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+            #     wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+            #     wind_real_day_hour_temp.append(wind_real_day_hour_model)
+            # wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
+            # wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+
+            # we use model 3 here because it has the best result amongst all the models
+            weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
             weather_name = 'Test_forecast_wind_model_count_%d_day_%d_hour_%d.npy' % (len(cf.model_number), day, hour)
+        title = weather_name[:-4]
         plt.clf()
         plt.imshow(wind_real_day_hour, cmap=cf.colormap)
         plt.colorbar()
-        ########## Plot all a-star
-        for m, go_to in enumerate(go_to_all):
-            for p in go_to.keys():
-                plt.scatter(p[1], p[0], c='black', s=1)
-            # anno_point = int(len(go_to.keys()) * (1+m) / 10)
-            anno_point = int(len(go_to.keys()) / 2)
-            go_to_sorted = sorted(go_to)
-            p = go_to_sorted[anno_point]
-            # plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
 
         # we also plot the city location
         for idx in range(city_data_df.index.__len__()):
@@ -162,6 +157,9 @@ def draw_predicted_route(cf, day, go_to_all, city_data_df, route_list):
         X, Y = np.meshgrid(x, y)
         CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
 
+        for p in route_list:
+            plt.scatter(p[1], p[0], c='yellow', s=5)
+
         for h in range(3, hour + 1):
             for p in route_list[(h - 3) * 30:(h - 2) * 30]:
                 plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
@@ -169,8 +167,17 @@ def draw_predicted_route(cf, day, go_to_all, city_data_df, route_list):
                     title = weather_name[:-4] + '.  Crash at: ' + str(p) + ' in hour: %d' % (
                         p[2] / 30 + 3)
                     print(title)
-        for p in route_list:
-            plt.scatter(p[1], p[0], c='yellow', s=1)
+
+
+        ########## Plot all a-star
+        for m, go_to in enumerate(go_to_all):
+            for p in go_to.keys():
+                plt.scatter(p[1], p[0], c='black', s=1, alpha=0.5)
+            # anno_point = int(len(go_to.keys()) * (1+m) / 10)
+            anno_point = int(len(go_to.keys()) / 2)
+            go_to_sorted = sorted(go_to)
+            p = go_to_sorted[anno_point]
+            # plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
 
         plt.clabel(CS, inline=1, fontsize=10)
         plt.title(title)
@@ -407,7 +414,7 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.debug_draw = True
-    cf.day_list = [2]
+    cf.day_list = [1]
     cf.goal_city_list = [8]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -435,10 +442,10 @@ def reinforcement_learning_solution_new(cf):
             go_to_all = extract_a_star(A_star_model_precompute_csv, day, goal_city)
             steps_a_star_all_mean = np.array([len(x) for x in go_to_all]).mean()
             # construct the 3d maze
-            cf.qlearning = True
-            cf.expected = False
-            model = initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total)
 
+            model = initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total)
+            model.qlearning = False
+            model.expected = True
             start_time = timer()
             # track steps / backups for each episode
             steps = []
@@ -448,7 +455,9 @@ def reinforcement_learning_solution_new(cf):
             total_reward = np.zeros(len(cf.model_number))
             action_value_function_sum = np.zeros(len(cf.model_number))
             model.epsilon = 0
+            #model.maze.cf.risky = True
             model.policy_init = go_to_all
+            model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
                 model.a_star_model = m
@@ -459,8 +468,10 @@ def reinforcement_learning_solution_new(cf):
                     = model.checkPath(steps_a_star_all_mean, set_wind_to_zeros=False)
                 print('Success in ep: %d, with %d steps. Q: %.2f' % (m, len(came_from), action_value_function_sum[m]))
 
+            stateActionValues_a_star = model.stateActionValues
+            plt.imshow(np.max(np.max(model.stateActionValues, axis=3), axis=2)); plt.colorbar();
             success_flag = False
-            save_length = int(cf.a_star_loop * cf.optimal_length_relax) +1
+            save_length = int(cf.a_star_loop * cf.optimal_length_relax) + 1
             total_Q_new = np.zeros(save_length)
             total_reward_new = np.zeros(save_length)
             action_value_function_sum_new = np.zeros(save_length)
@@ -470,14 +481,25 @@ def reinforcement_learning_solution_new(cf):
             epsilon_step = (cf.epsilon_start - cf.epsilon_end) / cf.a_star_loop
             model.epsilon = cf.epsilon_start
             model.alpha = cf.alpha_start
-            model.qlearning = True
-            model.expected = False
+            model.qlearning = cf.qLearning
+            model.expected = cf.expected
+            model.maze.risky = False
+            model.gamma = cf.gamma_loop
+            model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
+
             while num_episode < cf.a_star_loop or not success_flag:
                 if num_episode >= cf.a_star_loop * cf.optimal_length_relax:
                     break
 
+                # plt.figure(num_episode+1)
+                # plt.clf()
+                # mng = plt.get_current_fig_manager()
+                # mng.resize(*mng.window.maxsize())
+                # plt.imshow(np.max(np.mean(model.stateActionValues, axis=3), axis=2))
+                # plt.colorbar()
+
                 model.maze.wind_model = model.rand.choice(range(len(cf.model_number)))
-                print("Episode %d, wind model: %d" % (num_episode, model.maze.wind_model))
+                print("Episode %d, wind model: %d" % (num_episode, model.maze.wind_model+1))
                 steps.append(model.play(environ_step=True))
                 # check whether the (relaxed) optimal path is found
                 came_from, currentState, success_flag, total_Q_new[num_episode], total_reward_new[num_episode], action_value_function_sum_new[num_episode]\
@@ -526,12 +548,14 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     go_to_all = extract_a_star(A_star_model_precompute_csv, day, goal_city)
     steps_a_star_all_mean = np.array([len(x) for x in go_to_all]).mean()
     # construct the 3d maze, we need Q Learning to initiate the value
-    cf.qlearning = True
-    cf.expected = False
+    # cf.qlearning = True
+    # cf.expected = False
     model = initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total)
     steps = []
     model.epsilon = 0
+    model.maze.cf.risky = False
     model.policy_init = go_to_all
+    model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
     # A star model initialisation
     for m in range(len(cf.model_number)):
         model.maze.wind_model = m
@@ -552,6 +576,9 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     # using Expected sarsa to refine
     model.qlearning = cf.qLearning
     model.expected = cf.expected
+    model.maze.cf.risky = False
+    model.gamma = cf.gamma_loop
+    model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
     # weather information fusion
     while num_episode <= cf.a_star_loop or not success_flag:
         if num_episode >= cf.a_star_loop * cf.optimal_length_relax:

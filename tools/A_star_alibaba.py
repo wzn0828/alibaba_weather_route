@@ -632,7 +632,7 @@ def A_star_fix_missing(cf):
     jobs = []
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     multiprocessing.log_to_stderr()
-    if cf.day_list[-1]<6:
+    if cf.day_list[-1] < 6:
         name_len = 62
     else:
         name_len = 61

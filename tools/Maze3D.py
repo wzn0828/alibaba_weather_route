@@ -45,8 +45,12 @@ class Maze_3D:
         self.return_to_start = return_to_start
         self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
-
-        self.cf = cf
+        self.wall_wind = cf.wall_wind
+        self.risky = cf.risky
+        self.wind_exp = cf.wind_exp
+        self.risky_coeff = cf.risky_coeff
+        self.hourly_travel_distance = cf.hourly_travel_distance
+        self.low_wind_pass = cf.low_wind_pass
 
     def takeAction(self, state, action):
         """
@@ -59,7 +63,7 @@ class Maze_3D:
         terminal_flag = False
         # the time always goes forward
         t += 1
-        if t >= self.TIME_LENGTH:
+        if t >= self.TIME_LENGTH - 1:
             # It will be a very undesirable state, we should stay here
             #x, y, t = self.START_STATE
             t = self.TIME_LENGTH - 1
@@ -87,8 +91,8 @@ class Maze_3D:
             terminal_flag = True
             return [x, y, t], reward, terminal_flag
 
-        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.cf.hourly_travel_distance)]
-        if current_loc_time_wind >= self.cf.wall_wind:
+        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
+        if current_loc_time_wind >= self.wall_wind:
             terminal_flag = True
             if self.return_to_start:
                 x, y, t = self.START_STATE
@@ -101,17 +105,17 @@ class Maze_3D:
             reward = self.reward_goal
             terminal_flag = True
         else:
-            if self.cf.risky:
+            if self.risky:
                 reward = self.reward_move
-            elif self.cf.wind_exp:
-                current_loc_time_wind -= self.cf.wind_exp_mean
-                current_loc_time_wind /= self.cf.wind_exp_std
+            elif self.wind_exp:
+                current_loc_time_wind -= self.wind_exp_mean
+                current_loc_time_wind /= self.wind_exp_std
                 reward = self.reward_move + (-1) * np.exp(current_loc_time_wind)
-                if self.cf.low_wind_pass:
-                    if current_loc_time_wind <= self.cf.low_wind_pass:
+                if self.low_wind_pass:
+                    if current_loc_time_wind <= self.low_wind_pass:
                         reward = self.reward_move
             else:
-                current_loc_time_wind /= self.cf.risky_coeff
+                current_loc_time_wind /= self.risky_coeff
                 reward = self.reward_move + (-1) * current_loc_time_wind
 
         return [x, y, t], reward, terminal_flag
@@ -130,3 +134,46 @@ class Maze_3D:
         (x1, y1, t1) = a
         (x2, y2, t2) = b[0]
         return abs(x1 - x2) + abs(y1 - y2)
+
+    def in_bound(self, id):
+        (x, y, t) = id
+        return 0 <= x < self.WORLD_WIDTH and 0 <= y < self.WORLD_HEIGHT and 0 < t < self.TIME_LENGTH
+
+    def lower_cone(self, id):
+        dist_manhantan = self.heuristic_fn(id, self.GOAL_STATES)
+        time_remain = self.TIME_LENGTH - 1 - id[2]
+        return time_remain >= dist_manhantan
+
+    def neighbors(self, id):
+        (x, y, t) = id
+        # Voila, time only goes forward, but we can stay in the same position
+        # The following should be strictly follow action sequence:
+        # up, down, left, right, stay
+        results = [(x - 1, y, t + 1), (x + 1, y, t + 1), (x, y - 1, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
+        # upper cone means the space allowed to traverse from starting point
+        results = filter(self.in_bound, results)
+        # lower cone means the space allowed to explore in order to reach the goal
+        results = filter(self.lower_cone, results)
+        # we also need within the wall wind limit
+        # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
+        return results
+
+    def viable_actions(self, current_state, viable_neighbours):
+        x1, y1, t1 = current_state
+        viable_actions = []
+        for s in viable_neighbours:
+            x2, y2, t2 = s
+            if x2 == x1 - 1 and y2 == y1:
+                viable_actions.append(self.ACTION_UP)
+            elif x2 == x1 + 1 and y2 == y1:
+                viable_actions.append(self.ACTION_DOWN)
+            elif x2 == x1 and y2 == y1 - 1:
+                viable_actions.append(self.ACTION_LEFT)
+            elif x2 == x1 and y2 == y1 + 1:
+                viable_actions.append(self.ACTION_RIGHT)
+            elif x2 == x1 and y2 == y1:
+                viable_actions.append(self.ACTION_STAY)
+            else:
+                assert "Invalid action!"
+
+        return viable_actions

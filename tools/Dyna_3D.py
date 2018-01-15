@@ -256,23 +256,26 @@ class Dyna_3D:
         :param state:
         :return:
         """
-        if np.random.binomial(1, self.epsilon) == 1:
-            action = np.random.choice(self.maze.actions)
-            # print(' Epsilon greedy effective. State: ' + str(state) + ', action: ' + str(action))
-            return action
-
         if len(self.policy_init):
             a_star_traj = self.policy_init[self.a_star_model]
             if tuple(state) in a_star_traj.keys():
                 go_to = a_star_traj[tuple(state)]
-                if type(go_to) == list:
-                    go_to = random.choice(go_to)
-                return self.return_action(tuple(state), go_to)
+                # if type(go_to) == list:
+                #     go_to = random.choice(go_to)
+                return self.return_action(tuple(state), go_to), [], []
 
-        # we will execute the following if action was not selected by
-        # (1) epsilon greedy (2) no Astar policy
-        values = self.stateActionValues[state[0], state[1], state[2], :]
-        return self.rand.choice([action for action, value in enumerate(values) if value == np.max(values)])
+        else:
+            # we follow an epsilon greedy alorithm and requires valid neighbours
+            viable_neighbours = self.maze.neighbors(state)
+            viable_actions = self.maze.viable_actions(state, viable_neighbours)
+
+            if np.random.binomial(1, self.epsilon) == 1:
+                action = np.random.choice(viable_actions)
+            else:
+                values = self.stateActionValues[state[0], state[1], state[2], viable_actions]
+                action = self.rand.choice([action for action, value in enumerate(values) if value == np.max(values)])
+
+            return action, viable_actions, viable_neighbours
 
     def play(self, environ_step=False):
         """
@@ -291,8 +294,8 @@ class Dyna_3D:
             ######################## Interaction with the environment ###############################
             steps += 1
             # get action
-            if steps == 1 or self.qlearning:
-                currentAction = self.chooseAction(currentState)
+            if steps == 1 or self.qlearning or len(self.policy_init):
+                currentAction, viable_actions, viable_neighbours = self.chooseAction(currentState)
             # take action
             newState, reward, terminal_flag = self.maze.takeAction(currentState, currentAction)
 
@@ -303,7 +306,7 @@ class Dyna_3D:
             else:
                 # sarsa update
                 if not self.expected:
-                    newAction = self.chooseAction(newState)
+                    newAction, viable_actions, viable_neighbours = self.chooseAction(newState)
                     valueTarget = self.stateActionValues[newState[0], newState[1], newState[2], newAction]
                 elif self.expected:
                     # expected sarsa update
@@ -358,7 +361,7 @@ class Dyna_3D:
                 else:
                     # sarsa or expected sarsa update
                     if not self.expected:
-                        newAction_sample = self.chooseAction(newStateSample)
+                        newAction_sample, viable_actions, viable_neighbours = self.chooseAction(newStateSample)
                         valueTarget = self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], newAction_sample]
                     elif self.expected:
                         # calculate the expected value of new state
@@ -387,7 +390,7 @@ class Dyna_3D:
                         else:
                             # sarsa or expected sarsa update
                             if not self.expected:
-                                newAction_sample = self.chooseAction(stateSample)
+                                newAction_sample, viable_actions, viable_neighbours = self.chooseAction(stateSample)
                                 valueTarget = self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], newAction_sample]
                             elif self.expected:
                                 # calculate the expected value of new state
