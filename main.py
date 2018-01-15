@@ -97,7 +97,7 @@ def process(cf):
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProject/alibaba_weather_route/config/wzn.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
