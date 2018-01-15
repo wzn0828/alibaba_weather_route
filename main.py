@@ -97,7 +97,7 @@ def process(cf):
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProject/alibaba_weather_route/config/wzn.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
@@ -111,27 +111,29 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-
-    # # Train /test/predict with the network, depending on the configuration
-    # for i in range(1, 11):
-    #     cf.model_number = list([i])
-    #     cf.model_description += '_model_number_' + str(cf.model_number)
-    #     cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
-    #         "%Y-%m-%d-%H-%M-%S"))
-    #     cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
-    #
-    #     if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
-    #             and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
-    #             and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
-    #             not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
-    #         # Enable log file
-    #         os.mkdir(cf.exp_dir)
-    #         cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
-    #         sys.stdout = Logger(cf.log_file)
-    #         # we print the configuration file here so that the configuration is traceable
-    #         print(help(cf))
-
+    # mean
     process(cf)
+
+    # Train /test/predict with the network, depending on the configuration
+    for i in range(1, 11):
+        cf.model_number = list([i])
+        cf.model_description = 'model_number_' + str(cf.model_number)
+        cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
+            "%Y-%m-%d-%H-%M-%S"))
+        cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
+
+        if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
+                not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
+            # Enable log file
+            os.mkdir(cf.exp_dir)
+            cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+            sys.stdout = Logger(cf.log_file)
+            # we print the configuration file here so that the configuration is traceable
+            print(help(cf))
+
+        process(cf)
 
 
     # End Time

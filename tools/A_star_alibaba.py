@@ -467,36 +467,34 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
         # --------set cost ---------#
         # we replicate the weather for the whole hour
-        wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
-        if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
-        elif cf.wind_exp:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
-        else:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
-
         costs = wind_real_day_hour.copy()
-        # costs.dtype = 'float64'
-        # costs[wind_real_day_hour <= 13.5] = np.float64(10 ** (6 * (0)))
-        # costs[wind_real_day_hour >= 16] = np.float64(10 ** (6 * 2.5))
-        # costs[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(10 ** (
-        #     6 * (wind_real_day_hour[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] - 13.5)))
-        # # costss = (10 ** (50 * (wind_real_day_hour - 15)))
+        if cf.risky or cf.wind_exp or cf.conservative:
+            costs[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
+        if cf.risky:
+            costs[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+        elif cf.wind_exp:
+            costs[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] = np.exp(costs[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+        elif cf.conservative:
+            costs[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] += 1
+        elif cf.costs_exponential:
+            costs.dtype = 'float64'
+            costs[wind_real_day_hour <= 13.5] = np.float64(10 ** (6 * (0)))
+            costs[wind_real_day_hour >= 16] = np.float64(10 ** (6 * 2.5))
+            costs[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(10 ** (
+                6 * (wind_real_day_hour[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] - 13.5)))
+        elif cf.costs_sigmoid:
+            costs.dtype = 'float64'
+            pass
 
         # print(costs[wind_real_day_hour <= 14])
         # print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
         # print(costs[wind_real_day_hour >= 15.5])
 
-
-        # print(wind_real_day_hour[14 <= wind_real_day_hour <= 16])
-        # print(costs[14 <= wind_real_day_hour <= 16])
-
         wind_real_day_hour_total[:, :, hour - 3] = costs[:, :]  # we replicate the hourly data
 
-        # wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
 
     # construct the 3d diagram
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)

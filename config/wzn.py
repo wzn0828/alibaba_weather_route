@@ -53,8 +53,12 @@ wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
 use_real_weather            = False
+conservative                = False
+
 real_hour                   = 3
 detailCosts                 = False  #costs
+costs_exponential           = False  #costs
+costs_sigmoid               = True  # sigmoid Costs
 
 
 colormap                    = 'jet'  #['hot', 'jet']
