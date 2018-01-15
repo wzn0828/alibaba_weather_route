@@ -46,16 +46,19 @@ A_star_fix_missing          = False
 # important parameters
 day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-risky                       = True   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
+risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
 use_real_weather            = False
+conservative                = False
 real_hour                   = 3
-detailCosts                 = False  #costs
 
+detailCosts                 = False  #costs
+costs_exponential           = False  #costs
+costs_sigmoid               = True  # sigmoid Costs
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
