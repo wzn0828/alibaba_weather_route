@@ -147,7 +147,7 @@ def adjust_sigmoid_function(cf):
         cf.costs_sig_speed_time = sig_pair[0]
         cf.costs_sig_inter_speed = sig_pair[1]
 
-        cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        cf.model_number = [1]
         costs_method = "costsSigmoid_" + "speedTime_" + str(cf.costs_sig_speed_time) + "_interSpeed_" + str(cf.costs_sig_inter_speed)
         cf.model_description = costs_method + "_model_mean_[1-10]"
         cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
