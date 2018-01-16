@@ -93,26 +93,9 @@ def process(cf):
         print('evaluation_plot')
         evaluation_plot(cf)
 
-
-def main():
-    # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
-
-    arguments = parser.parse_args()
-    assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
-    print('\n > Start Time:')
-    print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
-    start_time = time.time()
-    # Define the user paths
-
-    # Load configuration files
-    configuration = Configuration(arguments.config_path)
-    cf = configuration.load()
-    configurationPATH(cf)
-
+def adjust_cost_exponential(cf):
     for powertime in range(1, 6):
-        cf.costs_exp_basenumber = 10**powertime
+        cf.costs_exp_basenumber = 10 ** powertime
 
         cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         costs_method = "costsExponential_" + "baseNumber_" + str(cf.costs_exp_basenumber)
@@ -157,11 +140,35 @@ def main():
             process(cf)
 
 
+
+def main():
+    # Get parameters from arguments
+    parser = argparse.ArgumentParser(description='Model training')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
+
+    arguments = parser.parse_args()
+    assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
+    print('\n > Start Time:')
+    print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
+    start_time = time.time()
+    # Define the user paths
+
+    # Load configuration files
+    configuration = Configuration(arguments.config_path)
+    cf = configuration.load()
+    configurationPATH(cf)
+
+    # process(cf)
+    # adjust_cost_exponential(cf)
+
     # End Time
     end_time = time.time()
     print('\n > End Time:')
     print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
     print('\n   ET: ' + HMS(end_time - start_time))
+
+
+
 
 
 if __name__ == "__main__":
