@@ -114,6 +114,7 @@ def main():
     for powertime in range(1, 6):
         cf.costs_exp_basenumber = 10**powertime
 
+        cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         costs_method = "costsExponential_" + "baseNumber_" + str(cf.costs_exp_basenumber)
         cf.model_description = costs_method + "_model_mean_[1-10]"
         cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
