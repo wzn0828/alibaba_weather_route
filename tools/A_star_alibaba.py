@@ -486,8 +486,10 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
             costs[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(
                 cf.costs_exp_basenumber ** (wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
         elif cf.costs_sigmoid:
+            # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
             costs.dtype = 'float64'
-            pass
+            costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+
 
         # print(costs[wind_real_day_hour <= 14])
         # print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
@@ -670,3 +672,6 @@ def A_star_fix_missing(cf):
         # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
+def sigmoid(speeds, cost_time, speed_time, inter_speed):
+    # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
+    return cost_time * (1 / (1 + np.exp(-speed_time * (speeds - inter_speed)))) + 1

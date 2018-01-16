@@ -56,9 +56,11 @@ use_real_weather            = False
 conservative                = False
 real_hour                   = 3
 
-costs_exponential           = True  #costs
+costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**5
-costs_sigmoid               = False  # sigmoid Costs
+costs_sigmoid               = True  # sigmoid Costs
+costs_sig_speed_time        = 1
+costs_sig_inter_speed       = 15
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
