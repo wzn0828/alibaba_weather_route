@@ -61,6 +61,7 @@ costs_exp_basenumber        = 10**5
 costs_sigmoid               = True  # sigmoid Costs
 costs_sig_speed_time        = 1
 costs_sig_inter_speed       = 15
+costs_sig_path              = '/home/wzn/PycharmProjects/alibaba_weather_route/config/costs_sigmoid'
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
