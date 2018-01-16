@@ -41,10 +41,6 @@ time_length                 = hourly_travel_distance * total_hours  # total numb
 model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 A_star_fix_missing          = False
 
-# important parameters
-day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
@@ -54,7 +50,6 @@ wind_exp_std                = 5
 low_wind_pass               = 10
 use_real_weather            = False
 real_hour                   = 3
-
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
@@ -66,19 +61,20 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 # evaluation
 debug_draw                  = False
 evaluation_plot             = False  # a flag for visualising predicted route
-evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
+evaluation_days             = [2]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-#csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa.csv'
-
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double.csv'
 
 ########################################################################################################################
 # reinforcement_learning solution
+# important parameters
+day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [7, 8]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
-reinforcement_learning_solution_new = True
-reinforcement_learning_solution_multiprocessing = False
+reinforcement_learning_solution_new = False
+reinforcement_learning_solution_multiprocessing = True
 a_star_loop                     = 100
 num_threads                     = 5
 return_to_start                 = False
@@ -93,25 +89,26 @@ maxSteps                        = time_length  # Maze maximum steps
 random_state                    = 1
 planningSteps                   = time_length // 10    # planning steps for Dyna model
 alpha                           = 1      # Learning step size
-gamma                           = 1.0
-gamma_loop                      = 0.95
-theta                           = 1e-1
+gamma                           = 0.99
+gamma_loop                      = 0.99
+theta                           = 1e-4
 epsilon                         = 0.01
 # the following are the parameters for second round update
-epsilon_start                   = 1
+epsilon_start                   = 0.1
 epsilon_end                     = 0.01
 alpha_start                     = 0.1
 alpha_end                       = 0.01
 
 qLearning                       = True  # flag for qLearning
+double                          = True  # flag for double qLearning
 expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
-plus                            = True   # Dyna Plus algorithm
+plus                            = False   # Dyna Plus algorithm
 optimal_length_relax            = 1.5
 heuristic                       = False
 increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson
 
-########################################################################################################################
+################################f########################################################################################
 ## FCN
 fully_convolutional_wind_pred   = False
 go_to_all_dir                   = None

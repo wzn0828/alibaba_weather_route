@@ -414,8 +414,8 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.debug_draw = True
-    cf.day_list = [1]
-    cf.goal_city_list = [8]
+    cf.day_list = [3]
+    cf.goal_city_list = [7]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -444,8 +444,6 @@ def reinforcement_learning_solution_new(cf):
             # construct the 3d maze
 
             model = initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total)
-            model.qlearning = False
-            model.expected = True
             start_time = timer()
             # track steps / backups for each episode
             steps = []
@@ -458,6 +456,7 @@ def reinforcement_learning_solution_new(cf):
             #model.maze.cf.risky = True
             model.policy_init = go_to_all
             model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
+            model.double = False
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
                 model.a_star_model = m
@@ -486,7 +485,9 @@ def reinforcement_learning_solution_new(cf):
             model.maze.risky = False
             model.gamma = cf.gamma_loop
             model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-
+            model.planningSteps = 10
+            model.double = cf.double
+            model.stateActionValues2 = model.stateActionValues.copy()
             while num_episode < cf.a_star_loop or not success_flag:
                 if num_episode >= cf.a_star_loop * cf.optimal_length_relax:
                     break
@@ -553,9 +554,9 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     model = initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total)
     steps = []
     model.epsilon = 0
-    model.maze.cf.risky = False
     model.policy_init = go_to_all
     model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
+    model.double = False
     # A star model initialisation
     for m in range(len(cf.model_number)):
         model.maze.wind_model = m
@@ -576,9 +577,12 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     # using Expected sarsa to refine
     model.qlearning = cf.qLearning
     model.expected = cf.expected
-    model.maze.cf.risky = False
+    model.maze.risky = False
     model.gamma = cf.gamma_loop
     model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
+    # Double learning
+    model.double = cf.double
+    model.stateActionValues2 = model.stateActionValues.copy()
     # weather information fusion
     while num_episode <= cf.a_star_loop or not success_flag:
         if num_episode >= cf.a_star_loop * cf.optimal_length_relax:

@@ -46,6 +46,8 @@ class Configuration():
                 cf.model_description += '_qLearning'
             elif cf.expected:
                 cf.model_description += '_ExpectedSarsa'
+            if cf.double:
+                cf.model_description += '_Double'
 
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))

@@ -93,11 +93,12 @@ class Maze_3D:
 
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
         if current_loc_time_wind >= self.wall_wind:
-            terminal_flag = True
             if self.return_to_start:
                 x, y, t = self.START_STATE
+                terminal_flag = True
             elif self.strong_wind_return:
                 x, y, _ = state
+                terminal_flag = True
 
             reward = self.reward_obstacle
 
@@ -137,11 +138,11 @@ class Maze_3D:
 
     def in_bound(self, id):
         (x, y, t) = id
-        return 0 <= x < self.WORLD_WIDTH and 0 <= y < self.WORLD_HEIGHT and 0 < t < self.TIME_LENGTH
+        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and 0 < t <= self.TIME_LENGTH
 
     def lower_cone(self, id):
         dist_manhantan = self.heuristic_fn(id, self.GOAL_STATES)
-        time_remain = self.TIME_LENGTH - 1 - id[2]
+        time_remain = self.TIME_LENGTH + 1 - id[2]
         return time_remain >= dist_manhantan
 
     def neighbors(self, id):
@@ -176,4 +177,4 @@ class Maze_3D:
             else:
                 assert "Invalid action!"
 
-        return viable_actions
+        return np.array(viable_actions)
