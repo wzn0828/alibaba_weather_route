@@ -488,13 +488,15 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
         elif cf.costs_sigmoid:
             # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
             costs.dtype = 'float64'
-            filename = 'costs_sigmoid_day_%d_hour_%d_speedTime_%f_interSpeed_%f.npy' % (day, hour, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            filename = 'costs_sigmoid_day_%d_hour_%d_speedTime_%.2f_interSpeed_%.2f.npy' % (day, hour, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
             pathName = os.path.join(cf.costs_sig_path, filename)
             if os.path.exists(pathName):
                 costs = np.load(pathName)
             else:
                 costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
                 np.save(pathName, costs)
+
+            # print(costs)
 
 
         # print(costs[wind_real_day_hour <= 14])
