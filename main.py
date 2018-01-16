@@ -140,14 +140,13 @@ def adjust_cost_exponential(cf):
             process(cf)
 
 def adjust_sigmoid_function(cf):
-    # for sig_pair in [(1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1.5, 12), (1.5, 13), (1.5, 14), (1.5, 15),
-    #                  (1.5, 16), (2, 13), (2, 14), (2, 15), (2, 16), (3, 13), (3, 14), (3, 15), (3, 15.5), (4, 14),
-    #                  (4, 14.5), (4, 15), (4, 15.5)]:
-    for sig_pair in [(1, 11)]:
+    for sig_pair in [(1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1.5, 12), (1.5, 13), (1.5, 14), (1.5, 15),
+                     (1.5, 16), (2, 13), (2, 14), (2, 15), (2, 16), (3, 13), (3, 14), (3, 15), (3, 15.5), (4, 14),
+                     (4, 14.5), (4, 15), (4, 15.5)]:
         cf.costs_sig_speed_time = sig_pair[0]
         cf.costs_sig_inter_speed = sig_pair[1]
 
-        cf.model_number = [1]
+        cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         costs_method = "costsSigmoid_" + "speedTime_" + str(cf.costs_sig_speed_time) + "_interSpeed_" + str(cf.costs_sig_inter_speed)
         cf.model_description = costs_method + "_model_mean_[1-10]"
         cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
@@ -169,7 +168,7 @@ def adjust_sigmoid_function(cf):
         process(cf)
 
         # Train /test/predict with the network, depending on the configuration
-        for i in range(1, 2):
+        for i in range(1, 11):
             cf.model_number = list([i])
             cf.model_description = costs_method + '_model_number_' + str(cf.model_number)
             cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
