@@ -481,10 +481,10 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
             costs[wind_real_day_hour < cf.wall_wind] += 1
         elif cf.costs_exponential:
             costs.dtype = 'float64'
-            costs[wind_real_day_hour <= 13.5] = np.float64(10 ** (6 * (0)))
-            costs[wind_real_day_hour >= 16] = np.float64(10 ** (6 * 2.5))
-            costs[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(10 ** (
-                6 * (wind_real_day_hour[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] - 13.5)))
+            costs[wind_real_day_hour <= 13] = np.float64(cf.costs_exp_basenumber ** (0))
+            costs[wind_real_day_hour >= 16] = np.float64(cf.costs_exp_basenumber ** (3))
+            costs[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(
+                cf.costs_exp_basenumber ** (wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
         elif cf.costs_sigmoid:
             costs.dtype = 'float64'
             pass
@@ -494,7 +494,6 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
         # print(costs[wind_real_day_hour >= 15.5])
 
         wind_real_day_hour_total[:, :, hour - 3] = costs[:, :]  # we replicate the hourly data
-
 
     # construct the 3d diagram
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)

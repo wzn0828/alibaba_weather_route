@@ -114,7 +114,7 @@ def main():
     # mean
     process(cf)
 
-
+    #
     # # Train /test/predict with the network, depending on the configuration
     # for i in range(1, 11):
     #     cf.model_number = list([i])

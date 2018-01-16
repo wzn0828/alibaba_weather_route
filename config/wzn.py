@@ -57,6 +57,7 @@ conservative                = False
 real_hour                   = 3
 
 costs_exponential           = True  #costs
+costs_exp_basenumber        = 10**5
 costs_sigmoid               = False  # sigmoid Costs
 
 colormap                    = 'jet'  #['hot', 'jet']
