@@ -163,7 +163,7 @@ def adjust_sigmoid_function(cf):
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
             sys.stdout = Logger(cf.log_file)
             # we print the configuration file here so that the configuration is traceable
-            print(help(cf))
+            # print(help(cf))
 
         # mean
         process(cf)
@@ -185,7 +185,7 @@ def adjust_sigmoid_function(cf):
                 cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
                 sys.stdout = Logger(cf.log_file)
                 # we print the configuration file here so that the configuration is traceable
-                print(help(cf))
+                # print(help(cf))
 
             process(cf)
 
