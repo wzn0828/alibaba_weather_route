@@ -31,10 +31,15 @@ class Configuration():
             cf.model_description += '_risky'
         elif cf.wind_exp:
             cf.model_description += '_wind_exp_mean_' + str(cf.wind_exp_mean) + '_std_' + str(cf.wind_exp_std)
-        else:
+        elif cf.costs_exponential:
+            cf.model_description += '_costsExponential'
+        elif cf.costs_sigmoid:
+            cf.model_description += '_costsSigmoid'
+        elif cf.conservative:
             cf.model_description += '_conservative'
-        if cf.wall_wind:
-            cf.model_description += '_wall_wind_'+str(cf.wall_wind)
+
+        # if cf.wall_wind:
+        #     cf.model_description += '_wall_wind_'+str(cf.wall_wind)
         if cf.use_real_weather:
             cf.model_description += '_use_real_weather'
         elif cf.model_number:
@@ -67,7 +72,7 @@ class Configuration():
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
             sys.stdout = Logger(cf.log_file)
             # we print the configuration file here so that the configuration is traceable
-            print(help(cf))
+            # print(help(cf))
 
         return cf
 
