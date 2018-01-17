@@ -99,7 +99,10 @@ class Maze_3D:
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
         if self.costs_exponential:
             if current_loc_time_wind <= 13:
-                reward_move = 0
+                reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
+
+            # if current_loc_time_wind <= 13:
+            #     reward_move = 0
             elif current_loc_time_wind >= 16:
                 reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
             else:

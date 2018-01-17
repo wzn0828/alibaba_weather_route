@@ -72,7 +72,7 @@ evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning_47598_Best.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double.csv'
 
 ########################################################################################################################
 # reinforcement_learning solution
