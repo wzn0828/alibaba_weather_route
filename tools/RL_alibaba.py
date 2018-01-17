@@ -414,8 +414,8 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.debug_draw = True
-    cf.day_list = [3]
-    cf.goal_city_list = [7]
+    cf.day_list = [2]
+    cf.goal_city_list = [8]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -651,6 +651,10 @@ def reinforcement_learning_solution_multiprocessing(cf):
             p = multiprocessing.Process(target=reinforcement_learning_solution_worker, args=(cf, day, goal_city, A_star_model_precompute_csv))
             jobs.append(p)
             p.start()
+            # because of the memory constraint, we need to wait for the previous to finish to finish in order
+            # to initiate another function...
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
 
     # waiting for the all the job to finish
     for j in jobs:

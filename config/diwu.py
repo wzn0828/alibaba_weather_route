@@ -61,7 +61,7 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 # evaluation
 debug_draw                  = False
 evaluation_plot             = False  # a flag for visualising predicted route
-evaluation_days             = [2]  # [1, 2, 3, 4, 5]
+evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
@@ -70,13 +70,12 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [7, 8]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
-reinforcement_learning_solution_new = False
+reinforcement_learning_solution_new = True
 reinforcement_learning_solution_multiprocessing = True
 a_star_loop                     = 100
-num_threads                     = 5
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
@@ -91,7 +90,7 @@ planningSteps                   = time_length // 10    # planning steps for Dyna
 alpha                           = 1      # Learning step size
 gamma                           = 0.99
 gamma_loop                      = 0.99
-theta                           = 1e-4
+theta                           = 1e-3
 epsilon                         = 0.01
 # the following are the parameters for second round update
 epsilon_start                   = 0.1

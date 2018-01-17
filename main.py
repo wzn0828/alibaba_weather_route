@@ -112,8 +112,11 @@ def main():
 
 
     # Train /test/predict with the network, depending on the configuration
-    # for i in range(1, 11):
-    #     cf.model_number = list([i])
+    # for i in range(7, 11):
+    #     cf.day_list = list([i])
+    #     process(cf)
+    # cf.day_list = list(range(6, 11))
+    # collect_csv_for_submission(cf)
     process(cf)
 
 
