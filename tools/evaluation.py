@@ -27,7 +27,13 @@ def evaluation(cf, csv_for_evaluation):
 
     for day in cf.evaluation_days:
         for goal_city in cf.evaluation_goal_cities:
-            print('Day: %d, city: %d' % (day, goal_city))
+
+            if day == 3 and goal_city == 6:
+                continue
+            if day == 3 and goal_city == 8:
+                continue
+
+            # print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
             # For evaluation, we don't need to substract 1 here because we have add 1 one submission
@@ -119,7 +125,7 @@ def evaluation(cf, csv_for_evaluation):
 
                 # Now we check whether the aircraft crash or not
                 if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
-                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    # print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
                     crash_flag = True
                     total_penalty[day-1, goal_city-1] = 24 * 60
                     crash_time_stamp[day-1, goal_city-1] = hour*100 + min
@@ -142,7 +148,7 @@ def evaluation(cf, csv_for_evaluation):
                 if not crash_flag:
                     if next_loc_pred == goal_loc:
                         total_penalty[day-1, goal_city-1] = acc_min
-                        print('Goal reached in %d mins' % acc_min)
+                        # print('Goal reached in %d mins' % acc_min)
                         predicted_df_idx += 1
                 else:
                     # it is a crash, we need to iterate

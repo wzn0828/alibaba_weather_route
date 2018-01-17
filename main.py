@@ -1,3 +1,5 @@
+import imp
+import os, sys
 import argparse
 import time
 from datetime import datetime
@@ -5,7 +7,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 
-from config.configuration import Configuration
+from config.configuration import Configuration, Logger
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing
@@ -96,7 +98,7 @@ def process(cf):
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/stevenwudi/PycharmProjects/alibaba_weather_route/config/diwu.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
@@ -110,7 +112,6 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-
     # Train /test/predict with the network, depending on the configuration
     # for i in range(7, 11):
     #     cf.day_list = list([i])
@@ -119,12 +120,14 @@ def main():
     # collect_csv_for_submission(cf)
     process(cf)
 
-
     # End Time
     end_time = time.time()
     print('\n > End Time:')
     print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
     print('\n   ET: ' + HMS(end_time - start_time))
+
+
+
 
 
 if __name__ == "__main__":
