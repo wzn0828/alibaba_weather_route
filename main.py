@@ -206,9 +206,9 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-    # process(cf)
+    process(cf)
     # adjust_cost_exponential(cf)
-    adjust_sigmoid_function(cf)
+    # adjust_sigmoid_function(cf)
 
     # End Time
     end_time = time.time()

@@ -618,10 +618,10 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
             p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
