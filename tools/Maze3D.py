@@ -51,6 +51,12 @@ class Maze_3D:
         self.risky_coeff = cf.risky_coeff
         self.hourly_travel_distance = cf.hourly_travel_distance
         self.low_wind_pass = cf.low_wind_pass
+        # cost naming
+        self.conservative = cf.conservative
+        self.costs_exponential = cf.costs_exponential
+        self.costs_exp_basenumber = cf.costs_exp_basenumber
+        self.costs_exponential_upper = cf.costs_exponential_upper
+        self.costs_exponential_lower = cf.costs_exponential_lower
 
     def takeAction(self, state, action):
         """
@@ -65,7 +71,6 @@ class Maze_3D:
         t += 1
         if t >= self.TIME_LENGTH - 1:
             # It will be a very undesirable state, we should stay here
-            #x, y, t = self.START_STATE
             t = self.TIME_LENGTH - 1
             reward = self.reward_obstacle
             terminal_flag = True
@@ -92,32 +97,20 @@ class Maze_3D:
             return [x, y, t], reward, terminal_flag
 
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
-        if current_loc_time_wind >= self.wall_wind:
-            if self.return_to_start:
-                x, y, t = self.START_STATE
-                terminal_flag = True
-            elif self.strong_wind_return:
-                x, y, _ = state
-                terminal_flag = True
+        if self.costs_exponential:
+            if current_loc_time_wind <= 13:
+                reward_move = 0
+            elif current_loc_time_wind >= 16:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
+            else:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
 
-            reward = self.reward_obstacle
-
-        elif tuple([x, y, t]) in self.GOAL_STATES:
-            reward = self.reward_goal
+        if tuple([x, y, t]) in self.GOAL_STATES:
+            # We add reward move because the goal state could have wind speed larger than 13...
+            reward = self.reward_goal + reward_move
             terminal_flag = True
         else:
-            if self.risky:
-                reward = self.reward_move
-            elif self.wind_exp:
-                current_loc_time_wind -= self.wind_exp_mean
-                current_loc_time_wind /= self.wind_exp_std
-                reward = self.reward_move + (-1) * np.exp(current_loc_time_wind)
-                if self.low_wind_pass:
-                    if current_loc_time_wind <= self.low_wind_pass:
-                        reward = self.reward_move
-            else:
-                current_loc_time_wind /= self.risky_coeff
-                reward = self.reward_move + (-1) * current_loc_time_wind
+            reward = reward_move
 
         return [x, y, t], reward, terminal_flag
 

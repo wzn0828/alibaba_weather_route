@@ -485,7 +485,7 @@ def reinforcement_learning_solution_new(cf):
             model.maze.risky = False
             model.gamma = cf.gamma_loop
             model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-            model.planningSteps = 10
+            model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
             model.double = cf.double
             model.stateActionValues2 = model.stateActionValues.copy()
             while num_episode < cf.a_star_loop or not success_flag:

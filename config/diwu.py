@@ -48,6 +48,13 @@ wind_exp                    = False
 wind_exp_mean               = 10
 wind_exp_std                = 5
 low_wind_pass               = 10
+conservative                = False
+costs_exponential           = True  #costs
+costs_sigmoid               = False  # sigmoid Costs
+costs_exponential_upper     = 16
+costs_exponential_lower     = 13
+costs_exp_basenumber        = 10
+
 use_real_weather            = False
 real_hour                   = 3
 
@@ -65,16 +72,16 @@ evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning_47598_Best.csv'
 
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = True
-reinforcement_learning_solution_multiprocessing = True
+reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 100
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state

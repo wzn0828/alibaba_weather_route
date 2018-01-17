@@ -54,6 +54,13 @@ class Configuration():
             if cf.double:
                 cf.model_description += '_Double'
 
+            if cf.costs_exponential:
+                cf.model_description += '_costsExponential'
+            elif cf.costs_sigmoid:
+                cf.model_description += '_costsSigmoid'
+            elif cf.conservative:
+                cf.model_description += '_conservative'
+
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
