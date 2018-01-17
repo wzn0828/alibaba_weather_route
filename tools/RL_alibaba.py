@@ -414,8 +414,8 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.debug_draw = True
-    cf.day_list = [2]
-    cf.goal_city_list = [8]
+    cf.day_list = [3]
+    cf.goal_city_list = [3]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -580,6 +580,7 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     model.maze.risky = False
     model.gamma = cf.gamma_loop
     model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
+    model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
     # Double learning
     model.double = cf.double
     model.stateActionValues2 = model.stateActionValues.copy()
