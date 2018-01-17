@@ -380,7 +380,8 @@ def A_star_3D_worker(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    print('Using model: %s, we reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!'
+          % (str(cf.model_number), day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -655,10 +656,14 @@ def A_star_fix_missing(cf):
     jobs = []
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     multiprocessing.log_to_stderr()
-    #for model_number in range(10):
-    for model_number in cf.model_number:
+    if cf.day_list[-1] < 6:
+        name_len = 62
+    else:
+        name_len = 61
+
+    for model_number in range(10):
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         for day in cf.day_list:
             for goal_city in cf.goal_city_list:
@@ -672,18 +677,16 @@ def A_star_fix_missing(cf):
                     p.start()
         jobs_all.append(jobs)
 
-    #for model_number in range(10):
-    for model_number in cf.model_number:
+    for model_number in range(10):
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
         cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
         for j in jobs_all[model_number-1]:
             j.join()
-        # sub_csv is for submission
+        # for submission
         collect_csv_for_submission(cf)
-        # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
 def sigmoid(speeds, cost_time, speed_time, inter_speed):
