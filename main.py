@@ -84,15 +84,110 @@ def process(cf):
     ### Following is the evaluation script #############
     if cf.evaluation:
         print('evaluation')
-        total_penalty = evaluation(cf, cf.csv_for_evaluation)
+        total_penalty, crash_time_stamp = evaluation(cf, cf.csv_for_evaluation)
         print(int(np.sum(np.sum(total_penalty))))
         print(total_penalty.astype('int'))
+        print(crash_time_stamp.astype('int'))
         print(np.sum(total_penalty.astype('int') == 1440))
 
     if cf.evaluation_plot:
         print('evaluation_plot')
         evaluation_plot(cf)
 
+def adjust_cost_exponential(cf):
+    for powertime in range(1, 6):
+        cf.costs_exp_basenumber = 10 ** powertime
+
+        cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        costs_method = "costsExponential_" + "baseNumber_" + str(cf.costs_exp_basenumber)
+        cf.model_description = costs_method + "_model_mean_[1-10]"
+        cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
+            "%Y-%m-%d-%H-%M-%S"))
+        cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
+
+        if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
+                not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
+            # Enable log file
+            os.mkdir(cf.exp_dir)
+            cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+            sys.stdout = Logger(cf.log_file)
+            # we print the configuration file here so that the configuration is traceable
+            print(help(cf))
+
+        # mean
+        process(cf)
+
+        # Train /test/predict with the network, depending on the configuration
+        for i in range(1, 11):
+            cf.model_number = list([i])
+            cf.model_description = costs_method + 'model_number_' + str(cf.model_number)
+            cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
+                "%Y-%m-%d-%H-%M-%S"))
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
+
+            if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                    and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                    and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
+                    not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
+                # Enable log file
+                os.mkdir(cf.exp_dir)
+                cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+                sys.stdout = Logger(cf.log_file)
+                # we print the configuration file here so that the configuration is traceable
+                print(help(cf))
+
+            process(cf)
+
+def adjust_sigmoid_function(cf):
+    for sig_pair in [(1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1.5, 12), (1.5, 13), (1.5, 14), (1.5, 15),
+                     (1.5, 16), (2, 13), (2, 14), (2, 15), (2, 16), (3, 13), (3, 14), (3, 15), (3, 15.5), (4, 14),
+                     (4, 14.5), (4, 15), (4, 15.5)]:
+        cf.costs_sig_speed_time = sig_pair[0]
+        cf.costs_sig_inter_speed = sig_pair[1]
+
+        cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        costs_method = "costsSigmoid_" + "speedTime_" + str(cf.costs_sig_speed_time) + "_interSpeed_" + str(cf.costs_sig_inter_speed)
+        cf.model_description = costs_method + "_model_mean_[1-10]"
+        cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
+            "%Y-%m-%d-%H-%M-%S"))
+        cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
+
+        if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
+                not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
+            # Enable log file
+            os.mkdir(cf.exp_dir)
+            cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+            sys.stdout = Logger(cf.log_file)
+            # we print the configuration file here so that the configuration is traceable
+            # print(help(cf))
+
+        # mean
+        process(cf)
+
+        # Train /test/predict with the network, depending on the configuration
+        for i in range(1, 11):
+            cf.model_number = list([i])
+            cf.model_description = costs_method + '_model_number_' + str(cf.model_number)
+            cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
+                "%Y-%m-%d-%H-%M-%S"))
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
+
+            if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
+                    and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
+                    and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
+                    not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
+                # Enable log file
+                os.mkdir(cf.exp_dir)
+                cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+                sys.stdout = Logger(cf.log_file)
+                # we print the configuration file here so that the configuration is traceable
+                # print(help(cf))
+
+            process(cf)
 
 def main():
     # Get parameters from arguments
@@ -111,37 +206,18 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-    # mean
     process(cf)
-
-
-    # # Train /test/predict with the network, depending on the configuration
-    # for i in range(1, 11):
-    #     cf.model_number = list([i])
-    #     cf.model_description += '_model_number_' + str(cf.model_number)
-    #     cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime(
-    #         "%Y-%m-%d-%H-%M-%S"))
-    #     cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
-    #
-    #     if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
-    #             and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
-    #             and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
-    #             not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new:
-    #         # Enable log file
-    #         os.mkdir(cf.exp_dir)
-    #         cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
-    #         sys.stdout = Logger(cf.log_file)
-    #         # we print the configuration file here so that the configuration is traceable
-    #         print(help(cf))
-    #
-    #     process(cf)
-
+    # adjust_cost_exponential(cf)
+    # adjust_sigmoid_function(cf)
 
     # End Time
     end_time = time.time()
     print('\n > End Time:')
     print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
     print('\n   ET: ' + HMS(end_time - start_time))
+
+
+
 
 
 if __name__ == "__main__":

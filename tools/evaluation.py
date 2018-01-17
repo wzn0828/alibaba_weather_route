@@ -17,6 +17,7 @@ def evaluation(cf, csv_for_evaluation):
     predicted_df = pd.read_csv(csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid'])
     predicted_df_idx = 0
     total_penalty = np.ones(shape=(5, 10)) * 24 * 60
+    crash_time_stamp = np.zeros(shape=(5, 10)).astype(int)
     if cf.debug_draw:
         # draw figure maximum
         plt.figure(1)
@@ -27,12 +28,12 @@ def evaluation(cf, csv_for_evaluation):
     for day in cf.evaluation_days:
         for goal_city in cf.evaluation_goal_cities:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
-            print('Day: %d, city: %d' % (day, goal_city))
+            # print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
             # For evaluation, we don't need to substract 1 here because we have add 1 one submission
@@ -124,9 +125,10 @@ def evaluation(cf, csv_for_evaluation):
 
                 # Now we check whether the aircraft crash or not
                 if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
-                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    # print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
                     crash_flag = True
                     total_penalty[day-1, goal_city-1] = 24 * 60
+                    crash_time_stamp[day-1, goal_city-1] = hour*100 + min
                     # we break the loop
                     break
                 else:
@@ -146,7 +148,7 @@ def evaluation(cf, csv_for_evaluation):
                 if not crash_flag:
                     if next_loc_pred == goal_loc:
                         total_penalty[day-1, goal_city-1] = acc_min
-                        print('Goal reached in %d mins' % acc_min)
+                        # print('Goal reached in %d mins' % acc_min)
                         predicted_df_idx += 1
                 else:
                     # it is a crash, we need to iterate
@@ -157,7 +159,7 @@ def evaluation(cf, csv_for_evaluation):
                                 break
                         predicted_df_idx += 1
 
-    return total_penalty
+    return total_penalty, crash_time_stamp
 
 
 def a_star_length(cf, csv_for_evaluation):
@@ -254,8 +256,8 @@ def evaluation_plot(cf):
     mng = plt.get_current_fig_manager()
     mng.resize(*mng.window.maxsize())
 
-    for day in cf.eval_day:
-        for goal_city in cf.eval_city:
+    for day in cf.evaluation_days:
+        for goal_city in cf.evaluation_goal_cities:
             print('Day: %d, city: %d' % (day, goal_city))
             route_list = []
             start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))

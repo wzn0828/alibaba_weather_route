@@ -51,6 +51,8 @@ class Configuration():
                 cf.model_description += '_qLearning'
             elif cf.expected:
                 cf.model_description += '_ExpectedSarsa'
+            if cf.double:
+                cf.model_description += '_Double'
 
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
@@ -70,7 +72,7 @@ class Configuration():
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
             sys.stdout = Logger(cf.log_file)
             # we print the configuration file here so that the configuration is traceable
-            print(help(cf))
+            # print(help(cf))
 
         return cf
 

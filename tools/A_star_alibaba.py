@@ -380,7 +380,8 @@ def A_star_3D_worker(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    print('Using model: %s, we reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!'
+          % (str(cf.model_number), day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -481,20 +482,35 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
             costs[wind_real_day_hour < cf.wall_wind] += 1
         elif cf.costs_exponential:
             costs.dtype = 'float64'
-            costs[wind_real_day_hour <= 13.5] = np.float64(10 ** (6 * (0)))
-            costs[wind_real_day_hour >= 16] = np.float64(10 ** (6 * 2.5))
-            costs[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(10 ** (
-                6 * (wind_real_day_hour[np.logical_and(13.5 < wind_real_day_hour, wind_real_day_hour < 16)] - 13.5)))
+            costs[wind_real_day_hour <= 13] = np.float64(cf.costs_exp_basenumber ** (0))
+            costs[wind_real_day_hour >= 16] = np.float64(cf.costs_exp_basenumber ** (3))
+            costs[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(
+                cf.costs_exp_basenumber ** (wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
         elif cf.costs_sigmoid:
+            # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
             costs.dtype = 'float64'
-            pass
+            # filename = 'costs_sigmoid_modelNumber_%s_day_%d_hour_%d_speedTime_%.2f_interSpeed_%.2f.npy' % (
+            #     str(cf.model_number), day, hour, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            # pathName = os.path.join(cf.costs_sig_path, filename)
+            # if os.path.exists(pathName):
+            #     # ad_cost = np.load(pathName)
+            #     if (np.load(pathName)).shape == wind_real_day_hour.shape:
+            #         costs = np.load(pathName)
+            #     else:
+            #         costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            # else:
+            #     costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            #     np.save(pathName, costs)
+            costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+
+            # print(costs)
+
 
         # print(costs[wind_real_day_hour <= 14])
         # print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
         # print(costs[wind_real_day_hour >= 15.5])
 
         wind_real_day_hour_total[:, :, hour - 3] = costs[:, :]  # we replicate the hourly data
-
 
     # construct the 3d diagram
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)
@@ -580,7 +596,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -602,10 +618,10 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
             p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
@@ -621,12 +637,12 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
-    print('evaluation')
-    print(cf.csv_file_name)
-    total_penalty = evaluation(cf, cf.csv_file_name)
-    print(int(np.sum(np.sum(total_penalty))))
-    print(total_penalty.astype('int'))
-    print(np.sum(total_penalty.astype('int') == 1440))
+    # print('evaluation')
+    # print(cf.csv_file_name)
+    # total_penalty = evaluation(cf, cf.csv_file_name)
+    # print(int(np.sum(np.sum(total_penalty))))
+    # print(total_penalty.astype('int'))
+    # print(np.sum(total_penalty.astype('int') == 1440))
 
 
 def A_star_fix_missing(cf):
@@ -640,10 +656,14 @@ def A_star_fix_missing(cf):
     jobs = []
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     multiprocessing.log_to_stderr()
-    #for model_number in range(10):
-    for model_number in cf.model_number:
+    if cf.day_list[-1] < 6:
+        name_len = 62
+    else:
+        name_len = 61
+
+    for model_number in range(10):
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         for day in cf.day_list:
             for goal_city in cf.goal_city_list:
@@ -657,17 +677,18 @@ def A_star_fix_missing(cf):
                     p.start()
         jobs_all.append(jobs)
 
-    #for model_number in range(10):
-    for model_number in cf.model_number:
+    for model_number in range(10):
         cf.model_number = [model_number+1]
-        name_prefix = cf.exp_dir.split('/')[-1][:62] + '['+str(model_number+1) +']'
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
         dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
         cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
         cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
         for j in jobs_all[model_number-1]:
             j.join()
-        # sub_csv is for submission
+        # for submission
         collect_csv_for_submission(cf)
-        # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
+def sigmoid(speeds, cost_time, speed_time, inter_speed):
+    # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
+    return cost_time * (1 / (1 + np.exp(-speed_time * (speeds - inter_speed)))) + 1

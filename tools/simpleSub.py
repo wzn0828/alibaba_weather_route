@@ -131,10 +131,10 @@ def collect_csv_for_submission(cf):
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
             csv_file_name_hour = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
             city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)
@@ -152,7 +152,7 @@ def collect_csv_for_submission_fraction():
     import pandas as pd
     import os
     frames = []
-    csv_file_name ='/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather_____2018-01-11-18-10-09/Train_A_star_search_3D_conservative_wall_wind_15_use_real_weather'
+    csv_file_name ='/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_qLearning_____2018-01-15-18-15-00/Train_reinforcement_learning_solution_multiprocessing_qLearning'
     for day in [1, 2, 3]:
         for goal_city in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
             csv_file_name_hour = csv_file_name + '_day: %d, city: %d' % (day, goal_city) + '.csv'
