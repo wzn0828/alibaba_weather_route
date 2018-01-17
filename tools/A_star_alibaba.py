@@ -637,12 +637,12 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
-    print('evaluation')
-    print(cf.csv_file_name)
-    total_penalty = evaluation(cf, cf.csv_file_name)
-    print(int(np.sum(np.sum(total_penalty))))
-    print(total_penalty.astype('int'))
-    print(np.sum(total_penalty.astype('int') == 1440))
+    # print('evaluation')
+    # print(cf.csv_file_name)
+    # total_penalty = evaluation(cf, cf.csv_file_name)
+    # print(int(np.sum(np.sum(total_penalty))))
+    # print(total_penalty.astype('int'))
+    # print(np.sum(total_penalty.astype('int') == 1440))
 
 
 def A_star_fix_missing(cf):
