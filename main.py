@@ -144,7 +144,7 @@ def adjust_sigmoid_function(cf):
     # for sig_pair in [(1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1.5, 12), (1.5, 13), (1.5, 14), (1.5, 15),
     #                  (1.5, 16), (2, 13), (2, 14), (2, 15), (2, 16), (3, 13), (3, 14), (3, 15), (3, 15.5), (4, 14),
     #                  (4, 14.5), (4, 15), (4, 15.5)]:
-    for sig_pair in [(3, 13), (3, 14), (3, 14.5), (3, 15), (4, 13),(4, 14), (4, 14.5), (4, 15), (5, 14.5), (5,15)]:
+    for sig_pair in [(3, 14.5), (4, 14.5), (3, 13), (3, 14), (3, 15), (4, 13), (4, 14),  (4, 15), (5, 14.5), (5,15)]:
         cf.costs_sig_speed_time = sig_pair[0]
         cf.costs_sig_inter_speed = sig_pair[1]
 
@@ -207,9 +207,9 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-    process(cf)
+    # process(cf)
     # adjust_cost_exponential(cf)
-    # adjust_sigmoid_function(cf)
+    adjust_sigmoid_function(cf)
 
     # End Time
     end_time = time.time()

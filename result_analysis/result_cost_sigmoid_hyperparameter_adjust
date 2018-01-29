@@ -559,3 +559,64 @@ evaluation
  [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
 30
 A_star_search_3D_multiprocessing
+
+
+
+/home/stevenwudi/anaconda3/bin/python3.5 /home/wzn/PycharmProjects/alibaba_weather_route/main.py
+
+ > Start Time:
+   Mon, 29 Jan 2018-01-29 15:12:39
+/home/wzn/PycharmProjects/alibaba_weather_route/config/wzn.py
+
+###########################
+ > Save Path = "/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-01-29-15-12-39"
+###########################
+
+A_star_search_3D_multiprocessing
+Finish writing submission, using 586.55 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_3_interSpeed_14.5_model_mean_[1-10]_____2018-01-29-15-12-39/Train_costsSigmoid_speedTime_3_interSpeed_14.5_model_mean_[1-10].csv
+47024
+[[ 366  200  192  362  440  674  632 1018  128  202]
+ [ 366  200  192  362  440  674  624  990  128  202]
+ [ 672  718  678 1440 1440 1440 1440 1440  362  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+25
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1240 1242    0 1238    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 629.74 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_4_interSpeed_14.5_model_mean_[1-10]_____2018-01-29-15-22-30/Train_costsSigmoid_speedTime_4_interSpeed_14.5_model_mean_[1-10].csv
+46784
+[[ 366  200  192  362  440  674  624 1018  128  202]
+ [ 366  200  192  362  440  674  624  978  128  202]
+ [ 526  718  670 1440 1440 1440 1440 1440  296  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+25
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1240 1242    0 1238    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+
+
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_3_interSpeed_13_model_mean_[1-10]_____2018-01-29-15-33-04/Train_costsSigmoid_speedTime_3_interSpeed_13_model_mean_[1-10].csv
+49836
+[[ 366  200  216  460  472  762 1440 1018  128  202]
+ [ 516  200  228  366  440  674  628 1006  128  202]
+ [ 718  718  586 1440 1440 1440 1440 1440  722 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+27
+[[   0    0    0    0    0    0 1310    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1242 1026    0 1026    0    0 1500]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
