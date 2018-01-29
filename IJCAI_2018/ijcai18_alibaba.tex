@@ -67,10 +67,6 @@ Shenzhen University\thanks{Shenzhen Key Lab of Advanced Telecommunication and In
 
 \section{Introduction}
 
-The {\it IJCAI--18 Proceedings} will be printed from electronic
-manuscripts submitted by the authors. These must be PDF ({\em Portable
-Document Format}) files formatted for 8-1/2$''$ $\times$ 11$''$ paper.
-
 
 
 \subsection{A* search algorithm}
@@ -118,7 +114,17 @@ Typical implementation of A* use a priority queue to perform the repeated select
 \subsubsection{A* 3D: risky scheme}
 \subsubsection{A* 3D: conservative scheme}
 
+\section{Deterministic environment}
 
+\section{Expected Sarsa}
+
+\section{Dyna} ~\cite{sutton1990integrated}
+
+\section{Prioritized Sweeping} ~\cite{peng1993efficient}
+
+\section{Eligibility traces} 
+Eligibility traces in conjunction with Temporal Difference (TD) errors provide an efficient, incremental way of shifting and choosing between Monte Carlo (MC) and TD methods. Methods using eligibility traces require more computation than one-step methods, but in return they offer significantly faster learning, particularly when rewards are delayed by many steps. However, in off-line applications in which data can be generated cheaply, perhaps from an inexpensive simulation, then it often does not pay to use eligibility traces. In these cases the objective is not to get more out of a limited amount of data, but simply to process as much data as possible as quickly as possible. In these cases the speedup per datum due to traces is typically not worth their computational cost. Moreover, the tabular case is in some sense the worst cast for the computational complexity of eligibility traces~\cite{sutton2018reinforcement}.
+In our problem setting, which is an off-line tabular setting, we leave out the method of eligibility traces.
 
 \begin{table}[t]
 \small
