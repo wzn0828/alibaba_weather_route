@@ -24,7 +24,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 10
+num_threads                 = 3
 
 ########################################################################################################################
 # A star search
@@ -53,7 +53,7 @@ costs_exponential           = True  #costs
 costs_sigmoid               = False  # sigmoid Costs
 costs_exponential_upper     = 16
 costs_exponential_lower     = 13
-costs_exp_basenumber        = 10
+costs_exp_basenumber        = 100
 
 use_real_weather            = False
 real_hour                   = 3
@@ -77,7 +77,7 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = True
@@ -102,15 +102,15 @@ epsilon                         = 0.01
 # the following are the parameters for second round update
 epsilon_start                   = 0.1
 epsilon_end                     = 0.01
-alpha_start                     = 0.1
-alpha_end                       = 0.01
+alpha_start                     = 0.01
+alpha_end                       = 0.001
 
 qLearning                       = True  # flag for qLearning
 double                          = True  # flag for double qLearning
 expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
 plus                            = False   # Dyna Plus algorithm
-optimal_length_relax            = 1.5
+optimal_length_relax            = 10
 heuristic                       = False
 increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson
 

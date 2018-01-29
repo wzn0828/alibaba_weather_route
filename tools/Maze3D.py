@@ -69,12 +69,8 @@ class Maze_3D:
         terminal_flag = False
         # the time always goes forward
         t += 1
-        if t >= self.TIME_LENGTH - 1:
-            # It will be a very undesirable state, we should stay here
-            t = self.TIME_LENGTH - 1
-            reward = self.reward_obstacle
-            terminal_flag = True
-            return [x, y, t], reward, terminal_flag
+        if t >= self.TIME_LENGTH:
+            assert "OMG this should never happened, check bug in the code!"
 
         if action == self.ACTION_UP:
             x = max(x - 1, 0)
@@ -101,8 +97,6 @@ class Maze_3D:
             if current_loc_time_wind <= 13:
                 reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
 
-            # if current_loc_time_wind <= 13:
-            #     reward_move = 0
             elif current_loc_time_wind >= 16:
                 reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
             else:
@@ -134,11 +128,11 @@ class Maze_3D:
 
     def in_bound(self, id):
         (x, y, t) = id
-        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and 0 < t <= self.TIME_LENGTH
+        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and t < self.TIME_LENGTH
 
     def lower_cone(self, id):
         dist_manhantan = self.heuristic_fn(id, self.GOAL_STATES)
-        time_remain = self.TIME_LENGTH + 1 - id[2]
+        time_remain = self.TIME_LENGTH - 1 - id[2]
         return time_remain >= dist_manhantan
 
     def neighbors(self, id):
@@ -148,9 +142,9 @@ class Maze_3D:
         # up, down, left, right, stay
         results = [(x - 1, y, t + 1), (x + 1, y, t + 1), (x, y - 1, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
         # upper cone means the space allowed to traverse from starting point
-        results = filter(self.in_bound, results)
+        results = list(filter(self.in_bound, results))
         # lower cone means the space allowed to explore in order to reach the goal
-        results = filter(self.lower_cone, results)
+        results = list(filter(self.lower_cone, results))
         # we also need within the wall wind limit
         # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
         return results
