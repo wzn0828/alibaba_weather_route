@@ -34,7 +34,7 @@ def plot_real_wind(cf):
             for idx in range(wind_real_df_day_hour.index.__len__()):
                 x_loc = int(wind_real_df_day_hour.iloc[idx]['xid']) - 1
                 y_loc = int(wind_real_df_day_hour.iloc[idx]['yid']) - 1
-                wind = int(wind_real_df_day_hour.iloc[idx]['wind'])
+                wind = np.float32(wind_real_df_day_hour.iloc[idx]['wind'])
                 wind_real_day_hour[x_loc, y_loc] = wind
 
             np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy'%(d_unique, h_unique)),wind_real_day_hour)
@@ -66,7 +66,7 @@ def plt_forecast_wind_train(cf):
                     for idx in range(wind_real_df_model_day_hour.index.__len__()):
                         x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
                         y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
-                        wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+                        wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
                         wind_real_day_hour[x_loc, y_loc] = wind
 
                     np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)),
@@ -83,7 +83,7 @@ def plt_forecast_wind_train_workers(cf, wind_real_df_model_day_hour, m_unique, d
     for idx in range(wind_real_df_model_day_hour.index.__len__()):
         x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
         y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
-        wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+        wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
         wind_real_day_hour[x_loc, y_loc] = wind
 
     np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)),wind_real_day_hour)
@@ -136,7 +136,7 @@ def plt_forecast_wind_test_workers(cf, wind_real_df_model_day_hour, m_unique, d_
     for idx in range(wind_real_df_model_day_hour.index.__len__()):
         x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
         y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
-        wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+        wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
         wind_real_day_hour[x_loc, y_loc] = wind
 
     np.save(os.path.join(cf.wind_save_path, 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' %
@@ -204,7 +204,7 @@ def plt_forecast_wind_test(cf):
                 for idx in range(wind_real_df_model_day_hour.index.__len__()):
                     x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
                     y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
-                    wind = int(wind_real_df_model_day_hour.iloc[idx]['wind'])
+                    wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
                     wind_real_day_hour[x_loc, y_loc] = wind
 
                 np.save(os.path.join(cf.wind_save_path, 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' %

@@ -1,3 +1,5 @@
+import imp
+import os, sys
 import argparse
 import time
 from datetime import datetime
@@ -5,17 +7,17 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 
-from config.configuration import Configuration
+from config.configuration import Configuration, Logger
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing
-from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
-from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing
-from FCN.FCN import fully_convolutional_wind_pred
+from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 
 
 def process(cf):
+    ### Following is the plotting alogrithm #############
     if cf.plot_real_wind:
         print('plot_real_wind')
         plot_real_wind(cf)
@@ -35,6 +37,7 @@ def process(cf):
         print('Draw weather')
         plot_all_wind(cf)
 
+    ### Following is the A Star alogrithm #############
     if cf.A_star_search_2D:
         print('A_star_search_2D')
         A_star_2d_hourly_update_route(cf)
@@ -48,18 +51,28 @@ def process(cf):
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing(cf)
 
+    if cf.A_star_search_3D_multiprocessing_multicost:
+        print('A_star_search_3D_multiprocessing')
+        A_star_search_3D_multiprocessing_multicost(cf)
+
+    if cf.A_star_fix_missing:
+        print('A_star_fix_missing')
+        A_star_fix_missing(cf)
+
+    ### Following is the RL alogrithm #############
     if cf.reinforcement_learning_solution:
         print('reinforcement_learning_solution')
         reinforcement_learning_solution(cf)
+
+    if cf.reinforcement_learning_solution_new:
+        print('reinforcement_learning_solution_new')
+        reinforcement_learning_solution_new(cf)
 
     if cf.reinforcement_learning_solution_multiprocessing:
         print("reinforcement_learning_solution_multiprocessing")
         reinforcement_learning_solution_multiprocessing(cf)
 
-    if cf.fully_convolutional_wind_pred:
-        print('fully_convolutional_wind_pred')
-        fully_convolutional_wind_pred(cf)
-
+    ### Following is the submission script #############
     if cf.submission_dummy:
         print("submission")
         submit_phase(cf)
@@ -68,11 +81,13 @@ def process(cf):
         print('collect_csv_for_submission_fraction')
         collect_csv_for_submission_fraction(cf)
 
+    ### Following is the evaluation script #############
     if cf.evaluation:
         print('evaluation')
-        total_penalty = evaluation(cf, cf.csv_for_evaluation)
+        total_penalty, crash_time_stamp = evaluation(cf, cf.csv_for_evaluation)
         print(int(np.sum(np.sum(total_penalty))))
         print(total_penalty.astype('int'))
+        print(crash_time_stamp.astype('int'))
         print(np.sum(total_penalty.astype('int') == 1440))
 
     if cf.evaluation_plot:
@@ -83,7 +98,7 @@ def process(cf):
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument('-c', '--config_path', type=str, default='/home/stevenwudi/PycharmProjects/alibaba_weather_route/config/diwu.py', help='Configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default='./config/diwu.py', help='Configuration file')
 
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'
@@ -98,6 +113,11 @@ def main():
     configurationPATH(cf)
 
     # Train /test/predict with the network, depending on the configuration
+    # for i in range(7, 11):
+    #     cf.day_list = list([i])
+    #     process(cf)
+    # cf.day_list = list(range(6, 11))
+    # collect_csv_for_submission(cf)
     process(cf)
 
     # End Time
@@ -105,6 +125,9 @@ def main():
     print('\n > End Time:')
     print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
     print('\n   ET: ' + HMS(end_time - start_time))
+
+
+
 
 
 if __name__ == "__main__":

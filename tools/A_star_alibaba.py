@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
-from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D
+from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
+from tools.evaluation import evaluation, evaluation_plot
+from decimal import Decimal
 
 
 
@@ -181,37 +183,46 @@ def A_star_search_3D(cf):
 
     start_time = timer()
     for day in cf.day_list:
-        wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length)))
+        wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.total_hours)))
         for hour in range(3, 21):
-            if day < 6:  # meaning this is a training day
+            if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-
             else:
                 wind_real_day_hour_temp = []
                 for model_number in cf.model_number:
                     # we average the result
-                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                    if day < 6:
+                        weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                    else:
+                        weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+
                     wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
                     wind_real_day_hour_temp.append(wind_real_day_hour_model)
                 wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
                 wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+
             # we replicate the weather for the whole hour
             wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
             if cf.risky:
                 wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
             elif cf.wind_exp:
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+                wind_real_day_hour[
+                    wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+                wind_real_day_hour[
+                    wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(
+                    wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype(
+                    'int')  # with int op. if will greatly enhance the computatinal speed
             else:
-                wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+                wind_real_day_hour[
+                    wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
                 wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
 
-            wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
+            wind_real_day_hour_total[:, :, hour - 3] = wind_real_day_hour[:, :]  # we replicate the hourly data
 
         # construct the 3d diagram
-        diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
+        diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)
         diagram.weights = wind_real_day_hour_total
 
         for goal_city in cf.goal_city_list:
@@ -223,7 +234,7 @@ def A_star_search_3D(cf):
             start_loc_3D = (start_loc[0], start_loc[1], 0)
             # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
             # we say we have reached the goal
-            goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
+            goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length + 1)]
             came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
 
             route_list = []
@@ -244,7 +255,7 @@ def A_star_search_3D(cf):
             if cf.debug_draw:
                 for hour in range(3, 21):
                     if day < 6:  # meaning this is a training day
-                        weather_name = 'real_wind_day_%d_hour_%d.np.npy' % (day, hour)
+                        weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                         wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
                     else:
                         wind_real_day_hour_temp = []
@@ -291,7 +302,7 @@ def A_star_search_3D(cf):
 
             print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' %
                   (day, goal_city, len(route_list), timer() - city_start_time))
-            sub_df = a_star_submission_3d(day, goal_city, start_loc, goal_loc, route_list)
+            sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
             sub_csv = pd.concat([sub_csv, sub_df], axis=0)
 
     sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
@@ -299,6 +310,110 @@ def A_star_search_3D(cf):
 
 
 def A_star_3D_worker(cf, day, goal_city):
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.total_hours)))
+    for hour in range(3, 21):
+        if cf.use_real_weather:
+            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+        else:
+            wind_real_day_hour_temp = []
+            for model_number in cf.model_number:
+                # we average the result
+                if day < 6:  # meaning this is a training day
+                    weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+                else:
+                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
+
+                wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour_temp.append(wind_real_day_hour_model)
+            wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
+            wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
+
+        # we replicate the weather for the whole hour
+        wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
+        if cf.risky:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+        elif cf.wind_exp:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+        else:
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
+
+        wind_real_day_hour_total[:, :, hour-3] = wind_real_day_hour[:, :]  # we replicate the hourly data
+
+    # construct the 3d diagram
+    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)
+    diagram.weights = wind_real_day_hour_total
+
+    city_start_time = timer()
+    start_loc = (int(city_data_df.iloc[0]['xid']) - 1, int(city_data_df.iloc[0]['yid']) - 1)
+    goal_loc = (int(city_data_df.iloc[goal_city]['xid']) - 1, int(city_data_df.iloc[goal_city]['yid']) - 1)
+    # initiate a star 3d search
+    # start location is the first time
+    start_loc_3D = (start_loc[0], start_loc[1], 0)
+    # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
+    # we say we have reached the goal
+    goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
+    if cf.search_method == 'a_star_search_3D':
+        came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    elif cf.search_method == 'dijkstra':
+        came_from, cost_so_far, current = dijkstra(diagram, start_loc_3D, goal_loc_3D)
+
+    route_list = []
+    current_loc = list(set(goal_loc_3D) & set(current))
+
+    if not len(current_loc):
+        print('We cannot reach the goal city: %d, continue!' % goal_city)
+        return
+
+    find_loc = current_loc[0]
+    while came_from[find_loc] is not None:
+        prev_loc = came_from[find_loc]
+        route_list.append(prev_loc)
+        find_loc = prev_loc
+
+    # we reverse the route for plotting and saving
+    route_list.reverse()
+    sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
+    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+    sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
+    print('Using model: %s, we reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!'
+          % (str(cf.model_number), day, goal_city, len(route_list), timer() - city_start_time))
+    sys.stdout.flush()
+    return
+
+
+def A_star_search_3D_multiprocessing(cf):
+    """
+    This is a 3D A star algorithm:
+    The whole diagram is expanded with a third dimension T which has length 18*30 = 540
+    :param cf:
+    :return:
+    """
+    start_time = timer()
+    jobs = []
+    # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
+    # multiprocessing.
+    #multiprocessing.log_to_stderr(logging.DEBUG)
+    multiprocessing.log_to_stderr()
+    for day in cf.day_list:
+        for goal_city in cf.goal_city_list:
+            p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
+            jobs.append(p)
+            p.start()
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+    # sub_csv is for submission
+    collect_csv_for_submission(cf)
+    print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
+
+
+def A_star_3D_worker_multicost(cf, day, goal_city):
     # get the city locations
     if cf.debug_draw:
         # draw figure maximum
@@ -314,12 +429,14 @@ def A_star_3D_worker(cf, day, goal_city):
             if cf.use_real_weather:
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour = np.round(wind_real_day_hour, 2)
             else:
                 wind_real_day_hour_temp = []
                 for model_number in cf.model_number:
                     # we average the result
                     weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
                     wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    wind_real_day_hour_model = np.round(wind_real_day_hour_model, 2)
                     wind_real_day_hour_temp.append(wind_real_day_hour_model)
                 wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
                 wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
@@ -329,25 +446,74 @@ def A_star_3D_worker(cf, day, goal_city):
                 # we average the result
                 weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
                 wind_real_day_hour_model = np.load(os.path.join(cf.wind_save_path, weather_name))
+                wind_real_day_hour_model = np.round(wind_real_day_hour_model, 2)
                 wind_real_day_hour_temp.append(wind_real_day_hour_model)
             wind_real_day_hour_temp = np.asarray(wind_real_day_hour_temp)
             wind_real_day_hour = np.mean(wind_real_day_hour_temp, axis=0)
-        # we replicate the weather for the whole hour
-        wind_real_day_hour[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
-        if cf.risky:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
-        elif cf.wind_exp:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] = np.exp(wind_real_day_hour[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
-        else:
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-            wind_real_day_hour[wind_real_day_hour < cf.wall_wind] += 1
 
-        wind_real_day_hour_total[:, :, (hour-3)*30:(hour-2)*30] = wind_real_day_hour[:, :, np.newaxis]  # we replicate the hourly data
+        # print(wind_real_day_hour)
+        # delta = 0.1
+        # min = wind_real_day_hour.min()
+        # max = wind_real_day_hour.max()
+        # data = min+delta
+        # counts = []
+        # datas = []
+        # while data < max:
+        #     counts.append(int(((data-delta <= wind_real_day_hour) & (wind_real_day_hour < data)).sum()))
+        #     datas.append(data)
+        #     data += delta
+        # print(np.asarray(counts).sum())
+        # plt.plot(datas, counts)
+        # plt.show()
+
+        # --------set cost ---------#
+        # we replicate the weather for the whole hour
+        costs = wind_real_day_hour.copy()
+        if cf.risky or cf.wind_exp or cf.conservative:
+            costs[wind_real_day_hour >= cf.wall_wind] = cf.strong_wind_penalty_coeff
+        if cf.risky:
+            costs[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
+        elif cf.wind_exp:
+            costs[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] = np.exp(costs[wind_real_day_hour < cf.wall_wind]).astype('int')  # with int op. if will greatly enhance the computatinal speed
+        elif cf.conservative:
+            costs[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+            costs[wind_real_day_hour < cf.wall_wind] += 1
+        elif cf.costs_exponential:
+            costs.dtype = 'float64'
+            costs[wind_real_day_hour <= 13] = np.float64(cf.costs_exp_basenumber ** (0))
+            costs[wind_real_day_hour >= 16] = np.float64(cf.costs_exp_basenumber ** (3))
+            costs[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(
+                cf.costs_exp_basenumber ** (wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
+        elif cf.costs_sigmoid:
+            # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
+            costs.dtype = 'float64'
+            # filename = 'costs_sigmoid_modelNumber_%s_day_%d_hour_%d_speedTime_%.2f_interSpeed_%.2f.npy' % (
+            #     str(cf.model_number), day, hour, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            # pathName = os.path.join(cf.costs_sig_path, filename)
+            # if os.path.exists(pathName):
+            #     # ad_cost = np.load(pathName)
+            #     if (np.load(pathName)).shape == wind_real_day_hour.shape:
+            #         costs = np.load(pathName)
+            #     else:
+            #         costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            # else:
+            #     costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            #     np.save(pathName, costs)
+            costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+
+            # print(costs)
+
+
+        # print(costs[wind_real_day_hour <= 14])
+        # print(np.asarray(costs[np.logical_and(14 < wind_real_day_hour, wind_real_day_hour < 15.5)]))
+        # print(costs[wind_real_day_hour >= 15.5])
+
+        wind_real_day_hour_total[:, :, hour - 3] = costs[:, :]  # we replicate the hourly data
 
     # construct the 3d diagram
-    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind)
+    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance)
     diagram.weights = wind_real_day_hour_total
 
     city_start_time = timer()
@@ -358,8 +524,11 @@ def A_star_3D_worker(cf, day, goal_city):
     start_loc_3D = (start_loc[0], start_loc[1], 0)
     # the goal location spans from all the time stamps--> as long as we reach the goal in any time stamp,
     # we say we have reached the goal
-    goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length)]
-    came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    goal_loc_3D = [(goal_loc[0], goal_loc[1], t) for t in range(cf.time_length + 1)]
+    if cf.search_method == 'a_star_search_3D':
+        came_from, cost_so_far, current = a_star_search_3D(diagram, start_loc_3D, goal_loc_3D)
+    elif cf.search_method == 'dijkstra':
+        came_from, cost_so_far, current = dijkstra(diagram, start_loc_3D, goal_loc_3D)
 
     route_list = []
     current_loc = list(set(goal_loc_3D) & set(current))
@@ -427,12 +596,12 @@ def A_star_3D_worker(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
 
-def A_star_search_3D_multiprocessing(cf):
+def A_star_search_3D_multiprocessing_multicost(cf):
     """
     This is a 3D A star algorithm:
     The whole diagram is expanded with a third dimension T which has length 18*30 = 540
@@ -444,20 +613,82 @@ def A_star_search_3D_multiprocessing(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     # multiprocessing.
     #multiprocessing.log_to_stderr(logging.DEBUG)
+
     multiprocessing.log_to_stderr()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
+
+            if day == 3 and goal_city == 6:
+                continue
+            if day == 3 and goal_city == 8:
+                continue
+
+            p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
             p.start()
 
     # waiting for the all the job to finish
     for j in jobs:
         j.join()
+
     # sub_csv is for submission
     collect_csv_for_submission(cf)
     # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
     # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
+    print('evaluation')
+    print(cf.csv_file_name)
+    total_penalty = evaluation(cf, cf.csv_file_name)
+    print(int(np.sum(np.sum(total_penalty))))
+    print(total_penalty.astype('int'))
+    print(np.sum(total_penalty.astype('int') == 1440))
 
+
+def A_star_fix_missing(cf):
+    """
+    This is a 3D A star algorithm for fixing missing model, day, city because of the memory issue
+    :param cf:
+    :return:
+    """
+    start_time = timer()
+    jobs_all = []
+    jobs = []
+    # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
+    multiprocessing.log_to_stderr()
+    if cf.day_list[-1] < 6:
+        name_len = 62
+    else:
+        name_len = 61
+
+    for model_number in range(10):
+        cf.model_number = [model_number+1]
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
+        dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
+        for day in cf.day_list:
+            for goal_city in cf.goal_city_list:
+                csv_file_name = os.path.join(cf.savepath, dir_name[0], name_prefix+'_day: %d, city: %d' % (day, goal_city) + '.csv')
+                cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
+                cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
+                if not os.path.isfile(csv_file_name):
+                    p = multiprocessing.Process(target=A_star_3D_worker, args=(cf, day, goal_city))
+                    jobs.append(p)
+                    print("starting %s" % csv_file_name.split('/')[-1])
+                    p.start()
+        jobs_all.append(jobs)
+
+    for model_number in range(10):
+        cf.model_number = [model_number+1]
+        name_prefix = cf.exp_dir.split('/')[-1][:name_len] + '['+str(model_number+1) +']'
+        dir_name = [x for x in os.listdir(cf.savepath) if len(x) >= len(name_prefix) and x[:len(name_prefix)] == name_prefix]
+        cf.exp_dir = os.path.join(cf.savepath, dir_name[0])
+        cf.csv_file_name = os.path.join(cf.exp_dir, name_prefix + '.csv')
+        for j in jobs_all[model_number-1]:
+            j.join()
+        # for submission
+        collect_csv_for_submission(cf)
+    print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
+
+def sigmoid(speeds, cost_time, speed_time, inter_speed):
+    # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
+    return cost_time * (1 / (1 + np.exp(-speed_time * (speeds - inter_speed)))) + 1

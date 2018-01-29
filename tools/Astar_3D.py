@@ -5,16 +5,22 @@ from mpl_toolkits.mplot3d import proj3d
 
 
 class GridWithWeights_3D():
-    def __init__(self, width, height, time_length, wall_wind):
+    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance):
         self.width = width
         self.height = height
         self.time_length = time_length
         self.wall_wind = wall_wind
         self.weights = []
+        self.hourly_travel_distance = hourly_travel_distance
 
-    def in_bounds(self, id):
+    def upper_cone(self, id):
         (x, y, t) = id
-        return 0 <= x < self.width and 0 <= y < self.height and 0 <= t < self.time_length
+        return 0 <= x < self.width and 0 <= y < self.height and 0 < t < self.time_length
+
+    def lower_cone(self, id):
+        dist_manhantan = heuristic(id, self.goal)
+        time_remain = self.time_length - id[2]
+        return time_remain >= dist_manhantan
 
     def in_wind(self, id):
         (x, y, t) = id
@@ -24,14 +30,30 @@ class GridWithWeights_3D():
         (x, y, t) = id
         # Voila, time only goes forward, but we can stay in the same position
         results = [(x + 1, y, t + 1), (x, y - 1, t + 1), (x - 1, y, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
-        # if (x + y) % 2 == 0 : results.reverse()  # aesthetics
-        results = filter(self.in_bounds, results)
+        # upper cone means the space allowed to traverse from starting point
+        results = filter(self.upper_cone, results)
+        # lower cone means the space allowed to explore in order to reach the goal
+        results = filter(self.lower_cone, results)
         # we also need within the wall wind limit
         # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
         return results
 
     def cost(self, to_node):
-        return self.weights[to_node]
+        weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
+        cost = self.weights[weight_idx]
+
+        # remainder = np.mod(to_node[2], self.hourly_travel_distance)
+        # if 25 <= remainder:
+        #     cost += 0.1*(remainder-25)
+        # elif remainder <= 5:
+        #     cost += 0.1*(5-remainder)
+
+        # remainder = np.mod(to_node[2], self.hourly_travel_distance)
+        # if 25 <= remainder or remainder <= 5:
+        #     if cost < 2:
+        #         cost = np.exp(cost-1)
+
+        return cost
 
 
 class PriorityQueue:
@@ -76,6 +98,7 @@ def a_star_search_3D(graph, start, goals):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
+    graph.goal = goals[0]
 
     while not frontier.empty():
         current = frontier.get()
@@ -96,14 +119,44 @@ def a_star_search_3D(graph, start, goals):
     return came_from, cost_so_far, [current]
 
 
-def walk_final_grid_go_to(START_STATE, GOAL_STATES, came_from, final_goal_time, include_all=False):
+def dijkstra(graph, start, goals):
+    """
+    :param graph:
+    :param start: 3D, (x,y,0)
+    :param goal: 2D, spam 3D space
+    :return:
+    """
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+    graph.goal = goals[0]
+
+    while not frontier.empty():
+        current = frontier.get()
+
+        # we change to in because the goals are in time span now
+        if current in goals:
+            break
+
+        for next in graph.neighbors(current):
+            # print(str(current) + '   ->   ' + str(next))
+            new_cost = cost_so_far[current] + graph.cost(next)
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost
+                frontier.put(next, priority)
+                came_from[next] = current
+    return came_from, cost_so_far, [current]
+
+def walk_final_grid_go_to(START_STATE, came_from, final_goal_time, include_all=False):
     """
     A helper function to walk the whole grid world
     :return:
     """
     go_to_all = {}
-    #GOAL_STATE = set(GOAL_STATES).intersection(came_from.keys())
-    #currentState = list(GOAL_STATE)[0]
     currentState = final_goal_time
     steps = 0
     while not currentState == START_STATE:

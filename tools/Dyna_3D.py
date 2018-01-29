@@ -1,6 +1,5 @@
 import numpy as np
 import heapq
-import random
 import itertools
 
 
@@ -47,13 +46,14 @@ class Dyna_3D:
                  planningSteps=5,
                  expected=False,
                  qLearning=False,
+                 double=False,
                  alpha=0.5,
                  plus=False,
                  kappa=1e-4,
                  priority=False,
                  ucb=False,
                  theta=1e-4,
-                 policy_init=None,
+                 policy_init=[],
                  optimal_length_relax=1.2,
                  heuristic=False,
                  increase_epsilon=0):
@@ -74,12 +74,21 @@ class Dyna_3D:
         self.expected = expected
         # Q-learning
         self.qlearning = qLearning
+        # Double Q-learning
+        self.double = double
         if self.qlearning:
             self.name = 'Dyna-Q'
+
         elif self.expected:
             self.name = 'DynaExpectedSarsa'
         else:
             self.name = 'Dyna-Sarsa'
+
+        if self.double:
+            self.name += '_Double'
+            self.double_first = True  # True means updating the first state action value, False will update the second
+            self.stateActionValues2 = np.zeros((maze.WORLD_HEIGHT, maze.WORLD_WIDTH, maze.TIME_LENGTH, len(maze.actions)))
+
         # discount
         self.gamma = gamma
         # probability for exploration
@@ -128,7 +137,7 @@ class Dyna_3D:
         if self.ucb:
             self.time = 0
             self.name += '_UCB'
-        self.full_name = self.name + '_planning:_%d' % planningSteps
+        self.name = self.name + '_planning:_%d' % planningSteps
 
     def insert(self, priority, state, action):
         """
@@ -256,23 +265,31 @@ class Dyna_3D:
         :param state:
         :return:
         """
-        if np.random.binomial(1, self.epsilon) == 1:
-            action = np.random.choice(self.maze.actions)
-            # print(' Epsilon greedy effective. State: ' + str(state) + ', action: ' + str(action))
-            return action
-
         if len(self.policy_init):
             a_star_traj = self.policy_init[self.a_star_model]
             if tuple(state) in a_star_traj.keys():
                 go_to = a_star_traj[tuple(state)]
-                if type(go_to) == list:
-                    go_to = random.choice(go_to)
-                return self.return_action(tuple(state), go_to)
+                # if type(go_to) == list:
+                #     go_to = random.choice(go_to)
+                return self.return_action(tuple(state), go_to), [], []
 
-        # we will execute the following if action was not selected by
-        # (1) epsilon greedy (2) no Astar policy
-        values = self.stateActionValues[state[0], state[1], state[2], :]
-        return np.random.choice([action for action, value in enumerate(values) if value == np.max(values)])
+        else:
+            # we follow an epsilon greedy alorithm and requires valid neighbours
+            viable_neighbours = self.maze.neighbors(state)
+            viable_actions = self.maze.viable_actions(state, viable_neighbours)
+
+            if np.random.binomial(1, self.epsilon) == 1:
+                action = np.random.choice(viable_actions)
+            else:
+                if not self.double:
+                    values = self.stateActionValues[state[0], state[1], state[2], viable_actions]
+                else:
+                    values = [item1 + item2 for item1, item2 in
+                              zip(self.stateActionValues[state[0], state[1], state[2], viable_actions], self.stateActionValues2[state[0], state[1], state[2], viable_actions])]
+
+                action = viable_actions[self.rand.choice([action for action, value in enumerate(values) if value == np.max(values)])]
+
+            return action, viable_actions, viable_neighbours
 
     def play(self, environ_step=False):
         """
@@ -289,38 +306,77 @@ class Dyna_3D:
         terminal_flag = False
         while tuple(currentState) not in self.maze.GOAL_STATES and not terminal_flag:
             ######################## Interaction with the environment ###############################
-            # track the steps
-            # if steps % 1000 == 0:
-            #     print(steps)
             steps += 1
             # get action
-            if steps == 1 or self.qlearning:
-                currentAction = self.chooseAction(currentState)
+            if steps == 1 or self.qlearning or len(self.policy_init):
+                currentAction, viable_actions, viable_neighbours = self.chooseAction(currentState)
             # take action
             newState, reward, terminal_flag = self.maze.takeAction(currentState, currentAction)
 
+            viable_neighbours = self.maze.neighbors(newState)
+            viable_actions = self.maze.viable_actions(newState, viable_neighbours)
             if self.qlearning:
                 # Q-Learning update
-                action_value_delta = reward + self.gamma * np.max(self.stateActionValues[newState[0], newState[1], newState[2], :]) - \
-                                     self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
+                if not self.double:
+                    action_value_delta = reward + self.gamma * np.max(self.stateActionValues[newState[0], newState[1], newState[2], viable_actions]) - \
+                                         self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
+                else:
+                    # the random seed only generates once here (during prioritized sweeping)
+                    if self.rand.binomial(1, 0.5) == 1:
+                        self.double_first = True
+                        currentStateActionValues = self.stateActionValues
+                        anotherStateActionValues = self.stateActionValues2
+                    else:
+                        self.double_first = False
+                        currentStateActionValues = self.stateActionValues2
+                        anotherStateActionValues = self.stateActionValues
+                    bestAction = viable_actions[np.argmax(currentStateActionValues[newState[0], newState[1], newState[2], viable_actions])]
+                    targetValue = anotherStateActionValues[newState[0], newState[1], newState[2], bestAction]
+                    action_value_delta = reward + self.gamma * targetValue - currentStateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
             else:
-                # sarsa or expected sarsa update
+                # sarsa update
                 if not self.expected:
-                    newAction = self.chooseAction(newState)
+                    newAction, viable_actions, viable_neighbours = self.chooseAction(newState)
                     valueTarget = self.stateActionValues[newState[0], newState[1], newState[2], newAction]
+                    action_value_delta = reward + self.gamma * valueTarget - self.stateActionValues[
+                        currentState[0], currentState[1], currentState[2], currentAction]
+
                 elif self.expected:
-                    # calculate the expected value of new state
+                    # expected sarsa update
                     valueTarget = 0.0
-                    actionValues = self.stateActionValues[newState[0], newState[1], newState[2], :]
-                    bestActions = np.argwhere(actionValues == np.max(actionValues))
-                    for action in self.maze.actions:
-                        if action in bestActions:
-                            valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(self.maze.actions)) * \
-                                           self.stateActionValues[newState[0], newState[1], newState[2], action]
+                    if not self.double:
+                        actionValues = self.stateActionValues[newState[0], newState[1], newState[2], viable_actions]
+                        bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                        for action in viable_actions:
+                            if action in bestActions:
+                                valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                               self.stateActionValues[newState[0], newState[1], newState[2], action]
+                            else:
+                                valueTarget += self.epsilon / len(viable_actions) * self.stateActionValues[newState[0], newState[1], newState[2], action]
+                        action_value_delta = reward + self.gamma * valueTarget - self.stateActionValues[
+                            currentState[0], currentState[1], currentState[2], currentAction]
+
+                    else:
+                        # the random seed only generates once here (during prioritized sweeping)
+                        if self.rand.binomial(1, 0.5) == 1:
+                            self.double_first = True
+                            currentStateActionValues = self.stateActionValues
+                            anotherStateActionValues = self.stateActionValues2
                         else:
-                            valueTarget += self.epsilon / len(self.maze.actions) * self.stateActionValues[newState[0], newState[1], newState[2], action]
-                # Sarsa update
-                action_value_delta = reward + self.gamma * valueTarget - self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
+                            self.double_first = False
+                            currentStateActionValues = self.stateActionValues2
+                            anotherStateActionValues = self.stateActionValues
+
+                        actionValues = currentStateActionValues[newState[0], newState[1], newState[2], viable_actions]
+                        bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                        for action in viable_actions:
+                            if action in bestActions:
+                                valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                               anotherStateActionValues[newState[0], newState[1], newState[2], action]
+                            else:
+                                valueTarget += self.epsilon / len(viable_actions) * anotherStateActionValues[newState[0], newState[1], newState[2], action]
+
+                        action_value_delta = reward + self.gamma * valueTarget - currentStateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
 
             if not self.priority:
                 self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction] += self.alpha * action_value_delta
@@ -334,7 +390,6 @@ class Dyna_3D:
 
             ######################## feed the model with experience ###############################
             self.feed(currentState, currentAction, newState, reward)
-            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(currentAction) + '->' + str(newState) + ' reward: ' + str(reward))
 
             if not self.qlearning:
                 if not self.expected:
@@ -347,7 +402,7 @@ class Dyna_3D:
             for t in range(0, self.planningSteps):
                 if self.priority:
                     if self.priorityQueue.empty():
-                        # although keep planning until the priority queue becomes empty will converge much faster
+                        #  keep planning until the priority queue becomes empty will converge much faster
                         break
                     else:
                         # get a sample with highest priority from the model
@@ -356,56 +411,133 @@ class Dyna_3D:
                     # sample experience from the model
                     stateSample, actionSample, newStateSample, rewardSample = self.sample()
 
+                viable_neighbours = self.maze.neighbors(newStateSample)
+                viable_actions = self.maze.viable_actions(newStateSample, viable_neighbours)
                 if self.qlearning:
-                    action_value_delta = rewardSample + self.gamma * np.max(self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], :]) - \
-                                         self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+                    if not self.double:
+                        action_value_delta = rewardSample + self.gamma * np.max(self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], viable_actions]) - \
+                                             self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+                    else:
+                        if self.double_first:
+                            currentStateActionValues = self.stateActionValues
+                            anotherStateActionValues = self.stateActionValues2
+                        else:
+                            currentStateActionValues = self.stateActionValues2
+                            anotherStateActionValues = self.stateActionValues
+                        bestAction = viable_actions[np.argmax(currentStateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], viable_actions])]
+                        targetValue = anotherStateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], bestAction]
+                        action_value_delta = rewardSample + self.gamma * targetValue - currentStateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+
                 else:
                     # sarsa or expected sarsa update
                     if not self.expected:
-                        newAction_sample = self.chooseAction(newStateSample)
+                        newAction_sample, viable_actions, viable_neighbours = self.chooseAction(newStateSample)
                         valueTarget = self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], newAction_sample]
+                        action_value_delta = rewardSample + self.gamma * valueTarget - self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+
                     elif self.expected:
-                        # calculate the expected value of new state
                         valueTarget = 0.0
-                        actionValues = self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], :]
-                        bestActions = np.argwhere(actionValues == np.max(actionValues))
-                        for action in self.maze.actions:
-                            if action in bestActions:
-                                valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(self.maze.actions)) * \
-                                               self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], action]
+                        if not self.double:
+                            # calculate the expected value of new state expected sarsa update
+                            actionValues = self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], viable_actions]
+                            bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                            for action in viable_actions:
+                                if action in bestActions:
+                                    valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                                   self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], action]
+                                else:
+                                    valueTarget += self.epsilon / len(viable_actions) * self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], action]
+                                    # Sarsa update
+                            action_value_delta = rewardSample + self.gamma * valueTarget - self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+                        else:
+                            if self.double_first:
+                                currentStateActionValues = self.stateActionValues
+                                anotherStateActionValues = self.stateActionValues2
                             else:
-                                valueTarget += self.epsilon / len(self.maze.actions) * self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2],action]
-                                # Sarsa update
-                    action_value_delta = rewardSample + self.gamma * valueTarget - self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
-                self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+                                currentStateActionValues = self.stateActionValues2
+                                anotherStateActionValues = self.stateActionValues
+
+                            actionValues = currentStateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], viable_actions]
+                            bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                            for action in viable_actions:
+                                if action in bestActions:
+                                    valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                                   anotherStateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], action]
+                                else:
+                                    valueTarget += self.epsilon / len(viable_actions) * anotherStateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], action]
+
+                            action_value_delta = reward + self.gamma * valueTarget - currentStateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
+
+                if not self.double:
+                    self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+                else:
+                    if self.double_first:
+                        self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+                    else:
+                        self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
 
                 if self.priority:
                     # deal with all the predecessors of the sample states
                     # print(stateSample, end=': ')
                     # print('get_predecessor--> len(%d)' % len(self.get_predecessor(stateSample)))
                     for statePre, actionPre, rewardPre in self.get_predecessor(stateSample):
+                        viable_neighbours = self.maze.neighbors(stateSample)
+                        viable_actions = self.maze.viable_actions(stateSample, viable_neighbours)
                         if self.qlearning:
-                            action_value_delta = rewardPre + self.gamma * np.max(
-                                self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], :]) - \
-                                                 self.stateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+                            if not self.double:
+                                action_value_delta = rewardPre + self.gamma * np.max(self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], viable_actions]) - \
+                                                     self.stateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+                            else:
+                                if self.double_first:
+                                    currentStateActionValues = self.stateActionValues
+                                    anotherStateActionValues = self.stateActionValues2
+                                else:
+                                    currentStateActionValues = self.stateActionValues2
+                                    anotherStateActionValues = self.stateActionValues
+                                bestAction = viable_actions[np.argmax(currentStateActionValues[stateSample[0], stateSample[1], stateSample[2], viable_actions])]
+                                targetValue = anotherStateActionValues[stateSample[0], stateSample[1], stateSample[2], bestAction]
+                                action_value_delta = rewardPre + self.gamma * targetValue - currentStateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+
                         else:
                             # sarsa or expected sarsa update
                             if not self.expected:
-                                newAction_sample = self.chooseAction(stateSample)
+                                newAction_sample, viable_actions, viable_neighbours = self.chooseAction(stateSample)
                                 valueTarget = self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], newAction_sample]
+                                action_value_delta = rewardPre + self.gamma * valueTarget - self.stateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+
                             elif self.expected:
                                 # calculate the expected value of new state
                                 valueTarget = 0.0
-                                actionValues = self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], :]
-                                bestActions = np.argwhere(actionValues == np.max(actionValues))
-                                for action in self.maze.actions:
-                                    if action in bestActions:
-                                        valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(self.maze.actions)) * \
-                                                       self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
+                                if not self.double:
+                                    actionValues = self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], viable_actions]
+                                    bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                                    for action in viable_actions:
+                                        if action in bestActions:
+                                            valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                                           self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
+                                        else:
+                                            valueTarget += self.epsilon / len(viable_actions) * self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
+
+                                    action_value_delta = rewardPre + self.gamma * valueTarget - self.stateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+                                else:
+                                    if self.double_first:
+                                        currentStateActionValues = self.stateActionValues
+                                        anotherStateActionValues = self.stateActionValues2
                                     else:
-                                        valueTarget += self.epsilon / len(self.maze.actions) * self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
-                                        # Sarsa update
-                            action_value_delta = rewardPre + self.gamma * valueTarget - self.stateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+                                        currentStateActionValues = self.stateActionValues2
+                                        anotherStateActionValues = self.stateActionValues
+                                    actionValues = currentStateActionValues[stateSample[0], stateSample[1], stateSample[2], viable_actions]
+                                    bestActions = viable_actions[np.argwhere(actionValues == np.max(actionValues))]
+                                    for action in viable_actions:
+                                        if action in bestActions:
+                                            valueTarget += ((1.0 - self.epsilon) / len(bestActions) + self.epsilon / len(viable_actions)) * \
+                                                           anotherStateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
+                                        else:
+                                            valueTarget += self.epsilon / len(viable_actions) * \
+                                                           anotherStateActionValues[stateSample[0], stateSample[1], stateSample[2], action]
+
+                                    action_value_delta = reward + self.gamma * valueTarget - currentStateActionValues[statePre[0], statePre[1], statePre[2], actionPre]
+
                         if self.heuristic:
                             priority = np.abs(action_value_delta) - self.heuristic_fn(statePre,
                                                                                       self.maze.GOAL_STATES) / self.heuristic_const
@@ -420,13 +552,7 @@ class Dyna_3D:
             # check whether it has exceeded the step limit
             if steps > self.maze.maxSteps:
                 print(currentState)
-                # if self.increase_epsilon > 0:
-                #     self.epsilon *= self.increase_epsilon
-                #     self.epsilon = min(1, self.self.epsilon)
-                #     print('eplison now is: ' + str(self.epsilon))
                 break
-
-        #print('Exist in steps: %d' % steps)
         return steps
 
     def heuristic_fn(self, a, b):
@@ -444,29 +570,45 @@ class Dyna_3D:
         (x2, y2, t2) = b[0]
         return abs(x1 - x2) + abs(y1 - y2)
 
-    def checkPath(self, optimal_length):
+    def checkPath(self, optimal_length, set_wind_to_zeros=False):
         """
-        This function only apply to Sutton book Chapter 8.
+        This function check whether the greedy action selection will lead to the goal states
         Check whether state-action values are already optimal
         :return:
         """
         # get the length of optimal path
         # optimal_length is the length of optimal path of the original maze
         # 1.2 means it's a relaxed optifmal path
+        # for the path, we also set the wind to zeros
+        if set_wind_to_zeros:
+            wind_real_day_hour_total = self.maze.wind_real_day_hour_total
+            self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
         maxSteps = optimal_length * self.optimal_length_relax
         currentState = self.maze.START_STATE
         steps = 0
         came_from = {}
         came_from[currentState] = None
+        total_Q = 0
+        total_reward = 0
+        if self.double:
+            stateActionValues = (self.stateActionValues + self.stateActionValues2)/2.
+        else:
+            stateActionValues = self.stateActionValues
+
         while tuple(currentState) not in self.maze.GOAL_STATES:
-            bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
-            nextState, _, _ = self.maze.takeAction(currentState, bestAction)
+
+            bestAction = np.argmax(stateActionValues[currentState[0], currentState[1], currentState[2], :])
+            total_Q += np.max(stateActionValues[currentState[0], currentState[1], currentState[2], :])
+            nextState, reward, terminal_flag = self.maze.takeAction(currentState, bestAction)
+            total_reward += reward
             came_from[tuple(nextState)] = tuple(currentState)
-            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
             currentState = nextState
             steps += 1
 
             if steps > maxSteps:
-                return came_from, tuple(currentState), False
-
-        return came_from, tuple(currentState), True
+                if set_wind_to_zeros:
+                    self.maze.wind_real_day_hour_total = wind_real_day_hour_total
+                return came_from, tuple(currentState), False, total_Q, total_reward, stateActionValues.sum()
+        if set_wind_to_zeros:
+            self.maze.wind_real_day_hour_total = wind_real_day_hour_total
+        return came_from, tuple(currentState), True, total_Q, total_reward, stateActionValues.sum()

@@ -45,8 +45,18 @@ class Maze_3D:
         self.return_to_start = return_to_start
         self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
-
-        self.cf = cf
+        self.wall_wind = cf.wall_wind
+        self.risky = cf.risky
+        self.wind_exp = cf.wind_exp
+        self.risky_coeff = cf.risky_coeff
+        self.hourly_travel_distance = cf.hourly_travel_distance
+        self.low_wind_pass = cf.low_wind_pass
+        # cost naming
+        self.conservative = cf.conservative
+        self.costs_exponential = cf.costs_exponential
+        self.costs_exp_basenumber = cf.costs_exp_basenumber
+        self.costs_exponential_upper = cf.costs_exponential_upper
+        self.costs_exponential_lower = cf.costs_exponential_lower
 
     def takeAction(self, state, action):
         """
@@ -59,9 +69,9 @@ class Maze_3D:
         terminal_flag = False
         # the time always goes forward
         t += 1
-        if t >= self.TIME_LENGTH:
+        if t >= self.TIME_LENGTH - 1:
             # It will be a very undesirable state, we should stay here
-            x, y, t = self.START_STATE
+            t = self.TIME_LENGTH - 1
             reward = self.reward_obstacle
             terminal_flag = True
             return [x, y, t], reward, terminal_flag
@@ -77,31 +87,90 @@ class Maze_3D:
         elif action == self.ACTION_STAY:
              x, y = x, y
 
-        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, t]
-        if current_loc_time_wind >= self.cf.wall_wind:
-            if self.return_to_start:
-                x, y, t = self.START_STATE
-                terminal_flag = True
-            elif self.strong_wind_return:
-                x, y, _ = state
-
+        # added lower cone (depending on the goal)
+        dist_manhantan = self.heuristic_fn((x, y, t), self.GOAL_STATES)
+        time_remain = self.TIME_LENGTH - t
+        if time_remain < dist_manhantan:
+            # we can no longer reach the goal from this point
             reward = self.reward_obstacle
+            terminal_flag = True
+            return [x, y, t], reward, terminal_flag
 
-        elif tuple([x, y, t]) in self.GOAL_STATES:
-            reward = self.reward_goal
+        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
+        if self.costs_exponential:
+            if current_loc_time_wind <= 13:
+                reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
+
+            # if current_loc_time_wind <= 13:
+            #     reward_move = 0
+            elif current_loc_time_wind >= 16:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
+            else:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
+
+        if tuple([x, y, t]) in self.GOAL_STATES:
+            # We add reward move because the goal state could have wind speed larger than 13...
+            reward = self.reward_goal + reward_move
             terminal_flag = True
         else:
-            reward = self.reward_move
-            # if self.cf.risky:
-            #     reward = self.reward_move
-            # elif self.cf.wind_exp:
-            #     current_loc_time_wind -= self.cf.wind_exp_mean
-            #     current_loc_time_wind /= self.cf.wind_exp_std
-            #     reward = self.reward_move + (-1) * np.exp(current_loc_time_wind).astype('int')
-            # else:
-            #     current_loc_time_wind /= self.cf.risky_coeff
-            #     reward = self.reward_move + (-1) * current_loc_time_wind
+            reward = reward_move
 
         return [x, y, t], reward, terminal_flag
 
+    def heuristic_fn(self, a, b):
+        """
+        https://en.wikipedia.org/wiki/A*_search_algorithm
+         For the algorithm to find the actual shortest path, the heuristic function must be admissible,
+         meaning that it never overestimates the actual cost to get to the nearest goal node.
+         That's easy!
+        :param a:
+        :param b:
+        :return:
+        """
 
+        (x1, y1, t1) = a
+        (x2, y2, t2) = b[0]
+        return abs(x1 - x2) + abs(y1 - y2)
+
+    def in_bound(self, id):
+        (x, y, t) = id
+        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and 0 < t <= self.TIME_LENGTH
+
+    def lower_cone(self, id):
+        dist_manhantan = self.heuristic_fn(id, self.GOAL_STATES)
+        time_remain = self.TIME_LENGTH + 1 - id[2]
+        return time_remain >= dist_manhantan
+
+    def neighbors(self, id):
+        (x, y, t) = id
+        # Voila, time only goes forward, but we can stay in the same position
+        # The following should be strictly follow action sequence:
+        # up, down, left, right, stay
+        results = [(x - 1, y, t + 1), (x + 1, y, t + 1), (x, y - 1, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
+        # upper cone means the space allowed to traverse from starting point
+        results = filter(self.in_bound, results)
+        # lower cone means the space allowed to explore in order to reach the goal
+        results = filter(self.lower_cone, results)
+        # we also need within the wall wind limit
+        # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
+        return results
+
+    def viable_actions(self, current_state, viable_neighbours):
+        x1, y1, t1 = current_state
+        viable_actions = []
+        for s in viable_neighbours:
+            x2, y2, t2 = s
+            if x2 == x1 - 1 and y2 == y1:
+                viable_actions.append(self.ACTION_UP)
+            elif x2 == x1 + 1 and y2 == y1:
+                viable_actions.append(self.ACTION_DOWN)
+            elif x2 == x1 and y2 == y1 - 1:
+                viable_actions.append(self.ACTION_LEFT)
+            elif x2 == x1 and y2 == y1 + 1:
+                viable_actions.append(self.ACTION_RIGHT)
+            elif x2 == x1 and y2 == y1:
+                viable_actions.append(self.ACTION_STAY)
+            else:
+                assert "Invalid action!"
+
+        return np.array(viable_actions)

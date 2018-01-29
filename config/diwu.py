@@ -3,8 +3,8 @@ dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/downloaded_
 fig_save_path               = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
 fig_save_train_path         = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
 fig_save_test_path          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
-wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing'
-
+wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing_float32'
+A_star_precompute_path      = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star'
 TrainRealFile               = 'In_situMeasurementforTraining_201712.csv'
 TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
 TestForecastFile            = 'ForecastDataforTesting_201712.csv'
@@ -24,81 +24,97 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 12
+num_threads                 = 10
 
 ########################################################################################################################
 # A star search
+search_method               = 'a_star_search_3D'
 A_star_search_2D            = False
 A_star_search_3D            = False
-A_star_search_3D_multiprocessing = True
-model_number                = [10]
+A_star_search_3D_multiprocessing = False
+A_star_search_3D_multiprocessing_multicost = False
+model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
-time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
-model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 hourly_travel_distance      = 30
+total_hours                 = 20-3+1  # 18 hours to travel
+time_length                 = hourly_travel_distance * total_hours  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
+model_description           = 'A_star_search_3D'  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
+A_star_fix_missing          = False
 
-# important parameters
-day_list                    = [6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
-wind_exp_mean               = 5
+wind_exp_mean               = 10
 wind_exp_std                = 5
-use_real_weather            = False
+low_wind_pass               = 10
+conservative                = False
+costs_exponential           = True  #costs
+costs_sigmoid               = False  # sigmoid Costs
+costs_exponential_upper     = 16
+costs_exponential_lower     = 13
+costs_exp_basenumber        = 10
 
+use_real_weather            = False
+real_hour                   = 3
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
-colors                      = ['red', 'white']
+colors                      = ['red', 'magenta']
 wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
 ########################################################################################################################
 # evaluation
 debug_draw                  = False
-evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
+evaluation_plot             = False  # a flag for visualising predicted route
+evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_qLearning.csv'
-
-# evalutation plot
-evaluation_plot             = False  # a flag for visualising predicted route
-eval_day                    = [3]
-eval_city                   = [9]
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double.csv'
 
 ########################################################################################################################
 # reinforcement_learning solution
+# important parameters
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
+reinforcement_learning_solution_new = True
 reinforcement_learning_solution_multiprocessing = False
-a_star_loop                     = 1000
-num_threads                     = 5
-return_to_start                 = True
-strong_wind_return              = True    # will go back to the previous state
+a_star_loop                     = 100
+return_to_start                 = False
+strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
-reward_goal                     = 1e5
+reward_goal                     = time_length * 1.0
 reward_move                     = 0.0
-reward_obstacle                 = -1e5
+reward_obstacle                 = -10.0
 
 # Dyna model hyper-parameters
 maxSteps                        = time_length  # Maze maximum steps
-random_state                    = 0
-planningSteps                   = time_length     # planning steps for Dyna model
+random_state                    = 1
+planningSteps                   = time_length // 10    # planning steps for Dyna model
 alpha                           = 1      # Learning step size
 gamma                           = 0.99
-theta                           = 0.1
+gamma_loop                      = 0.99
+theta                           = 1e-3
 epsilon                         = 0.01
+# the following are the parameters for second round update
+epsilon_start                   = 0.1
+epsilon_end                     = 0.01
+alpha_start                     = 0.1
+alpha_end                       = 0.01
+
 qLearning                       = True  # flag for qLearning
+double                          = True  # flag for double qLearning
 expected                        = False  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
-plus                            = True   # Dyna Plus algorithm
+plus                            = False   # Dyna Plus algorithm
 optimal_length_relax            = 1.5
 heuristic                       = False
 increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson
 
-########################################################################################################################
+################################f########################################################################################
 ## FCN
 fully_convolutional_wind_pred   = False
 go_to_all_dir                   = None
