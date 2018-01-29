@@ -186,6 +186,77 @@ def draw_predicted_route(cf, day, go_to_all, city_data_df, route_list):
             break
 
 
+def print_predicted_route(cf, day, go_to_all, city_data_df, route_list):
+    """
+    We only print whether the route is successful instead of the slow drawing
+    :param cf:
+    :param day:
+    :param go_to_all:
+    :param city_data_df:
+    :param route_list:
+    :return:
+    """
+    for hour in range(3, 21):
+        if day < 6:  # meaning this is a training day
+            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+        else:
+            weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+            weather_name = 'Test_forecast_wind_model_count_%d_day_%d_hour_%d.npy' % (len(cf.model_number), day, hour)
+
+        for h in range(3, hour + 1):
+            for p in route_list[(h - 3) * 30:(h - 2) * 30]:
+                if h >= hour and wind_real_day_hour[p[0], p[1]] >= cf.wall_wind:
+                    title = weather_name[:-4] + '.  Crash at: ' + str(p) + ' in hour: %d' % (p[2] / 30 + 3)
+                    print(title)
+
+                    # we draw the crash time here
+                    plt.close("all")
+                    # draw figure maximum
+                    plt.figure(1)
+                    plt.clf()
+                    mng = plt.get_current_fig_manager()
+                    mng.resize(*mng.window.maxsize())
+                    plt.imshow(wind_real_day_hour, cmap=cf.colormap)
+                    plt.colorbar()
+                    # we also plot the city location
+                    for idx in range(city_data_df.index.__len__()):
+                        x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                        y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                        cid = int(city_data_df.iloc[idx]['cid'])
+                        plt.scatter(y_loc, x_loc, c='r', s=40)
+                        if wind_real_day_hour[x_loc, y_loc] >= cf.wall_wind:
+                            plt.annotate(str(cid), xy=(y_loc, x_loc), color='black', fontsize=20)
+                        else:
+                            plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
+                    # we also draw some contours
+                    x = np.arange(0, wind_real_day_hour.shape[1], 1)
+                    y = np.arange(0, wind_real_day_hour.shape[0], 1)
+                    X, Y = np.meshgrid(x, y)
+                    CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
+                    plt.clabel(CS, inline=1, fontsize=10)
+
+                    for p in route_list:
+                        plt.scatter(p[1], p[0], c='yellow', s=5)
+                    ########## Plot all a-star
+                    for m, go_to in enumerate(go_to_all):
+                        for p in go_to.keys():
+                            plt.scatter(p[1], p[0], c='black', s=1, alpha=0.5)
+                        # anno_point = int(len(go_to.keys()) * (1+m) / 10)
+                        anno_point = int(len(go_to.keys()) / 2)
+                        go_to_sorted = sorted(go_to)
+                        p = go_to_sorted[anno_point]
+                        # plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
+                    plt.title(title)
+                    plt.waitforbuttonpress(10)
+                    break
+                    return False
+
+        if 30 * (hour - 2) > len(route_list):
+            return True
+
+
 def reinforcement_learning_solution(cf):
     """
     This is a RL algorithm:
@@ -413,9 +484,8 @@ def reinforcement_learning_solution_new(cf):
     """
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
-    cf.debug_draw = True
     cf.day_list = [3]
-    cf.goal_city_list = [7]
+    cf.goal_city_list = [3]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -453,7 +523,6 @@ def reinforcement_learning_solution_new(cf):
             total_reward = np.zeros(len(cf.model_number))
             action_value_function_sum = np.zeros(len(cf.model_number))
             model.epsilon = 0
-            #model.maze.cf.risky = True
             model.policy_init = go_to_all
             model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
             model.double = False
@@ -467,8 +536,6 @@ def reinforcement_learning_solution_new(cf):
                     = model.checkPath(steps_a_star_all_mean, set_wind_to_zeros=False)
                 print('Success in ep: %d, with %d steps. Q: %.2f' % (m, len(came_from), action_value_function_sum[m]))
 
-            stateActionValues_a_star = model.stateActionValues
-            plt.imshow(np.max(np.max(model.stateActionValues, axis=3), axis=2)); plt.colorbar();
             success_flag = False
             save_length = int(cf.a_star_loop * cf.optimal_length_relax) + 1
             total_Q_new = np.zeros(save_length)
@@ -485,20 +552,13 @@ def reinforcement_learning_solution_new(cf):
             model.maze.risky = False
             model.gamma = cf.gamma_loop
             model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-            model.planningSteps = 10
+            model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
             model.double = cf.double
+            # we need to copy the double Q-learning stateActionValue here
             model.stateActionValues2 = model.stateActionValues.copy()
             while num_episode < cf.a_star_loop or not success_flag:
                 if num_episode >= cf.a_star_loop * cf.optimal_length_relax:
                     break
-
-                # plt.figure(num_episode+1)
-                # plt.clf()
-                # mng = plt.get_current_fig_manager()
-                # mng.resize(*mng.window.maxsize())
-                # plt.imshow(np.max(np.mean(model.stateActionValues, axis=3), axis=2))
-                # plt.colorbar()
-
                 model.maze.wind_model = model.rand.choice(range(len(cf.model_number)))
                 print("Episode %d, wind model: %d" % (num_episode, model.maze.wind_model+1))
                 steps.append(model.play(environ_step=True))
@@ -527,9 +587,12 @@ def reinforcement_learning_solution_new(cf):
             route_list.reverse()
             if cf.debug_draw:
                 draw_predicted_route(cf, day, go_to_all, city_data_df, route_list)
+            else:
+                flag_success = print_predicted_route(cf, day, go_to_all, city_data_df, route_list)
 
-            print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' %
-                  (day, goal_city, len(route_list), timer() - city_start_time))
+            if flag_success:
+                print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' %
+                      (day, goal_city, len(route_list), timer() - city_start_time))
 
     print('Finish! using %.2f sec!' % (timer() - start_time))
 
@@ -580,6 +643,7 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     model.maze.risky = False
     model.gamma = cf.gamma_loop
     model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
+    model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
     # Double learning
     model.double = cf.double
     model.stateActionValues2 = model.stateActionValues.copy()
@@ -651,6 +715,10 @@ def reinforcement_learning_solution_multiprocessing(cf):
             p = multiprocessing.Process(target=reinforcement_learning_solution_worker, args=(cf, day, goal_city, A_star_model_precompute_csv))
             jobs.append(p)
             p.start()
+            # because of the memory constraint, we need to wait for the previous to finish to finish in order
+            # to initiate another function...
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
 
     # waiting for the all the job to finish
     for j in jobs:

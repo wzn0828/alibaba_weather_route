@@ -315,6 +315,10 @@ class Dyna_3D:
 
             viable_neighbours = self.maze.neighbors(newState)
             viable_actions = self.maze.viable_actions(newState, viable_neighbours)
+            # if we arrive the goal via the boundary
+            if newState[2] == self.maze.TIME_LENGTH-1 and terminal_flag:
+                viable_actions = np.array([self.maze.ACTION_STAY])
+
             if self.qlearning:
                 # Q-Learning update
                 if not self.double:
@@ -413,6 +417,10 @@ class Dyna_3D:
 
                 viable_neighbours = self.maze.neighbors(newStateSample)
                 viable_actions = self.maze.viable_actions(newStateSample, viable_neighbours)
+                # if we arrive the goal via the boundary
+                if newStateSample[2] == self.maze.TIME_LENGTH - 1 and tuple(newStateSample) in self.maze.GOAL_STATES:
+                    viable_actions = np.array([self.maze.ACTION_STAY])
+
                 if self.qlearning:
                     if not self.double:
                         action_value_delta = rewardSample + self.gamma * np.max(self.stateActionValues[newStateSample[0], newStateSample[1], newStateSample[2], viable_actions]) - \
@@ -483,6 +491,9 @@ class Dyna_3D:
                     for statePre, actionPre, rewardPre in self.get_predecessor(stateSample):
                         viable_neighbours = self.maze.neighbors(stateSample)
                         viable_actions = self.maze.viable_actions(stateSample, viable_neighbours)
+                        # if we arrive the goal via the boundary
+                        if stateSample[2] == self.maze.TIME_LENGTH - 1 and tuple(stateSample) in self.maze.GOAL_STATES:
+                            viable_actions = np.array([self.maze.ACTION_STAY])
                         if self.qlearning:
                             if not self.double:
                                 action_value_delta = rewardPre + self.gamma * np.max(self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], viable_actions]) - \
@@ -590,21 +601,25 @@ class Dyna_3D:
         came_from[currentState] = None
         total_Q = 0
         total_reward = 0
-        #
+        if self.double:
+            stateActionValues = (self.stateActionValues + self.stateActionValues2)/2.
+        else:
+            stateActionValues = self.stateActionValues
+
         while tuple(currentState) not in self.maze.GOAL_STATES:
-            bestAction = np.argmax(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
-            total_Q += np.max(self.stateActionValues[currentState[0], currentState[1], currentState[2], :])
+
+            bestAction = np.argmax(stateActionValues[currentState[0], currentState[1], currentState[2], :])
+            total_Q += np.max(stateActionValues[currentState[0], currentState[1], currentState[2], :])
             nextState, reward, terminal_flag = self.maze.takeAction(currentState, bestAction)
             total_reward += reward
             came_from[tuple(nextState)] = tuple(currentState)
-            #print('step: ' + str(steps) + '  ' + str(currentState) + '->' + str(bestAction) + '->' + str(nextState))
             currentState = nextState
             steps += 1
 
-            if steps > maxSteps:
+            if steps > maxSteps or currentState[2] >= self.maze.TIME_LENGTH-1:
                 if set_wind_to_zeros:
                     self.maze.wind_real_day_hour_total = wind_real_day_hour_total
-                return came_from, tuple(currentState), False, total_Q, total_reward, self.stateActionValues.sum()
+                return came_from, tuple(currentState), False, total_Q, total_reward, stateActionValues.sum()
         if set_wind_to_zeros:
             self.maze.wind_real_day_hour_total = wind_real_day_hour_total
-        return came_from, tuple(currentState), True, total_Q, total_reward, self.stateActionValues.sum()
+        return came_from, tuple(currentState), True, total_Q, total_reward, stateActionValues.sum()

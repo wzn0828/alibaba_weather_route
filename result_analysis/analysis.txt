@@ -1,4 +1,0 @@
-Conservative的要好于risky的方法。
-
-Conservative的变体：layer+和conservative结果一样；layer+speed和conservative比，model2的结果要差，model6的结果要好。
-

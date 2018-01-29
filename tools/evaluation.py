@@ -27,12 +27,6 @@ def evaluation(cf, csv_for_evaluation):
 
     for day in cf.evaluation_days:
         for goal_city in cf.evaluation_goal_cities:
-
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
-
             # print('Day: %d, city: %d' % (day, goal_city))
             crash_flag = False
             route_list = []
@@ -128,7 +122,7 @@ def evaluation(cf, csv_for_evaluation):
                     # print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
                     crash_flag = True
                     total_penalty[day-1, goal_city-1] = 24 * 60
-                    crash_time_stamp[day-1, goal_city-1] = hour*100 + min
+                    crash_time_stamp[day-1, goal_city-1] = hour*30 + min
                     # we break the loop
                     break
                 else:

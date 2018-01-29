@@ -51,6 +51,12 @@ class Maze_3D:
         self.risky_coeff = cf.risky_coeff
         self.hourly_travel_distance = cf.hourly_travel_distance
         self.low_wind_pass = cf.low_wind_pass
+        # cost naming
+        self.conservative = cf.conservative
+        self.costs_exponential = cf.costs_exponential
+        self.costs_exp_basenumber = cf.costs_exp_basenumber
+        self.costs_exponential_upper = cf.costs_exponential_upper
+        self.costs_exponential_lower = cf.costs_exponential_lower
 
     def takeAction(self, state, action):
         """
@@ -63,13 +69,8 @@ class Maze_3D:
         terminal_flag = False
         # the time always goes forward
         t += 1
-        if t >= self.TIME_LENGTH - 1:
-            # It will be a very undesirable state, we should stay here
-            #x, y, t = self.START_STATE
-            t = self.TIME_LENGTH - 1
-            reward = self.reward_obstacle
-            terminal_flag = True
-            return [x, y, t], reward, terminal_flag
+        if t >= self.TIME_LENGTH:
+            assert "OMG this should never happened, check bug in the code!"
 
         if action == self.ACTION_UP:
             x = max(x - 1, 0)
@@ -92,32 +93,21 @@ class Maze_3D:
             return [x, y, t], reward, terminal_flag
 
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
-        if current_loc_time_wind >= self.wall_wind:
-            if self.return_to_start:
-                x, y, t = self.START_STATE
-                terminal_flag = True
-            elif self.strong_wind_return:
-                x, y, _ = state
-                terminal_flag = True
+        if self.costs_exponential:
+            if current_loc_time_wind <= 13:
+                reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
 
-            reward = self.reward_obstacle
+            elif current_loc_time_wind >= 16:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
+            else:
+                reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
 
-        elif tuple([x, y, t]) in self.GOAL_STATES:
-            reward = self.reward_goal
+        if tuple([x, y, t]) in self.GOAL_STATES:
+            # We add reward move because the goal state could have wind speed larger than 13...
+            reward = self.reward_goal + reward_move
             terminal_flag = True
         else:
-            if self.risky:
-                reward = self.reward_move
-            elif self.wind_exp:
-                current_loc_time_wind -= self.wind_exp_mean
-                current_loc_time_wind /= self.wind_exp_std
-                reward = self.reward_move + (-1) * np.exp(current_loc_time_wind)
-                if self.low_wind_pass:
-                    if current_loc_time_wind <= self.low_wind_pass:
-                        reward = self.reward_move
-            else:
-                current_loc_time_wind /= self.risky_coeff
-                reward = self.reward_move + (-1) * current_loc_time_wind
+            reward = reward_move
 
         return [x, y, t], reward, terminal_flag
 
@@ -138,11 +128,11 @@ class Maze_3D:
 
     def in_bound(self, id):
         (x, y, t) = id
-        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and 0 < t <= self.TIME_LENGTH
+        return 0 <= x < self.WORLD_HEIGHT and 0 <= y < self.WORLD_WIDTH and t < self.TIME_LENGTH
 
     def lower_cone(self, id):
         dist_manhantan = self.heuristic_fn(id, self.GOAL_STATES)
-        time_remain = self.TIME_LENGTH + 1 - id[2]
+        time_remain = self.TIME_LENGTH - 1 - id[2]
         return time_remain >= dist_manhantan
 
     def neighbors(self, id):
@@ -152,9 +142,9 @@ class Maze_3D:
         # up, down, left, right, stay
         results = [(x - 1, y, t + 1), (x + 1, y, t + 1), (x, y - 1, t + 1), (x, y + 1, t + 1), (x, y, t + 1)]
         # upper cone means the space allowed to traverse from starting point
-        results = filter(self.in_bound, results)
+        results = list(filter(self.in_bound, results))
         # lower cone means the space allowed to explore in order to reach the goal
-        results = filter(self.lower_cone, results)
+        results = list(filter(self.lower_cone, results))
         # we also need within the wall wind limit
         # results = filter(self.in_wind, results)  # However, with this condition, we might never find a route
         return results
