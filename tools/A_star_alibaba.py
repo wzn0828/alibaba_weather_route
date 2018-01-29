@@ -521,7 +521,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     current_loc = list(set(goal_loc_3D) & set(current))
 
     if not len(current_loc):
-        # print('We cannot reach the goal city: %d, continue!' % goal_city)
+        print('We cannot reach the goal city: %d, continue!' % goal_city)
         return
 
     find_loc = current_loc[0]
@@ -583,7 +583,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -605,10 +605,10 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
             p = multiprocessing.Process(target=A_star_3D_worker_multicost, args=(cf, day, goal_city))
             jobs.append(p)
@@ -624,13 +624,13 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
-    print('evaluation')
-    print(cf.csv_file_name)
-    total_penalty = evaluation(cf, cf.csv_file_name)
-    print(int(np.sum(np.sum(total_penalty[0]))))
-    print(total_penalty[0].astype('int'))
-    print(np.sum(total_penalty[0].astype('int') == 1440))
-    print(total_penalty[1].astype('int'))
+    # print('evaluation')
+    # print(cf.csv_file_name)
+    # total_penalty = evaluation(cf, cf.csv_file_name)
+    # print(int(np.sum(np.sum(total_penalty[0]))))
+    # print(total_penalty[0].astype('int'))
+    # print(np.sum(total_penalty[0].astype('int') == 1440))
+    # print(total_penalty[1].astype('int'))
 
 
 def A_star_fix_missing(cf):

@@ -131,10 +131,10 @@ def collect_csv_for_submission(cf):
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
 
-            if day == 3 and goal_city == 6:
-                continue
-            if day == 3 and goal_city == 8:
-                continue
+            # if day == 3 and goal_city == 6:
+            #     continue
+            # if day == 3 and goal_city == 8:
+            #     continue
 
             csv_file_name_hour = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
             city_data_hour_df = pd.read_csv(csv_file_name_hour, index_col=None, header=None)

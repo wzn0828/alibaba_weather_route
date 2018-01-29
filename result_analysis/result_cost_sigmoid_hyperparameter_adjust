@@ -605,8 +605,8 @@ evaluation
  [   0    0    0    0    0    0    0    0    0    0]
  [   0    0    0    0    0    0    0    0    0    0]]
 A_star_search_3D_multiprocessing
-
-
+Finish writing submission, using 704.70 sec!
+evaluation
 /home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_3_interSpeed_13_model_mean_[1-10]_____2018-01-29-15-33-04/Train_costsSigmoid_speedTime_3_interSpeed_13_model_mean_[1-10].csv
 49836
 [[ 366  200  216  460  472  762 1440 1018  128  202]
@@ -620,3 +620,125 @@ A_star_search_3D_multiprocessing
  [   0    0    0 1242 1026    0 1026    0    0 1500]
  [   0    0    0    0    0    0    0    0    0    0]
  [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 649.37 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_3_interSpeed_14_model_mean_[1-10]_____2018-01-29-15-44-53/Train_costsSigmoid_speedTime_3_interSpeed_14_model_mean_[1-10].csv
+47968
+[[ 366  200  192  362  440  674  688 1018  128  202]
+ [ 410  200  192  362  440  674  624  994  128  202]
+ [1440  718  680 1440 1440 1440 1440 1440  432  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+26
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [1500    0    0 1230 1004    0 1230    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 663.76 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_3_interSpeed_15_model_mean_[1-10]_____2018-01-29-15-55-46/Train_costsSigmoid_speedTime_3_interSpeed_15_model_mean_[1-10].csv
+46802
+[[ 366  200  192  362  440  674  624 1018  128  202]
+ [ 366  200  192  362  440  674  624  982  128  202]
+ [ 536  718  672 1440 1440 1440 1440 1440  298  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+25
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1158 1242    0 1238    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 668.18 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_4_interSpeed_13_model_mean_[1-10]_____2018-01-29-16-06-54/Train_costsSigmoid_speedTime_4_interSpeed_13_model_mean_[1-10].csv
+48426
+[[ 366  200  192  362  440  676  710 1018  128  202]
+ [ 412  200  192  362  440  674  626  996  128  202]
+ [ 436  718  584 1440 1440 1440 1440 1440  722 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+26
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1022 1022    0 1022    0    0 1500]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 669.73 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_4_interSpeed_14_model_mean_[1-10]_____2018-01-29-16-18-06/Train_costsSigmoid_speedTime_4_interSpeed_14_model_mean_[1-10].csv
+46882
+[[ 366  200  192  362  440  674  628 1018  128  202]
+ [ 366  200  192  362  440  674  624  986  128  202]
+ [ 538  718  678 1440 1440 1440 1440 1440  362  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+25
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1230 1004    0 1228    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 674.18 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_4_interSpeed_15_model_mean_[1-10]_____2018-01-29-16-29-19/Train_costsSigmoid_speedTime_4_interSpeed_15_model_mean_[1-10].csv
+47484
+[[ 366  200  192  362  440  674  624 1018  128  202]
+ [ 366  200  192  362  440  674  624  972  128  202]
+ [ 500  718 1440 1440 1440 1440 1440 1440  258  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+26
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0 1042 1300 1242    0 1238    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 652.50 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10]_____2018-01-29-16-40-37/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10].csv
+46714
+[[ 366  200  192  362  440  674  624 1018  128  202]
+ [ 366  200  192  362  440  674  624  972  128  202]
+ [ 502  718  668 1440 1440 1440 1440 1440  258  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+25
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0 1240 1240    0 1236    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+A_star_search_3D_multiprocessing
+Finish writing submission, using 554.12 sec!
+evaluation
+/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_5_interSpeed_15_model_mean_[1-10]_____2018-01-29-16-51-34/Train_costsSigmoid_speedTime_5_interSpeed_15_model_mean_[1-10].csv
+48062
+[[ 366  200  192  362  440  674  624 1016  128  202]
+ [ 366  200  192  362  440  674  624  932  128  202]
+ [ 422 1440 1440 1440 1440 1440 1440 1440  234  202]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]
+ [1440 1440 1440 1440 1440 1440 1440 1440 1440 1440]]
+27
+[[   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0 1044 1034 1300 1158    0 1232    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]
+ [   0    0    0    0    0    0    0    0    0    0]]
+
+ > End Time:
+   Mon, 29 Jan 2018-01-29 17:00:51
+
+   ET: 1h:48m:12s
+
+Process finished with exit code 0
+
+
+
