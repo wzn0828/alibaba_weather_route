@@ -44,7 +44,7 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
@@ -56,9 +56,9 @@ use_real_weather            = False
 conservative                = False
 real_hour                   = 3
 
-costs_exponential           = True  #costs
+costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**4
-costs_sigmoid               = False  # sigmoid Costs
+costs_sigmoid               = True  # sigmoid Costs
 costs_sig_speed_time        = 1
 costs_sig_inter_speed       = 15
 costs_sig_path              = '/home/wzn/PycharmProjects/alibaba_weather_route/config/costs_sigmoid'
