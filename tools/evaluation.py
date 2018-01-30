@@ -43,9 +43,9 @@ def evaluation(cf, csv_for_evaluation):
             target_pred = predicted_df.iloc[predicted_df_idx]['target']
 
             if goal_city != predicted_df.iloc[predicted_df_idx]['target']:
-                print('Sadly, we never reached the goal: %d' % goal_city)
+                # print('Sadly, we never reached the goal: %d' % goal_city)
                 total_penalty[day - 1, goal_city - 1] = 24 * 60
-                print('#' * 20 + '5' * 20 + '#' * 20)
+                # print('#' * 20 + '5' * 20 + '#' * 20)
                 continue
 
             assert start_loc == start_loc_pred, "Starting x, y not the same!"

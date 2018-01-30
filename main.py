@@ -94,7 +94,6 @@ def process(cf):
         print('evaluation_plot')
         evaluation_plot(cf)
 
-
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
@@ -112,12 +111,6 @@ def main():
     cf = configuration.load()
     configurationPATH(cf)
 
-    # Train /test/predict with the network, depending on the configuration
-    # for i in range(7, 11):
-    #     cf.day_list = list([i])
-    #     process(cf)
-    # cf.day_list = list(range(6, 11))
-    # collect_csv_for_submission(cf)
     process(cf)
 
     # End Time
@@ -125,8 +118,6 @@ def main():
     print('\n > End Time:')
     print('   ' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S'))
     print('\n   ET: ' + HMS(end_time - start_time))
-
-
 
 
 
