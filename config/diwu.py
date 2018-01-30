@@ -49,11 +49,14 @@ wind_exp_mean               = 10
 wind_exp_std                = 5
 low_wind_pass               = 10
 conservative                = False
-costs_exponential           = True  #costs
+costs_linear                = True
+costs_exponential           = False  #costs
 costs_sigmoid               = False  # sigmoid Costs
 costs_exponential_upper     = 16
 costs_exponential_lower     = 13
 costs_exp_basenumber        = 100
+
+
 
 use_real_weather            = False
 real_hour                   = 3
@@ -67,12 +70,12 @@ strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard thre
 ########################################################################################################################
 # evaluation
 debug_draw                  = False
-evaluation_plot             = False  # a flag for visualising predicted route
-evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
+evaluation_plot             = True  # a flag for visualising predicted route
+evaluation_days             = [6]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double.csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Test_a_star_search_3D_costsExponential_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
 
 ########################################################################################################################
 # reinforcement_learning solution
@@ -80,9 +83,10 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
-reinforcement_learning_solution_new = True
+reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 100
+loop_switch_to_linear_cost      = 50
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
@@ -93,17 +97,19 @@ reward_obstacle                 = -10.0
 # Dyna model hyper-parameters
 maxSteps                        = time_length  # Maze maximum steps
 random_state                    = 1
-planningSteps                   = time_length // 10    # planning steps for Dyna model
+planningSteps                   = time_length    # planning steps for Dyna model
 alpha                           = 1      # Learning step size
-gamma                           = 0.99
-gamma_loop                      = 0.99
+gamma                           = 0.999
+gamma_loop                      = 0.999
 theta                           = 1e-3
 epsilon                         = 0.01
 # the following are the parameters for second round update
-epsilon_start                   = 0.1
+epsilon_start                   = 0.9
 epsilon_end                     = 0.01
 alpha_start                     = 0.01
 alpha_end                       = 0.001
+polynomial_alpha                = True
+polynomial_alpha_coefficient    = 0.8
 
 qLearning                       = True  # flag for qLearning
 double                          = True  # flag for double qLearning

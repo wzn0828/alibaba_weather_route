@@ -52,6 +52,7 @@ class Maze_3D:
         self.hourly_travel_distance = cf.hourly_travel_distance
         self.low_wind_pass = cf.low_wind_pass
         # cost naming
+        self.costs_linear = cf.costs_linear
         self.conservative = cf.conservative
         self.costs_exponential = cf.costs_exponential
         self.costs_exp_basenumber = cf.costs_exp_basenumber
@@ -96,15 +97,19 @@ class Maze_3D:
         if self.costs_exponential:
             if current_loc_time_wind <= 13:
                 reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
-
             elif current_loc_time_wind >= 16:
                 reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
             else:
                 reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
+        elif self.costs_linear:
+            if current_loc_time_wind < self.wall_wind:
+                reward_move = (current_loc_time_wind - self.risky_coeff) / self.risky_coeff
+            else:
+                reward_move = -1.0 * self.reward_goal
 
         if tuple([x, y, t]) in self.GOAL_STATES:
             # We add reward move because the goal state could have wind speed larger than 13...
-            reward = self.reward_goal + reward_move
+            reward = self.reward_goal
             terminal_flag = True
         else:
             reward = reward_move

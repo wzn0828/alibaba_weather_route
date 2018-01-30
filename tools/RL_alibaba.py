@@ -249,8 +249,7 @@ def print_predicted_route(cf, day, go_to_all, city_data_df, route_list):
                         p = go_to_sorted[anno_point]
                         # plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
                     plt.title(title)
-                    plt.waitforbuttonpress(10)
-                    break
+                    plt.waitforbuttonpress()
                     return False
 
         if 30 * (hour - 2) > len(route_list):
@@ -485,7 +484,7 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.day_list = [3]
-    cf.goal_city_list = [3]
+    cf.goal_city_list = [9]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 

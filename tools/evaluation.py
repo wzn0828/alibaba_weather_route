@@ -278,7 +278,11 @@ def evaluation_plot(cf):
             min = 0
             acc_min = 0
             hour = 3
-            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            if day < 6:  # meaning this is a training day
+                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            else:
+                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+
             wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
 
             # begin to draw
@@ -317,7 +321,10 @@ def evaluation_plot(cf):
                 if min >= 60:
                     min = 0
                     hour += 1
-                    weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                    if day < 6:  # meaning this is a training day
+                        weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                    else:
+                        weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
                     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
 
                     # we plot every hour
@@ -358,7 +365,7 @@ def evaluation_plot(cf):
 
             for p in route_list[(hour-3)*30:]:
                 plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
-            plt.waitforbuttonpress(0.5)
+            plt.waitforbuttonpress(2)
 
             if predicted_df_idx < len(predicted_df):
                 if next_loc_pred == goal_loc:
