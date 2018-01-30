@@ -331,13 +331,11 @@ def evaluation_plot(cf):
                     else:
                         weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
                     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-
+                    plt.clf()
                     # we plot every hour
                     for h in range(3, hour):
                         for p in route_list[(h-3)*30:(h-2)*30]:
                             plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
-                    plt.waitforbuttonpress(0.1)
-                    plt.clf()
                     plt.imshow(wind_real_day_hour, cmap=cf.colormap)
                     plt.colorbar()
                     # we also plot the city location
@@ -354,12 +352,15 @@ def evaluation_plot(cf):
                     CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
                     plt.clabel(CS, inline=1, fontsize=10)
                     plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
-
+                    plt.waitforbuttonpress(0.1)
                 # Now we check whether the aircraft crash or not
                 if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
                     print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
                     # we break the loop
-                    break
+                    # break
+                    plt.title('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    plt.waitforbuttonpress(0.001)
+                    start_loc_pred = next_loc_pred
                 else:
                     start_loc_pred = next_loc_pred
 
@@ -370,7 +371,7 @@ def evaluation_plot(cf):
 
             for p in route_list[(hour-3)*30:]:
                 plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
-            plt.waitforbuttonpress(2)
+            plt.waitforbuttonpress(3)
 
             if predicted_df_idx < len(predicted_df):
                 if next_loc_pred == goal_loc:
