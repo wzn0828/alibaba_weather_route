@@ -18,6 +18,8 @@ def evaluation(cf, csv_for_evaluation):
     predicted_df_idx = 0
     total_penalty = np.ones(shape=(5, 10)) * 24 * 60
     crash_time_stamp = np.zeros(shape=(5, 10)).astype(int)
+    average_wind = np.zeros(shape=(5, 10))
+    max_wind = np.zeros(shape=(5, 10))
     if cf.debug_draw:
         # draw figure maximum
         plt.figure(1)
@@ -127,6 +129,8 @@ def evaluation(cf, csv_for_evaluation):
                     break
                 else:
                     start_loc_pred = next_loc_pred
+                    average_wind[day-1, goal_city-1] += wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1]
+                    max_wind[day-1, goal_city-1] = max(max_wind[day-1, goal_city-1], wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1])
 
             # plot the last bit route
             if cf.debug_draw:
@@ -153,7 +157,8 @@ def evaluation(cf, csv_for_evaluation):
                                 break
                         predicted_df_idx += 1
 
-    return total_penalty, crash_time_stamp
+    average_wind = np.divide(average_wind, total_penalty)
+    return total_penalty, crash_time_stamp, average_wind, max_wind
 
 
 def a_star_length(cf, csv_for_evaluation):

@@ -84,10 +84,14 @@ def process(cf):
     ### Following is the evaluation script #############
     if cf.evaluation:
         print('evaluation')
-        total_penalty, crash_time_stamp = evaluation(cf, cf.csv_for_evaluation)
+        total_penalty, crash_time_stamp, average_wind, max_wind = evaluation(cf, cf.csv_for_evaluation)
+
         print(int(np.sum(np.sum(total_penalty))))
         print(total_penalty.astype('int'))
         print(crash_time_stamp.astype('int'))
+        np.set_printoptions(precision=2)
+        print(average_wind)
+        print(max_wind)
         print(np.sum(total_penalty.astype('int') == 1440))
 
     if cf.evaluation_plot:
