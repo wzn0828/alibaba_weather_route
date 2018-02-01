@@ -14,9 +14,9 @@ This repo is used for "Future challenge Helping Balloons Navigate the Weather"
 
 (2) Modify the path in the file `/config/diwu.py` (or the file of your choice):
 set the data root directory `dataroot_dir=''` as where you have put them. 
-Name the corresponding file, e.g. `TestForecastFile=''`
+Name the corresponding file, e.g. `TestForecastFile=''` and their corresponding `.np` files saving location `wind_save_path=''` .
 
-Run the `plt_forecast_wind_test_multiprocessing` logic by setting all data logic in `/config/diwu.py` to `False` and
+(3) Run the `plt_forecast_wind_test_multiprocessing` logic by setting all data logic in `/config/diwu.py` to `False` and
  `plt_forecast_wind_test_multiprocessing` to `True`. The logic is executed by
 ```bash
 python main.py
