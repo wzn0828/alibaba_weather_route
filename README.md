@@ -1,6 +1,6 @@
-#3D A Star with Reinforcement Learning
+# 3D A Star with Reinforcement Learning
 
-This repo is used for `"Future challenge Helping Balloons Navigate the Weather"
+This repo is used for "Future challenge Helping Balloons Navigate the Weather"
 ([English site](https://tianchi.aliyun.com/competition/introduction.htm?spm=5176.100067.5678.1.3d16c911DB1wX4&raceId=231622&_lang=en_US)
 , [Chinese site](https://tianchi.aliyun.com/competition/introduction.htm?spm=5176.100066.0.0.59d64078pngYE6&raceId=231622))
 
@@ -10,17 +10,17 @@ This repo is used for `"Future challenge Helping Balloons Navigate the Weather"
 
 
 ## Getting Started
-After downloading the data into .csv files, in the file `/config/diwu.py` (or the file of your choice), set the data
-root directory `dataroot_dir=''` as where you have put them. And name the corresponding file, e.g. `TestForecastFile='''`
+(1) Downloading the data and unzip into .csv files.
 
-Run the `plt_forecast_wind_test_multiprocessing` logic: by setting all data logic in `/config/diwu.py` to `False` and
- `plt_forecast_wind_test_multiprocessing` to `True`
+(2) Modify the path in the file `/config/diwu.py` (or the file of your choice):
+set the data root directory `dataroot_dir=''` as where you have put them. 
+Name the corresponding file, e.g. `TestForecastFile=''`
 
+Run the `plt_forecast_wind_test_multiprocessing` logic by setting all data logic in `/config/diwu.py` to `False` and
+ `plt_forecast_wind_test_multiprocessing` to `True`. The logic is executed by
 ```bash
 python main.py
 ```
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
