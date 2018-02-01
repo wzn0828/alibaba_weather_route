@@ -37,21 +37,17 @@ Run the logic `A_star_search_3D_multiprocessing`, hyper-parameters are as follow
 * **model_number**: which wind model are run upon
 * **conservative**: a linear conservative cost
 
-This logic will generate files in the `Experiments` folder with information stamp and time stamp. For a single wind model, it will take up to 1-2 hours.
+This logic will generate files in the `Experiments` folder with information stamp and time stamp. For a single wind model, it will take up to 1-2 hours (The bottleneck is the CPU cores you have on your PC).
 
 ### Tabular Reinforcement Learning for model fusion
  
  Run the logic `reinforcement_learning_solution_multiprocessing`,  hyper-parameters are as follows:
 
-Explain how to run the automated tests for this system
 
 
 
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Authors
 
-* **Di Wu** - *Initial work* - [stevenwudi](http://stevenwudi.github.io)
+* **Di Wu** - [stevenwudi](http://stevenwudi.github.io)
 * **Zhennan Wang**
