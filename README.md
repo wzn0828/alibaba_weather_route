@@ -1,4 +1,4 @@
-#3D A Star with Reinforcement Learning
+# 3D A Star with Reinforcement Learning
 
 This repo is used for `"Future challenge Helping Balloons Navigate the Weather"
 ([English site](https://tianchi.aliyun.com/competition/introduction.htm?spm=5176.100067.5678.1.3d16c911DB1wX4&raceId=231622&_lang=en_US)
