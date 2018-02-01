@@ -27,67 +27,25 @@ Name the corresponding file, e.g. `TestForecastFile=''` and their corresponding 
 This logic will take the .csv file for the wind predictions from various models given and output the `.npy` file for individual model-day-hour.
 
 (4) Run the `plot_all_wind` logic by setting all data logic in `/config/diwu.py` to `False` and `plot_all_wind=True`.
-`plot_test_model` and `plot_train_model` should also be set to `True` accordingly. This script will simply save the wind models in a single `.png` file for better visualisation and comparison between different wind predictions.
+`plot_test_model` and `plot_train_model` should also be set to `True` accordingly. `fig_save_train_path` should be set the the path where you want to store the `.png` files.
 
-### Prerequisites
+This script will simply save the wind models in a single `.png` file for better visualisation and comparison between different wind predictions.
 
-What things you need to install the software and how to install them
+### 3D A * algorithm
 
-```
-Give examples
-```
+Run the logic `A_star_search_3D_multiprocessing`, hyper-parameters are as follows:
+* **model_number**: which wind model are run upon
+* **conservative**: a linear conservative cost
 
-### Installing
+This logic will generate files in the `Experiments` folder with information stamp and time stamp. For a single wind model, it will take up to 1-2 hours.
 
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
+### Tabular Reinforcement Learning for model fusion
+ 
+ Run the logic `reinforcement_learning_solution_multiprocessing`,  hyper-parameters are as follows:
 
 Explain how to run the automated tests for this system
 
-### Break down into end to end tests
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
@@ -95,16 +53,5 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* **Di Wu** - *Initial work* - [stevenwudi](http://stevenwudi.github.io)
+* **Zhennan Wang**
