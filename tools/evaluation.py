@@ -324,7 +324,7 @@ def evaluation_plot(cf):
                     for h in range(3, hour):
                         for p in route_list[(h-3)*30:(h-2)*30]:
                             plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
-                    plt.waitforbuttonpress(0.1)
+                    plt.waitforbuttonpress(100)
                     plt.clf()
                     plt.imshow(wind_real_day_hour, cmap=cf.colormap)
                     plt.colorbar()
@@ -358,7 +358,7 @@ def evaluation_plot(cf):
 
             for p in route_list[(hour-3)*30:]:
                 plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
-            plt.waitforbuttonpress(0.5)
+            plt.waitforbuttonpress(100)
 
             if predicted_df_idx < len(predicted_df):
                 if next_loc_pred == goal_loc:

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from tools.A_star_alibaba import sigmoid
 
 # data_score = [(1, 11, 53632), (1, 12, 53754), (1, 13, 53290), (1, 14, 53176), (1, 15, 53060), (3, 14.5, 47024),
 #               (4, 14.5, 46784), (3, 13, 49836), (3, 14, 47968), (3, 15, 46802), (4, 13, 48426), (4, 14, 46882),
@@ -29,8 +30,6 @@ def scatter():
     ax.set_xlabel('X')
     plt.show()
 
-
-
 def surface():
     data = data_score
     x = [item[0] for item in data]
@@ -49,5 +48,12 @@ def surface():
     plt.show()
 
 
-scatter()
+def plt_sigmoid():
+    x = np.arange(10,20,0.01)
+    y = sigmoid(x, 10000, 5, 14.5)
+    plt.plot(x, y)
+    plt.grid(True)
+
+# scatter()
 # surface()
+plt_sigmoid

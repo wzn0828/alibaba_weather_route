@@ -31,9 +31,9 @@ num_threads                 = 5
 A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
-A_star_search_3D_multiprocessing_multicost = True
+A_star_search_3D_multiprocessing_multicost = False
 search_method               = 'a_star_search_3D'  #search methods ['a_star_search_3D','dijkstra']
-model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+model_number                = [3]
 grid_world_shape            = (548, 421)
 total_hours                 = 20-3+1  # 18 hours to travel
 hourly_travel_distance      = 30
@@ -60,7 +60,7 @@ costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**4
 costs_sigmoid               = True  # sigmoid Costs
 costs_sig_speed_time        = 5
-costs_sig_inter_speed       = 14.5
+costs_sig_inter_speed       = 15
 costs_sig_path              = '/home/wzn/PycharmProjects/alibaba_weather_route/config/costs_sigmoid'
 
 colormap                    = 'jet'  #['hot', 'jet']
@@ -75,7 +75,7 @@ evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Train_a_star_search_3D_risky_wall_wind_15_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
+csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10]_____2018-01-29-16-40-37/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10].csv'
 
 # evalutation plot
 evaluation_plot             = False  # a flag for visualising predicted route
@@ -140,3 +140,12 @@ random_crop                     = 416   # We choose 64 here because 30*2+1=61 is
 random_crop_valid               = 416
 batch_size                      = 18
 
+
+########################################################################################################################
+## Weather Prediction
+wp_generate_weather_data_multiprocessing  = True
+wp_wind_indexes                 = 'weather_prediction_data/wind_13_17_index.pickle'
+wp_generate_weather_indexes     = False
+wp_used_model_number            = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+wp_onelayer_data_path           = 'weather_prediction_data/3x3-sample_label_weather'
+wp_twolayer_data_path           = 'weather_prediction_data/5x5-sample_label_weather'
