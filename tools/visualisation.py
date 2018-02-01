@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import multiprocessing
-from multiprocessing import Pool
 import matplotlib
 #matplotlib.use('Agg')
 matplotlib.use('TkAgg')
@@ -376,3 +375,96 @@ def plot_all_wind(cf):
             print('Saving figure %s' % save_fig_name)
             plt.savefig(save_fig_name, dpi=74, bbox_inches='tight')
 
+
+def plot_state_action_value(model, city_data_df, cf):
+    plt.imshow(np.max(np.max(model.stateActionValues, axis=3), axis=2))
+    plt.clim(0, 540)
+    #cb = plt.colorbar(shrink=0.5, aspect=20, fraction=.12, pad=.02)
+    cb = plt.colorbar()
+    cb.ax.set_yticklabels(cb.ax.get_yticklabels(), fontsize=30)
+    plt.axis('off')
+
+    idx = 0
+    x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+    y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+    cid = int(city_data_df.iloc[idx]['cid'])
+    plt.scatter(y_loc, x_loc, c='r', s=40)
+    plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=50)
+
+    idx = cf.goal_city_list[0]
+    x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+    y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+    cid = int(city_data_df.iloc[idx]['cid'])
+    plt.scatter(y_loc, x_loc, c='r', s=40)
+    plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=50)
+
+    plt.show()
+
+
+def evaluation_plot_multi(cf):
+    """
+    This is a script for visualising predicted route's length from multiple output
+    :param cf:
+    :param csvd_for_evaluation:
+    :return:
+    """
+    csvs_for_evaluation = cf.csvs_for_evaluation
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    predicted_dfs = []
+    for csv_for_evaluation in csvs_for_evaluation:
+        predicted_dfs.append(pd.read_csv(csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid']))
+
+    # draw figure maximum
+    plt.figure(1)
+    plt.clf()
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize())
+
+    for day in cf.evaluation_days:
+        for goal_city in cf.evaluation_goal_cities:
+            # begin to draw
+            plt.clf()
+            reach_count = np.zeros(len(predicted_dfs))
+            for hour in range(3, 20):
+                if day < 6:  # meaning this is a training day
+                    weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                else:
+                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+                wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                plt.clf()
+                plt.imshow(wind_real_day_hour, cmap=cf.colormap)
+                plt.colorbar()
+                # we also plot the city location
+                for idx in range(city_data_df.index.__len__()):
+                    x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                    y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                    cid = int(city_data_df.iloc[idx]['cid'])
+                    plt.scatter(y_loc, x_loc, c='r', s=40)
+                    plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
+                # we also draw some contours
+                x = np.arange(0, wind_real_day_hour.shape[1], 1)
+                y = np.arange(0, wind_real_day_hour.shape[0], 1)
+                X, Y = np.meshgrid(x, y)
+                CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
+                plt.clabel(CS, inline=1, fontsize=10)
+                plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
+
+                # we plot every hour
+                for p_idx, predicted_df in enumerate(predicted_dfs):
+                    predicted_df_now = predicted_df.loc[(predicted_df['date'] == day) & (predicted_df['target'] == goal_city)]
+                    for h in range(3, hour+1):
+                        for idx in list(range((h-3)*30, (h-2)*30)):
+                            if len(predicted_df_now) > idx:
+                                plt.scatter(predicted_df_now.iloc[idx]['yid'], predicted_df_now.iloc[idx]['xid'],
+                                            c=cf.colors[np.mod(p_idx, len(cf.colors))], s=10, marker=cf.markers[p_idx])
+                            else:
+                                print('Reached!')
+                                reach_count[p_idx] = 1
+                # plot some legend
+                for p_idx, predicted_df in enumerate(predicted_dfs):
+                    plt.scatter(predicted_df_now.iloc[0]['yid'], predicted_df_now.iloc[0]['xid'],
+                                c=cf.colors[np.mod(p_idx, len(cf.colors))], s=10, marker=cf.markers[p_idx],label=cf.csv_names[p_idx])
+                plt.legend(loc='upper right', shadow=True)
+                plt.waitforbuttonpress(1)
+                if np.sum(reach_count) == len(predicted_dfs):
+                    break

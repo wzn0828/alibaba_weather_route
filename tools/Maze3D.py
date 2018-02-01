@@ -13,13 +13,12 @@ class Maze_3D:
                  time_length,
                  start_state,
                  goal_states,
-                 return_to_start=False,
                  strong_wind_return=False,
                  reward_goal=0.0,
                  reward_move=-1.0,
-                 reward_obstacle=-100.,
                  maxSteps=1e5,
                  wind_real_day_hour_total=None,
+                 c_baseline=0,
                  cf={}):
 
         self.WORLD_WIDTH = width
@@ -39,10 +38,8 @@ class Maze_3D:
         # all reward
         self.reward_goal = reward_goal
         self.reward_move = reward_move
-        self.reward_obstacle = reward_obstacle
 
         self.wind_real_day_hour_total = wind_real_day_hour_total
-        self.return_to_start = return_to_start
         self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
         self.wall_wind = cf.wall_wind
@@ -58,6 +55,12 @@ class Maze_3D:
         self.costs_exp_basenumber = cf.costs_exp_basenumber
         self.costs_exponential_upper = cf.costs_exponential_upper
         self.costs_exponential_lower = cf.costs_exponential_lower
+        # sigmoid cost hyperparameters
+        self.cost_sigmoid = cf.cost_sigmoid
+        self.c1 = cf.c1
+        self.c2 = cf.c2
+        self.c3 = cf.c3
+        self.c_baseline = c_baseline
 
     def takeAction(self, state, action):
         """
@@ -88,10 +91,11 @@ class Maze_3D:
         dist_manhantan = self.heuristic_fn((x, y, t), self.GOAL_STATES)
         time_remain = self.TIME_LENGTH - t
         if time_remain < dist_manhantan:
-            # we can no longer reach the goal from this point
-            reward = self.reward_obstacle
-            terminal_flag = True
-            return [x, y, t], reward, terminal_flag
+            assert "OMG this should never happened, check bug in the code!"
+            # # we can no longer reach the goal from this point
+            # reward = self.reward_obstacle
+            # terminal_flag = True
+            # return [x, y, t], reward, terminal_flag
 
         current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
         if self.costs_exponential:
@@ -106,6 +110,8 @@ class Maze_3D:
                 reward_move = (current_loc_time_wind - self.risky_coeff) / self.risky_coeff
             else:
                 reward_move = -1.0 * self.reward_goal
+        elif self.cost_sigmoid:
+            reward_move = self.sigmoid_cost(current_loc_time_wind)
 
         if tuple([x, y, t]) in self.GOAL_STATES:
             # We add reward move because the goal state could have wind speed larger than 13...
@@ -173,3 +179,6 @@ class Maze_3D:
                 assert "Invalid action!"
 
         return np.array(viable_actions)
+
+    def sigmoid_cost(self, wind_speed):
+        return self.c1 * (1 / (1 + np.exp(-self.c2 * (wind_speed - self.c3)))) + self.c_baseline

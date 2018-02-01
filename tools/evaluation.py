@@ -324,6 +324,7 @@ def evaluation_plot(cf):
                 assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
 
                 if min >= 60:
+                    #plt.waitforbuttonpress()
                     min = 0
                     hour += 1
                     if day < 6:  # meaning this is a training day
@@ -385,3 +386,5 @@ def evaluation_plot(cf):
                             if predicted_df_idx >= len(predicted_df)-1:
                                 break
                         predicted_df_idx += 1
+
+

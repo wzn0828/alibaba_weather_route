@@ -22,7 +22,7 @@ model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
 # submission
 submission_dummy            = False
-add_day                     = 1 #[1| 6]
+add_day                     = 1   #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
 num_threads                 = 3
 
@@ -49,13 +49,21 @@ wind_exp_mean               = 10
 wind_exp_std                = 5
 low_wind_pass               = 10
 conservative                = False
-costs_linear                = True
+costs_linear                = False
 costs_exponential           = False  #costs
 costs_sigmoid               = False  # sigmoid Costs
 costs_exponential_upper     = 16
 costs_exponential_lower     = 13
 costs_exp_basenumber        = 100
-
+cost_sigmoid                = True
+#  c1 * (1 / (1 + np.exp(-c2 * (wind_speed - c3)))) + c4
+c1                          = -10   #-1
+c2                          = 1
+c3                          = 15
+c_baseline_a_star           = 0
+# c_baseline_start            = c1 * (-1) /2
+c_baseline_start            = 0
+c_baseline_end              = 0
 
 
 use_real_weather            = False
@@ -63,60 +71,72 @@ real_hour                   = 3
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
-colors                      = ['red', 'magenta']
+colors                      = ['red', 'black', 'yellow', 'magenta']
+markers                     = [">", (5, 0), (5, 1), '+', (5, 2)]
 wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
 ########################################################################################################################
 # evaluation
 debug_draw                  = False
-evaluation_plot             = True  # a flag for visualising predicted route
-evaluation_days             = [6]  # [1, 2, 3, 4, 5]
+evaluation_plot             = False  # a flag for visualising predicted route
+evaluation_days             = [6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Test_a_star_search_3D_costsExponential_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_A_star_search_3D_conservative_wall_wind_15_model_number_[10].csv'
 
+
+# visualisation
+evaluation_plot_multi        = True
+# csvs_for_evaluation          = ['/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_A_star_search_3D_conservative_wall_wind_15_model_number_[10].csv',
+#                                '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double_____2018-01-31-22-16-40/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double.csv',
+#                                '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double_____2018-01-31-22-13-08/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double.csv',
+#                                 '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10].csv']
+# csv_names = ['Model 10', 'Double Expected Sarsa', 'Double QLearning', 'WZN best Sigmoid Cost']
+
+csvs_for_evaluation          = ['/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Test_A_star_search_3D_conservative_wall_wind_15_model_number_[3].csv',
+                               '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_costTime10_speedTime5_interSpeed_15_model_number_[3]_____2018-01-31-11-59-29/Test_a_star_search_3D_costsSigmoid_model_number_[3].csv',
+                                '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Test_a_star_search_3D_costsSigmoid_speedTime5_interspeed14.5_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv']
+csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000, c2: 5, c3: 14.5']
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
-a_star_loop                     = 100
+# a_star_loop                     = 100
 loop_switch_to_linear_cost      = 50
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
 reward_goal                     = time_length * 1.0
 reward_move                     = 0.0
-reward_obstacle                 = -10.0
 
 # Dyna model hyper-parameters
 maxSteps                        = time_length  # Maze maximum steps
 random_state                    = 1
 planningSteps                   = time_length    # planning steps for Dyna model
-alpha                           = 1      # Learning step size
+alpha                           = 1.0      # Learning step size
 gamma                           = 0.999
-gamma_loop                      = 0.999
 theta                           = 1e-3
 epsilon                         = 0.01
 # the following are the parameters for second round update
-epsilon_start                   = 0.9
+epsilon_start                   = 0.1
 epsilon_end                     = 0.01
-alpha_start                     = 0.01
-alpha_end                       = 0.001
+alpha_start                     = 0.5
+alpha_end                       = 0.01
 polynomial_alpha                = True
 polynomial_alpha_coefficient    = 0.8
 
-qLearning                       = True  # flag for qLearning
+qLearning                       = False  # flag for qLearning
 double                          = True  # flag for double qLearning
-expected                        = False  # flag for expected Sarsa
+expected                        = True  # flag for expected Sarsa
 priority                        = True   # flag for prioritized sweeping
 plus                            = False   # Dyna Plus algorithm
-optimal_length_relax            = 10
+optimal_length_relax            = 540
 heuristic                       = False
 increase_epsilon                = 1.5  # for every maxSteps fail to reach the goal, we increase the epilson
 

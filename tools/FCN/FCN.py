@@ -1,5 +1,6 @@
 from FCN.Pytorch_model_factory import Model_Factory_semantic_seg
-from FCN.Pytorch_data_generator import Dataset_Generators, Dataset_Generators_no_crop
+
+from tools.FCN.Pytorch_data_generator import Dataset_Generators, Dataset_Generators_no_crop
 
 
 # Train the network

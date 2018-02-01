@@ -278,6 +278,10 @@ class Dyna_3D:
             viable_neighbours = self.maze.neighbors(state)
             viable_actions = self.maze.viable_actions(state, viable_neighbours)
 
+            # This is an exception that we have reached our terminal states
+            if state[2] == self.maze.TIME_LENGTH-1:
+                viable_actions = np.array([self.maze.ACTION_STAY])
+
             if np.random.binomial(1, self.epsilon) == 1:
                 action = np.random.choice(viable_actions)
             else:
@@ -339,8 +343,8 @@ class Dyna_3D:
                     action_value_delta = reward + self.gamma * targetValue - currentStateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
             else:
                 # sarsa update
+                newAction, viable_actions, viable_neighbours = self.chooseAction(newState)
                 if not self.expected:
-                    newAction, viable_actions, viable_neighbours = self.chooseAction(newState)
                     valueTarget = self.stateActionValues[newState[0], newState[1], newState[2], newAction]
                     action_value_delta = reward + self.gamma * valueTarget - self.stateActionValues[
                         currentState[0], currentState[1], currentState[2], currentAction]
@@ -396,10 +400,7 @@ class Dyna_3D:
             self.feed(currentState, currentAction, newState, reward)
 
             if not self.qlearning:
-                if not self.expected:
-                    currentAction = newAction
-                else:
-                    currentAction = np.random.choice(np.array(bestActions).flatten())
+                currentAction = newAction
             currentState = newState
 
             ######################## Planning from the model ###############################
@@ -594,7 +595,9 @@ class Dyna_3D:
         if set_wind_to_zeros:
             wind_real_day_hour_total = self.maze.wind_real_day_hour_total
             self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
-        maxSteps = optimal_length * self.optimal_length_relax
+        #maxSteps = optimal_length * self.optimal_length_relax
+        maxSteps = self.optimal_length_relax
+
         currentState = self.maze.START_STATE
         steps = 0
         came_from = {}
