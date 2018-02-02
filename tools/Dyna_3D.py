@@ -504,15 +504,22 @@ class Dyna_3D:
                             self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
 
                 else:
-                    self.alpha_count[stateSample[0], stateSample[1], stateSample[2], actionSample] += 1
-                    alpha_action_temp = 1. / ((self.alpha_count[stateSample[0],stateSample[1], stateSample[2], actionSample]) ** self.polynomial_alpha_coefficient)
-                    self.alpha_action.append(alpha_action_temp)
                     if not self.double:
+                        self.alpha_count[stateSample[0], stateSample[1], stateSample[2], actionSample] += 1
+                        alpha_action_temp = 1. / ((self.alpha_count[stateSample[0], stateSample[1], stateSample[
+                            2], actionSample]) ** self.polynomial_alpha_coefficient)
+                        self.alpha_action.append(alpha_action_temp)
                         self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
                     else:
                         if self.double_first:
+                            self.alpha_count_1[stateSample[0], stateSample[1], stateSample[2], actionSample] += 1
+                            alpha_action_temp = 1. / ((self.alpha_count_1[stateSample[0], stateSample[1], stateSample[2], actionSample]) ** self.polynomial_alpha_coefficient)
+                            self.alpha_action.append(alpha_action_temp)
                             self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
                         else:
+                            self.alpha_count_2[stateSample[0], stateSample[1], stateSample[2], actionSample] += 1
+                            alpha_action_temp = 1. / ((self.alpha_count_2[stateSample[0], stateSample[1], stateSample[2], actionSample]) ** self.polynomial_alpha_coefficient)
+                            self.alpha_action.append(alpha_action_temp)
                             self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
 
                 if self.priority:

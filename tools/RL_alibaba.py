@@ -485,7 +485,7 @@ def reinforcement_learning_solution_new(cf):
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
     cf.day_list = [3]
-    cf.goal_city_list = [9]
+    cf.goal_city_list = [3]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -573,7 +573,11 @@ def reinforcement_learning_solution_new(cf):
             if cf.polynomial_alpha:
                 model.polynomial_alpha = cf.polynomial_alpha
                 model.polynomial_alpha_coefficient = cf.polynomial_alpha_coefficient
-                model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+                if not cf.double:
+                    model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+                else:
+                    model.alpha_count_1 = np.zeros(model.stateActionValues.shape).astype(int)
+                    model.alpha_count_2 = np.zeros(model.stateActionValues.shape).astype(int)
 
             while num_episode < a_star_loop or not success_flag:
                 if num_episode >= a_star_loop * cf.optimal_length_relax:
@@ -684,7 +688,11 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     if cf.polynomial_alpha:
         model.polynomial_alpha = cf.polynomial_alpha
         model.polynomial_alpha_coefficient = cf.polynomial_alpha_coefficient
-        model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+        if not cf.double:
+            model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+        else:
+            model.alpha_count_1 = np.zeros(model.stateActionValues.shape).astype(int)
+            model.alpha_count_2 = np.zeros(model.stateActionValues.shape).astype(int)
 
     # weather information fusion
     while num_episode <= a_star_loop or not success_flag:
