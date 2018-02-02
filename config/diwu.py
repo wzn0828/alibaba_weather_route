@@ -24,7 +24,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1   #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 3
+num_threads                 = 4
 
 ########################################################################################################################
 # A star search
@@ -57,7 +57,7 @@ costs_exponential_lower     = 13
 costs_exp_basenumber        = 100
 cost_sigmoid                = True
 #  c1 * (1 / (1 + np.exp(-c2 * (wind_speed - c3)))) + c4
-c1                          = -100   #-1
+c1                          = -10   #-1
 c2                          = 1
 c3                          = 15
 c_baseline_a_star           = 0
@@ -105,9 +105,8 @@ csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000,
 day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
-reinforcement_learning_solution_new = True
-reinforcement_learning_solution_multiprocessing = False
-# a_star_loop                     = 100
+reinforcement_learning_solution_new = False
+reinforcement_learning_solution_multiprocessing = True
 loop_switch_to_linear_cost      = 50
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state

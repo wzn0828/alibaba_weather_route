@@ -54,6 +54,9 @@ class Configuration():
             if cf.double:
                 cf.model_description += '_Double'
 
+            if cf.polynomial_alpha:
+                cf.model_description += '_polynomial_alpha'
+
             if cf.costs_exponential:
                 cf.model_description += '_costsExponential'
             elif cf.costs_sigmoid:
