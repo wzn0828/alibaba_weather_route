@@ -149,3 +149,12 @@ wp_generate_weather_indexes     = False
 wp_used_model_number            = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 wp_onelayer_data_path           = 'weather_prediction_data/3x3-sample_label_weather'
 wp_twolayer_data_path           = 'weather_prediction_data/5x5-sample_label_weather'
+
+
+################ Predict Weather ###################
+cuda                            = True
+loss                            = 'MSELoss'     # ['L1Loss', 'MSELoss', 'SmoothL1Loss']
+wp_model_name                   = 'fully_connected_model'
+# wp_fc
+wp_fc_input_dim                 = 90            # input dim, [90, 250]
+wp_fc_nonlinear                 = 'ReLU'        # ['Tanh', 'ReLU']

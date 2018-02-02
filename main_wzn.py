@@ -14,7 +14,7 @@ from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
-from tools.weather_prediction.generate_weather_data import wp_generate_weather_data_multiprocessing
+from weather_prediction.wp_generate_weather_data import wp_generate_weather_data_multiprocessing
 
 def process(cf):
     ### Following is the plotting alogrithm #############

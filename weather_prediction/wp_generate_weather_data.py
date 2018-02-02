@@ -19,7 +19,6 @@ def wp_generate_weather_data_multiprocessing(cf):
         jobs.append(p)
         p.start()
 
-
     # waiting for the all the job to finish
     for j in jobs:
         j.join()
@@ -49,16 +48,17 @@ def wp_generate_weather_data_worker(cf, day_hour, locations):
     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, real_weather_name))
     wind_real_day_hour = np.round(wind_real_day_hour, 2)
     # save data
+    onelayerdatas = []
+    twolayerdatas = []
     for loc_idx, location in enumerate(locations):
         location = tuple(location)
-        onelayerdatafilename = os.path.join(cf.wp_onelayer_data_path,
-                                            '3x3_' + str(day_hour[0]) + '_' + str(day_hour[1]) + '_' + str(
-                                                location) + '.npy')
-        twolayerdatafilename = os.path.join(cf.wp_twolayer_data_path,
-                                            '5x5_' + str(day_hour[0]) + '_' + str(day_hour[1]) + '_' + str(
-                                                location) + '.npy')
-        np.save(onelayerdatafilename, (sampledata_onelayer[loc_idx], wind_real_day_hour[location]))
-        np.save(twolayerdatafilename, (sampledata_twolayer[loc_idx], wind_real_day_hour[location]))
+        onelayerdatas.append((sampledata_onelayer[loc_idx], wind_real_day_hour[location]))
+        twolayerdatas.append((sampledata_twolayer[loc_idx], wind_real_day_hour[location]))
+
+    onelayerdatafilename = os.path.join(cf.wp_onelayer_data_path, '3x3_' + str(day_hour[0]) + '_' + str(day_hour[1]) + '_' + str(len(locations)) + '.npy')
+    twolayerdatafilename = os.path.join(cf.wp_twolayer_data_path, '5x5_' + str(day_hour[0]) + '_' + str(day_hour[1]) + '_' + str(len(locations)) + '.npy')
+    np.save(onelayerdatafilename, onelayerdatas)
+    np.save(twolayerdatafilename, twolayerdatas)
 
 
 def expand_array(cf, wind_model_day_hour):
@@ -83,12 +83,17 @@ def generate_weather_indexes(cf):
             for hour in range(3, 21):
                 model_index = np.zeros(cf.grid_world_shape)
                 # wind model data
-                for model_number in cf.model_number:
+                wind_model_day_hour_temp = []
+                for model_number in cf.wp_used_model_number:
                     # we average the result
                     weather_name = 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (model_number, day, hour)
                     wind_model_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
                     wind_model_day_hour = np.round(wind_model_day_hour, 2)
+                    wind_model_day_hour_temp.append(wind_model_day_hour)
                     model_index += np.logical_and(13 <= wind_model_day_hour, wind_model_day_hour <= 17)
+                wind_model_day_hour_temp = np.asarray(wind_model_day_hour_temp)
+                wind_model_day_hour = np.mean(wind_model_day_hour_temp, axis=0)
+
                 # wind real data
                 real_weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, real_weather_name))
@@ -96,8 +101,11 @@ def generate_weather_indexes(cf):
                 # union set
                 model_index += np.logical_and(13 <= wind_real_day_hour, wind_real_day_hour <= 17)
 
+                #intersection
+                intersection = np.logical_and(model_index > 0, np.abs(wind_real_day_hour-wind_model_day_hour) <= 2)
+
                 # record
-                index_day_hour[(day, hour)] = np.argwhere(model_index > 0)
+                index_day_hour[(day, hour)] = np.argwhere(intersection==True)
         # save
         with open(cf.wp_wind_indexes, 'wb') as handle:
             pickle.dump(index_day_hour, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -124,6 +132,7 @@ def test_error_ratio(cf, day, hour):
     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
     wind_real_day_hour = np.round(wind_real_day_hour, 2)
     # wind_real_day_hour[wind_real_day_hour==0] = 1e+8
+
 
     return (wind_real_day_hour-wind_model_day_hour)/wind_real_day_hour
 
