@@ -11,6 +11,7 @@ import multiprocessing
 from tools.simpleSub import a_star_submission_3d, collect_csv_for_submission
 from tools.visualisation import plot_state_action_value
 
+
 def load_a_star_precompute(cf):
     A_star_model_precompute_csv = []
     if cf.day_list[0] <= 5:
@@ -93,6 +94,7 @@ def initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_
                     priority=cf.priority,
                     theta=cf.theta,
                     optimal_length_relax=cf.optimal_length_relax,
+                    polynomial_alpha=False,
                     heuristic=cf.heuristic)
     return model
 
@@ -482,8 +484,8 @@ def reinforcement_learning_solution_new(cf):
     """
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
-    cf.day_list = [2]
-    cf.goal_city_list = [8]
+    cf.day_list = [3]
+    cf.goal_city_list = [3]
     cf.risky = False
     cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -566,6 +568,13 @@ def reinforcement_learning_solution_new(cf):
             model.double = cf.double
             # we need to copy the double Q-learning stateActionValue here
             model.stateActionValues2 = model.stateActionValues.copy()
+
+            # polynomial learning rate for alpha
+            if cf.polynomial_alpha:
+                model.polynomial_alpha = cf.polynomial_alpha
+                model.polynomial_alpha_coefficient = cf.polynomial_alpha_coefficient
+                model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+
             while num_episode < a_star_loop or not success_flag:
                 if num_episode >= a_star_loop * cf.optimal_length_relax:
                     break
@@ -582,7 +591,10 @@ def reinforcement_learning_solution_new(cf):
                 model.epsilon = max(cf.epsilon_end, model.epsilon - epsilon_step)
                 model.alpha = max(cf.alpha_end, model.alpha - alpha_step)   # we don't want our learning rate to be too large
                 model.maze.c_baseline = max(cf.c_baseline_end, model.maze.c_baseline - c_baseline_step)
-                str1 = "Episode %d, wind model: %d, baseline: %2f, alpha: %2f, epsilon: %2f. ### " % (num_episode, model.maze.wind_model+1, model.maze.c_baseline, model.alpha, model.epsilon)
+                if cf.polynomial_alpha:
+                    str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, baseline: %2f, alpha(mean): %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.maze.c_baseline, np.mean(np.array(model.alpha_action)), model.epsilon)
+                else:
+                    str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, baseline: %2f, alpha: %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.maze.c_baseline, model.alpha, model.epsilon)
                 print(str1 + str2)
 
             print('Finish, using %.2f sec!, updating %d steps.' % (timer() - start_time, np.sum(steps)))
@@ -726,6 +738,7 @@ def reinforcement_learning_solution_multiprocessing(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by multiprocessing.
     multiprocessing.log_to_stderr()
     print("Read Precompute A star route...")
+    print(cf)
     A_star_model_precompute_csv = load_a_star_precompute(cf)
 
     jobs = []

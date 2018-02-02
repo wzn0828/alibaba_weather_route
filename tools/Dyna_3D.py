@@ -56,7 +56,9 @@ class Dyna_3D:
                  policy_init=[],
                  optimal_length_relax=1.2,
                  heuristic=False,
-                 increase_epsilon=0):
+                 increase_epsilon=0,
+                 polynomial_alpha=False,
+                 polynomial_alpha_coefficient=0.8):
         """
         :param rand: @rand: an instance of np.random.RandomState for sampling
         :param maze:
@@ -129,6 +131,12 @@ class Dyna_3D:
         self.policy_init = policy_init
         if type(self.policy_init):
             self.name += '_A_star'
+
+        # polynomial learning rate for alpha
+        self.polynomial_alpha = polynomial_alpha
+        if polynomial_alpha:
+            self.polynomial_alpha_coefficient = polynomial_alpha_coefficient
+            self.alpha_count = np.zeros(self.stateActionValues.shape).astype(int)
 
         # for checking the optimal path length and a stopping criterion
         self.optimal_length_relax = optimal_length_relax
@@ -308,6 +316,8 @@ class Dyna_3D:
         currentState = self.maze.START_STATE
         steps = 0
         terminal_flag = False
+        if self.polynomial_alpha:
+            self.alpha_action = []
         while tuple(currentState) not in self.maze.GOAL_STATES and not terminal_flag:
             ######################## Interaction with the environment ###############################
             steps += 1
@@ -387,7 +397,14 @@ class Dyna_3D:
                         action_value_delta = reward + self.gamma * valueTarget - currentStateActionValues[currentState[0], currentState[1], currentState[2], currentAction]
 
             if not self.priority:
-                self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction] += self.alpha * action_value_delta
+                if not self.polynomial_alpha:
+                    self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction] += self.alpha * action_value_delta
+                else:
+                    self.alpha_count[currentState[0], currentState[1], currentState[2], currentAction] += 1
+                    alpha_action_temp = 1. / ((self.alpha_count[currentState[0], currentState[1], currentState[2], currentAction]) ** self.polynomial_alpha_coefficient)
+                    self.alpha_action.append(alpha_action_temp)
+                    self.stateActionValues[currentState[0], currentState[1], currentState[2], currentAction] += alpha_action_action_temp * action_value_delta
+
             else:
                 if self.heuristic:
                     priority = np.abs(action_value_delta) - self.heuristic_fn(currentState, self.maze.GOAL_STATES) /self.heuristic_const
@@ -477,13 +494,26 @@ class Dyna_3D:
 
                             action_value_delta = reward + self.gamma * valueTarget - currentStateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample]
 
-                if not self.double:
-                    self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
-                else:
-                    if self.double_first:
+                if not self.polynomial_alpha:
+                    if not self.double:
                         self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
                     else:
-                        self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+                        if self.double_first:
+                            self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+                        else:
+                            self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += self.alpha * action_value_delta
+
+                else:
+                    self.alpha_count[stateSample[0], stateSample[1], stateSample[2], actionSample] += 1
+                    alpha_action_temp = 1. / ((self.alpha_count[stateSample[0],stateSample[1], stateSample[2], actionSample]) ** self.polynomial_alpha_coefficient)
+                    self.alpha_action.append(alpha_action_temp)
+                    if not self.double:
+                        self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
+                    else:
+                        if self.double_first:
+                            self.stateActionValues[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
+                        else:
+                            self.stateActionValues2[stateSample[0], stateSample[1], stateSample[2], actionSample] += alpha_action_temp * action_value_delta
 
                 if self.priority:
                     # deal with all the predecessors of the sample states

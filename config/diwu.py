@@ -57,7 +57,7 @@ costs_exponential_lower     = 13
 costs_exp_basenumber        = 100
 cost_sigmoid                = True
 #  c1 * (1 / (1 + np.exp(-c2 * (wind_speed - c3)))) + c4
-c1                          = -10   #-1
+c1                          = -100   #-1
 c2                          = 1
 c3                          = 15
 c_baseline_a_star           = 0
@@ -88,7 +88,7 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 
 
 # visualisation
-evaluation_plot_multi        = True
+evaluation_plot_multi        = False
 # csvs_for_evaluation          = ['/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_A_star_search_3D_conservative_wall_wind_15_model_number_[10].csv',
 #                                '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double_____2018-01-31-22-16-40/Train_reinforcement_learning_solution_multiprocessing_ExpectedSarsa_Double.csv',
 #                                '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double_____2018-01-31-22-13-08/Train_reinforcement_learning_solution_multiprocessing_qLearning_Double.csv',
@@ -105,7 +105,7 @@ csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000,
 day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
-reinforcement_learning_solution_new = False
+reinforcement_learning_solution_new = True
 reinforcement_learning_solution_multiprocessing = False
 # a_star_loop                     = 100
 loop_switch_to_linear_cost      = 50
