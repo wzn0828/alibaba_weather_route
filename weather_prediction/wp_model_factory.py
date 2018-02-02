@@ -27,7 +27,23 @@ class Model_Factory_Predict_Weather():
                                              cuda=cf.cuda)
 
         # Set the loss criterion
-        if cf.loss == 'MSELoss':
+        if cf.loss == 'L1Loss':
+            self.crit = nn.L1Loss()
+        elif cf.loss == 'MSELoss':
             self.crit = nn.MSELoss()
         elif cf.loss == 'SmoothL1Loss':
             self.crit = nn.SmoothL1Loss()
+
+        # set data type
+        self.net.float()
+        if cf.cuda and torch.cuda.is_available():
+            print('Using cuda')
+            self.net = self.net.cuda()
+            self.crit = self.crit.cuda()
+
+        # set path and logfile
+        self.exp_dir = cf.savepath + '_' + datetime.now().strftime('%a, %d %b %Y-%m-%d %H:%M:%S') + '_' + cf.model_name
+        os.mkdir(self.exp_dir)
+        # Enable log file
+        self.log_file = os.path.join(self.exp_dir, "logfile.log")
+        sys.stdout = Logger(self.log_file)

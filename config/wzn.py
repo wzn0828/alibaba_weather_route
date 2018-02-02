@@ -44,7 +44,7 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
@@ -143,15 +143,14 @@ batch_size                      = 18
 
 ########################################################################################################################
 ## Weather Prediction
-wp_generate_weather_data_multiprocessing  = True
+wp_generate_weather_data_multiprocessing = True
 wp_wind_indexes                 = 'weather_prediction_data/wind_13_17_index.pickle'
 wp_generate_weather_indexes     = False
 wp_used_model_number            = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 wp_onelayer_data_path           = 'weather_prediction_data/3x3-sample_label_weather'
 wp_twolayer_data_path           = 'weather_prediction_data/5x5-sample_label_weather'
 
-
-################ Predict Weather ###################
+wp_predict_weather              = True
 cuda                            = True
 loss                            = 'MSELoss'     # ['L1Loss', 'MSELoss', 'SmoothL1Loss']
 wp_model_name                   = 'fully_connected_model'
