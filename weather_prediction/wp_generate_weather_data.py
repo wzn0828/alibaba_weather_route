@@ -6,22 +6,22 @@ import multiprocessing
 
 
 def wp_generate_weather_data_multiprocessing(cf):
+    if cf.wp_generate_weather_data_multiprocessing:
+        # get indices
+        indexes = generate_weather_indexes(cf)
 
-    # # get idnexes
-    indexes = generate_weather_indexes(cf)
+        # generate data
+        start_time = timer()
+        multiprocessing.log_to_stderr()
+        jobs = []
+        for day_hour, locations in indexes.items():
+            p = multiprocessing.Process(target=wp_generate_weather_data_worker, args=(cf, day_hour, locations))
+            jobs.append(p)
+            p.start()
 
-    # generate data
-    start_time = timer()
-    multiprocessing.log_to_stderr()
-    jobs = []
-    for day_hour, locations in indexes.items():
-        p = multiprocessing.Process(target=wp_generate_weather_data_worker, args=(cf, day_hour, locations))
-        jobs.append(p)
-        p.start()
-
-    # waiting for the all the job to finish
-    for j in jobs:
-        j.join()
+        # waiting for the all the job to finish
+        for j in jobs:
+            j.join()
 
 
 def wp_generate_weather_data_worker(cf, day_hour, locations):
@@ -132,7 +132,6 @@ def test_error_ratio(cf, day, hour):
     wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
     wind_real_day_hour = np.round(wind_real_day_hour, 2)
     # wind_real_day_hour[wind_real_day_hour==0] = 1e+8
-
 
     return (wind_real_day_hour-wind_model_day_hour)/wind_real_day_hour
 
