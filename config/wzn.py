@@ -154,6 +154,13 @@ wp_predict_weather              = True
 cuda                            = True
 loss                            = 'MSELoss'     # ['L1Loss', 'MSELoss', 'SmoothL1Loss']
 wp_model_name                   = 'fully_connected_model'
+wp_load_trained_model           = False
+wp_trained_model_path           = ''
+wp_optimizer                    = 'LBFGS'       # ['LBFGS','adam','rmsprop','sgd']
+wp_learning_rate                = 0.01          # Training learning rate
+wp_momentum                     = 0.9
+wp_weight_decay                 = 0.            # Weight decay or L2 parameter norm penalty
+wp_lr_decay_epoch               = 10
 # wp_fc
 wp_fc_input_dim                 = 90            # input dim, [90, 250]
 wp_fc_nonlinear                 = 'ReLU'        # ['Tanh', 'ReLU']
