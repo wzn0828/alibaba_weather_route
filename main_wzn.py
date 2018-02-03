@@ -95,7 +95,7 @@ def process(cf):
         evaluation_plot(cf)
 
     ### weather prediction
-    if cf.wp_generate_weather_data_multiprocessing:
+    if cf.wp_predict_weather:
         print('weather: generate weather data')
         wp_generate_weather_data_multiprocessing(cf)
 

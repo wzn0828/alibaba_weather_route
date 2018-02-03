@@ -15,6 +15,7 @@ class fully_connected_model(nn.Module):
         :param cuda: whether or not to use GPU
         '''
         super(fully_connected_model, self).__init__()
+        self.wp_fc_input_dim = wp_fc_input_dim
         # fully connected part
         self.linear1 = nn.Linear(wp_fc_input_dim, 90)
         self.linear2 = nn.Linear(90, 40)
@@ -36,6 +37,9 @@ class fully_connected_model(nn.Module):
         :return: predicted weather data, type is Variable, Size is (batchSize, *, 1)
         '''
 
+        # resize data
+        size = wp_model_weather_datas.size()
+        wp_model_weather_datas.resize(size[0], self.wp_fc_input_dim)
         # fully connected part:
         output_linear1 = self.linear1(wp_model_weather_datas)
         output_nonlinear1 = self.nonlinear1(output_linear1)

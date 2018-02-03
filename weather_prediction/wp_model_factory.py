@@ -80,33 +80,27 @@ class Model_Factory_Predict_Weather():
         lr = adjust_learning_rate(self.cf.learning_rate, self.optimizer, epoch, decrease_epoch=cf.lr_decay_epoch)
         print('learning rate:', lr)
 
-        if cf.optimizer == 'LBFGS':
-            def closure():
-                self.optimizer.zero_grad()
-                out = self.net(*input)[0]
-                loss = self.crit(out, train_target)
-                if cf.cuda:
-                    print('loss: ', loss.data.cpu().numpy()[0])
-                else:
-                    print('loss: ', loss.data.numpy()[0])
-                loss.backward()
-                return loss
-            self.optimiser.step(closure)
-        else:
+        # if cf.optimizer == 'LBFGS':
+        #     def closure():
+        #         self.optimizer.zero_grad()
+        #         out = self.net(*input)[0]
+        #         loss = self.crit(out, train_target)
+        #         if cf.cuda:
+        #             print('loss: ', loss.data.cpu().numpy()[0])
+        #         else:
+        #             print('loss: ', loss.data.numpy()[0])
+        #         loss.backward()
+        #         return loss
+        #     self.optimiser.step(closure)
+        # else:
         train_losses = []
-        for i, (sementic, input_trajectory, target_trajectory) in enumerate(train_loader):
-            self.optimiser.zero_grad()
-            sementic, input_trajectory, target_trajectory = Variable(sementic.cuda(async=True), requires_grad=False), \
-                                                            Variable(input_trajectory.cuda(async=True),
-                                                                     requires_grad=False), \
-                                                            Variable(target_trajectory.cuda(async=True),
-                                                                     requires_grad=False)
-            if cf.model_name == 'CNN_LSTM_To_FC' or cf.model_name == 'DropoutCNN_LSTM_To_FC':
-                input = tuple([sementic, input_trajectory])
-            else:
-                input = tuple([input_trajectory])
-            output = self.net(*input)[0]
-            self.loss = self.crit(output, target_trajectory)
+        for i, (input_samples, output_labels) in enumerate(train_loader):
+            self.optimizer.zero_grad()
+            input_samples, output_labels = Variable(input_samples.cuda(async=True), requires_grad=False), \
+                                           Variable(output_labels.cuda(async=True), requires_grad=False)
+
+            output_prediction = self.net(input_samples)
+            self.loss = self.crit(output_prediction, output_labels)
             train_losses.append(self.loss.data[0])
             self.loss.backward()
             self.optimiser.step()
@@ -114,5 +108,50 @@ class Model_Factory_Predict_Weather():
         train_loss = np.array(train_losses).mean()
         print('Train Loss', epoch, train_loss)
 
-        return train_loss, lastupdate_epoch
+        return train_loss
 
+    def test(self, cf, valid_loader, data_mean, data_std, epoch=None):
+        self.net.eval()
+        # for experiment: output predicted trajectory
+        predicted_weather = []
+        valid_losses = []
+        MSEs = []
+        for i, (input_samples, output_labels) in enumerate(valid_loader):
+            # print(i)
+            input_samples, output_labels = Variable(input_samples.cuda(async=True)), \
+                                           Variable(output_labels.cuda(async=True))
+
+            output_prediction = self.net(input_samples)
+            # output predicted weather
+            predicted_weather.append((output_prediction.data.cpu().numpy())*data_std + data_mean)
+
+            # cal loss
+            loss = self.crit(output_prediction, output_labels)
+            valid_losses.append(loss.data[0])
+
+            # eavluation
+            MSEs.append((data_std**2) * nn.MSELoss(output_prediction, output_labels))
+
+        # output predicted weather
+        cf.predicted_weather_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '_predicted_weather.npy')
+        np.save(cf.predicted_weather_file_name, np.array(predicted_weather))
+
+        # loss mean
+        self.loss = np.array(valid_losses).mean()
+
+        # evaluation mean
+        self.MSE = np.array(MSEs).mean()
+
+        # Save weights and scores
+        if epoch:
+            print('############### VALID #############################################')
+            print('Valid Loss:', epoch, self.loss)
+            print('MSE: %.4f' % self.MSE)
+            model_checkpoint = 'Epoch:%2d_MSE:%.4f.PTH' % (epoch, self.MSE)
+            torch.save(self.net.state_dict(), os.path.join(self.exp_dir, model_checkpoint))
+        else:
+            print('############### TEST #############################################')
+            print('Test Loss:', epoch, self.loss)
+            print('MSE: %.4f' % self.MSE)
+
+        return self.loss

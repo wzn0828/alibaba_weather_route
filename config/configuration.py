@@ -68,8 +68,6 @@ class Configuration():
                 cf.model_description += str(cf.wp_fc_input_dim) + '_' + cf.wp_fc_nonlinear
 
 
-
-
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
