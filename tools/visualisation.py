@@ -31,13 +31,17 @@ def plot_real_wind(cf):
                       (len(x_unique) * len(y_unique), wind_real_df_day_hour.index.__len__()))
 
             wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+            rainfall_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
             for idx in range(wind_real_df_day_hour.index.__len__()):
                 x_loc = int(wind_real_df_day_hour.iloc[idx]['xid']) - 1
                 y_loc = int(wind_real_df_day_hour.iloc[idx]['yid']) - 1
                 wind = np.float32(wind_real_df_day_hour.iloc[idx]['wind'])
                 wind_real_day_hour[x_loc, y_loc] = wind
+                rainfall = np.float32(wind_real_df_day_hour.iloc[idx]['rainfall'])
+                rainfall_real_day_hour[x_loc, y_loc] = rainfall
 
-            np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy'%(d_unique, h_unique)),wind_real_day_hour)
+            np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy'%(d_unique, h_unique)), wind_real_day_hour)
+            np.save(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)), rainfall_real_day_hour)
 
 
 def plt_forecast_wind_train(cf):
@@ -80,13 +84,17 @@ def plt_forecast_wind_train_workers(cf, wind_real_df_model_day_hour, m_unique, d
               (len(x_unique) * len(y_unique), wind_real_df_model_day_hour.index.__len__()))
 
     wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    rainfall_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
     for idx in range(wind_real_df_model_day_hour.index.__len__()):
         x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
         y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
         wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
         wind_real_day_hour[x_loc, y_loc] = wind
+        rainfall = np.float32(wind_real_df_model_day_hour.iloc[idx]['rainfall'])
+        rainfall_real_day_hour[x_loc, y_loc] = rainfall
 
-    np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)),wind_real_day_hour)
+    np.save(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)), wind_real_day_hour)
+    np.save(os.path.join(cf.rainfall_save_path, 'Train_forecast_rainfall_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique)), rainfall_real_day_hour)
     print('Finish writing Train weather, using %.2f sec!' % (timer() - start_time))
 
 
@@ -102,7 +110,7 @@ def plt_forecast_wind_train_multiprocessing(cf):
     multiprocessing.log_to_stderr()
 
     for m_unique in cf.model_unique:
-        for d_unique in cf.day_list:
+        for d_unique in [1, 2, 3, 4, 5]:
             for h_unique in range(cf.hour_unique[0], cf.hour_unique[1]+1):
                 if not os.path.exists(os.path.join(cf.wind_save_path, 'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))):
                     print('Processing forecast data for model: %d,  date: %d, hour: %d' % (m_unique, d_unique, h_unique))
@@ -133,15 +141,20 @@ def plt_forecast_wind_test_workers(cf, wind_real_df_model_day_hour, m_unique, d_
               (len(x_unique) * len(y_unique), wind_real_df_model_day_hour.index.__len__()))
 
     wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    rainfall_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
     for idx in range(wind_real_df_model_day_hour.index.__len__()):
         x_loc = int(wind_real_df_model_day_hour.iloc[idx]['xid']) - 1
         y_loc = int(wind_real_df_model_day_hour.iloc[idx]['yid']) - 1
         wind = np.float32(wind_real_df_model_day_hour.iloc[idx]['wind'])
+        rainfall = np.float32(wind_real_df_model_day_hour.iloc[idx]['rainfall'])
         wind_real_day_hour[x_loc, y_loc] = wind
+        rainfall_real_day_hour[x_loc, y_loc] = rainfall
 
     np.save(os.path.join(cf.wind_save_path, 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' %
                          (m_unique, d_unique, h_unique)), wind_real_day_hour)
-    print('Finish writing one hour wind data saving, using %.2f sec!' % (timer() - start_time))
+    np.save(os.path.join(cf.rainfall_save_path, 'Test_forecast_rainfall_model_%d_day_%d_hour_%d.npy' %
+                         (m_unique, d_unique, h_unique)), rainfall_real_day_hour)
+    print('Finish writing one hour wind & rainfall data saving, using %.2f sec!' % (timer() - start_time))
 
 
 def plt_forecast_wind_test_multiprocessing(cf):
@@ -155,9 +168,9 @@ def plt_forecast_wind_test_multiprocessing(cf):
     multiprocessing.log_to_stderr()
 
     for m_unique in cf.model_unique:
-        for d_unique in cf.day_list:
+        for d_unique in [6, 7, 8, 9, 10]:
             for h_unique in range(cf.hour_unique[0], cf.hour_unique[1]+1):
-                if not os.path.exists(os.path.join(cf.wind_save_path,'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))):
+                if not os.path.exists(os.path.join(cf.wind_save_path, 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))):
                     print('Processing forecast data for model: %d,  date: %d, hour: %d' % (m_unique, d_unique, h_unique))
 
                     wind_real_df_model = wind_real_df.loc[wind_real_df['model'] == m_unique]

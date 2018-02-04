@@ -1,13 +1,14 @@
 savepath                    = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments'
-dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/downloaded_data/'
+dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rematch_downloaded_data/'
 fig_save_path               = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
 fig_save_train_path         = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
 fig_save_test_path          = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
-wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing_float32'
+wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/wind_numpy_2018_02'
+rainfall_save_path          = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rainfall_numpy_2018_02'
 
-TrainRealFile               = 'In_situMeasurementforTraining_201712.csv'
-TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
-TestForecastFile            = 'ForecastDataforTesting_201712.csv'
+TrainRealFile               = 'In_situMeasurementforTraining_201802.csv'
+TrainForecastFile           = 'ForecastDataforTraining_201802.csv'
+TestForecastFile            = 'ForecastDataforTesting_201802.csv'
 
 ########################################################################################################################
 plot_real_wind              = False
@@ -24,7 +25,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 5
+num_threads                 = 10
 
 ########################################################################################################################
 # A star search
@@ -150,7 +151,7 @@ wp_used_model_number            = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 wp_onelayer_data_path           = 'weather_prediction_data/3x3-sample_label_weather'
 wp_twolayer_data_path           = 'weather_prediction_data/5x5-sample_label_weather'
 
-wp_predict_weather              = True
+wp_predict_weather              = False
 cuda                            = True
 loss                            = 'MSELoss'     # ['L1Loss', 'MSELoss', 'SmoothL1Loss']
 wp_model_name                   = 'fully_connected_model'
