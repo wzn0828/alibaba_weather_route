@@ -43,6 +43,57 @@ def plot_real_wind(cf):
             np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy'%(d_unique, h_unique)), wind_real_day_hour)
             np.save(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)), rainfall_real_day_hour)
 
+def plot_real_wind_worker(cf, wind_real_df_day_hour, d_unique, h_unique, x_unique, y_unique):
+    start_time = timer()
+    if not len(x_unique) * len(y_unique) == wind_real_df_day_hour.index.__len__():
+        print('There are some missing data or redudant data: pixel range: %d, given wind pixel range: %d.' %
+              (len(x_unique) * len(y_unique), wind_real_df_day_hour.index.__len__()))
+
+    wind_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    rainfall_real_day_hour = np.zeros(shape=(len(x_unique), len(y_unique)))
+    for idx in range(wind_real_df_day_hour.index.__len__()):
+        x_loc = int(wind_real_df_day_hour.iloc[idx]['xid']) - 1
+        y_loc = int(wind_real_df_day_hour.iloc[idx]['yid']) - 1
+        wind = np.float32(wind_real_df_day_hour.iloc[idx]['wind'])
+        wind_real_day_hour[x_loc, y_loc] = wind
+        rainfall = np.float32(wind_real_df_day_hour.iloc[idx]['rainfall'])
+        rainfall_real_day_hour[x_loc, y_loc] = rainfall
+
+    np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy' % (d_unique, h_unique)), wind_real_day_hour)
+    np.save(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)),
+            rainfall_real_day_hour)
+    print('Finish writing Real weather, using %.2f sec!' % (timer() - start_time))
+
+def plot_real_wind_multiprocessing(cf):
+    # Create the data generators
+    start_time = timer()
+    # Create the data generators
+    wind_real_df = pd.read_csv(os.path.join(cf.dataroot_dir, cf.TrainRealFile))
+
+    x_unique = pd.unique(wind_real_df['xid'])
+    y_unique = pd.unique(wind_real_df['yid'])
+    date_unique = pd.unique(wind_real_df['date_id'])
+    hour_unique = pd.unique(wind_real_df['hour'])
+
+    jobs = []
+    multiprocessing.log_to_stderr()
+
+    for d_unique in date_unique:
+        for h_unique in hour_unique:
+            if not os.path.exists(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy' % (d_unique, h_unique))):
+                print('Processing real data for date: %d, hour: %d' % (d_unique, h_unique))
+                wind_real_df_day = wind_real_df.loc[wind_real_df['date_id'] == d_unique]
+                wind_real_df_day_hour = wind_real_df_day.loc[wind_real_df_day['hour'] == h_unique]
+
+                p = multiprocessing.Process(target=plot_real_wind_worker, args=(cf, wind_real_df_day_hour, d_unique, h_unique, x_unique, y_unique))
+                p.start()
+                jobs.append(p)
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+
+    print('Finish writing Real weather, using %.2f sec!' % (timer() - start_time))
 
 def plt_forecast_wind_train(cf):
     # Create the data generators

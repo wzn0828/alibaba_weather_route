@@ -11,7 +11,8 @@ TrainForecastFile           = 'ForecastDataforTraining_201802.csv'
 TestForecastFile            = 'ForecastDataforTesting_201802.csv'
 
 ########################################################################################################################
-plot_real_wind              = True
+plot_real_wind              = False
+plot_real_wind_multiprocessing = True
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
 plt_forecast_wind_train_multiprocessing = True
