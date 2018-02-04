@@ -1,8 +1,11 @@
 savepath                    = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments'
 dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rematch_downloaded_data/'
 fig_save_path               = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
-fig_save_train_path         = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
-fig_save_test_path          = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
+fig_wind_save_train_path         = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Wind/Train_models_wind_2018_02'
+fig_wind_save_test_path          = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Wind/Test_models_wind_2018_02'
+fig_rainfall_save_train_path         = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Rainfall/Train_models_rainfall_2018_02'
+fig_rainfall_save_test_path          = '/home/wzn/PycharmProjects/alibaba_weather_route/Figures/Rainfall/Test_models_rainfall_2018_02'
+
 wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/wind_numpy_2018_02'
 rainfall_save_path          = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rainfall_numpy_2018_02'
 
@@ -20,13 +23,15 @@ plt_forecast_wind_test_multiprocessing = True
 plot_all_wind               = False
 plot_train_model            = False
 plot_test_model             = False
+plot_all_wind_new           = True
+plot_all_rainfall           = True
 model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
 # submission
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 10
+num_threads                 = 5
 
 ########################################################################################################################
 # A star search
@@ -90,7 +95,6 @@ reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
 a_star_loop                     = 1000
-num_threads                     = 12
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state
 include_all                     = False     # A flag indicating include all other A star heuristics
