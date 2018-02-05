@@ -36,6 +36,10 @@ def process(cf):
     if cf.plot_all_wind:
         print('Draw weather')
         plot_all_wind(cf)
+    if cf.plot_all_rain:
+        print('plot_all_rain')
+        plot_all_rain(cf)
+
 
     ### Following is the A Star alogrithm #############
     if cf.A_star_search_2D:
