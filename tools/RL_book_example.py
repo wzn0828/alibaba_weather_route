@@ -59,7 +59,7 @@ def main():
     ############## A star search algorithm  ######################################
     start_time = timer()
     diagram = convert_3D_maze_to_grid(maze, cf)
-    came_from, cost_so_far, [final_goal_time] = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
+    came_from, cost_so_far, [final_goal_time], wind_costs, rainfall_costs = a_star_search_3D(diagram, tuple(maze.START_STATE), maze.GOAL_STATES)
     go_to_all, steps = walk_final_grid_go_to(tuple(maze.START_STATE), maze.GOAL_STATES, came_from, final_goal_time, include_all=cf.include_all)
     if True:
         draw_grid_3d(diagram, came_from=came_from, start=tuple(maze.START_STATE),

@@ -15,10 +15,10 @@ TestForecastFile            = 'ForecastDataforTesting_201802.csv'
 
 ########################################################################################################################
 plot_real_wind              = False
-plot_real_wind_multiprocessing = True
+plot_real_wind_multiprocessing = False
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
-plt_forecast_wind_train_multiprocessing = True
+plt_forecast_wind_train_multiprocessing = False
 plt_forecast_wind_test_multiprocessing = True
 plot_all_wind               = False
 plot_train_model            = False
@@ -31,7 +31,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 4
+num_threads                 = 6
 
 ########################################################################################################################
 # A star search
@@ -55,10 +55,14 @@ day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
+wall_rainfall               = 4
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
+risky_coeff_rainfall        = 4.  # This will only take effect is risky is set to False
 wind_exp                    = False
 wind_exp_mean               = 5
 wind_exp_std                = 5
+rainfall_exp_mean           = 1.3
+rainfall_exp_std            = 1.3
 use_real_weather            = False
 conservative                = False
 real_hour                   = 3
@@ -67,14 +71,17 @@ costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**4
 costs_sigmoid               = True  # sigmoid Costs
 costs_sig_speed_time        = 5
-costs_sig_inter_speed       = 15
+rainfall_costs_sig_speed_time = 1.5
+costs_sig_inter_speed       = 14.5
+rainfall_costs_sig_inter_speed = 3.8
 costs_sig_path              = '/home/wzn/PycharmProjects/alibaba_weather_route/config/costs_sigmoid'
 
 colormap                    = 'jet'  #['hot', 'jet']
 #colors                     = ['red', 'magenta', 'cyan', 'yellow', 'green', 'blue']
 colors                      = ['red', 'white']
 wind_penalty_coeff          = 1
-strong_wind_penalty_coeff   = 540  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
+strong_wind_penalty_coeff   = 1440  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
+strong_wind_penalty_coeff   = 1440
 
 # evaluation
 debug_draw                  = False
@@ -170,3 +177,8 @@ wp_lr_decay_epoch               = 10
 # wp_fc
 wp_fc_input_dim                 = 90            # input dim, [90, 250]
 wp_fc_nonlinear                 = 'ReLU'        # ['Tanh', 'ReLU']
+
+
+########################################################################################################################
+## A_star_search_3D_multiprocessing_rainfall_wind
+A_star_search_3D_multiprocessing_rainfall_wind = True
