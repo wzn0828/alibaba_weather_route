@@ -11,6 +11,7 @@ def wp_generate_weather_data_multiprocessing(cf):
         indexes = generate_weather_indexes(cf)
 
         # generate data
+        print('------> generate weather datas for weather prediction <-------')
         start_time = timer()
         multiprocessing.log_to_stderr()
         jobs = []
@@ -23,6 +24,7 @@ def wp_generate_weather_data_multiprocessing(cf):
         for j in jobs:
             j.join()
 
+    print('Finish generate weather data, using %.2f sec!' % (timer() - start_time))
 
 def wp_generate_weather_data_worker(cf, day_hour, locations):
     # get estimation value
@@ -61,6 +63,42 @@ def wp_generate_weather_data_worker(cf, day_hour, locations):
     np.save(twolayerdatafilename, twolayerdatas)
 
 
+# class DataGenerator_Synthia_car_trajectory():
+#     """ Initially we use synthia dataset"""
+#     def __init__(self, cf):
+#         self.cf = cf
+#         print('Loading data')
+#         train_weather_list, valid_weather_list, test_weather_list, self.data_mean, self.data_std = prepare_weather_list(cf)
+#
+#         # # for experiment
+#         # test_data[693,:,:]
+#         # test_img_list[693]
+#         # deal images and relocate train_img_list & valid_img_list & test_img_list
+#         self.root_dir = '/'.join(cf.dataset_path[0].split('/')[:-1])
+#
+#         print('\n > Loading training, valid, test set')
+#
+#         train_dataset = Resized_BB_ImageDataGenerator_Synthia(cf, True, train_data, train_img_list, crop=False,
+#                                                               flip=False)
+#         valid_dataset = Resized_BB_ImageDataGenerator_Synthia(cf, False, valid_data, valid_img_list, crop=False,
+#                                                               flip=False)
+#         test_dataset = Resized_BB_ImageDataGenerator_Synthia(cf, False, test_data, test_img_list, crop=False,
+#                                                              flip=False)
+#
+#         self.train_loader = DataLoader(train_dataset, batch_size=cf.batch_size_train, shuffle=True,
+#                                        num_workers=cf.workers, pin_memory=True)
+#
+#         self.valid_loader = DataLoader(valid_dataset, batch_size=cf.batch_size_valid, num_workers=cf.workers,
+#                                        pin_memory=True)
+#         self.test_loader = DataLoader(test_dataset, batch_size=cf.batch_size_test, num_workers=cf.workers,
+#                                       pin_memory=True)
+
+
+# def prepare_weather_list(cf):
+
+
+
+
 def expand_array(cf, wind_model_day_hour):
     wind_model_day_hour_expand_two_labs = np.zeros((cf.grid_world_shape[0] + 4, cf.grid_world_shape[1] + 4))
     wind_model_day_hour_expand_two_labs[2:-2, 2:-2] = wind_model_day_hour
@@ -77,6 +115,7 @@ def expand_array(cf, wind_model_day_hour):
 
 # generate indexes where wind speed if more than a low bound and lower than a high bound
 def generate_weather_indexes(cf):
+    print('------> generate weather indices for weather prediction <-------')
     index_day_hour = {}
     if cf.wp_generate_weather_indexes:
         for day in range(1, 6):

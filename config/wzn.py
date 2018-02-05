@@ -31,7 +31,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 5
+num_threads                 = 4
 
 ########################################################################################################################
 # A star search
@@ -149,7 +149,7 @@ batch_size                      = 18
 
 ########################################################################################################################
 ## Weather Prediction
-wp_generate_weather_data_multiprocessing = True
+wp_generate_weather_data_multiprocessing = False
 wp_wind_indexes                 = 'weather_prediction_data/wind_13_17_index.pickle'
 wp_generate_weather_indexes     = False
 wp_used_model_number            = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

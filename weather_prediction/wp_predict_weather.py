@@ -4,6 +4,7 @@ def wp_predict_weather(cf):
 
     #----- data-----#
     wp_generate_weather_data_multiprocessing(cf)
+    print('Create dataloader')
 
 
 
@@ -17,4 +18,3 @@ def wp_predict_weather(cf):
 
 
 
-    # test
