@@ -13,7 +13,13 @@
 /Submissions
 /IJCAI_2018
 /Result_analysis
+/result_analysis
 /config/costs_sigmoid
+
+/paper_ploting
+
+main_wzn.py
+
 
 for_wzn
 

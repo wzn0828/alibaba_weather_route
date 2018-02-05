@@ -9,6 +9,7 @@ from tools.Dyna_3D import Dyna_3D
 from tools.Maze3D import Maze_3D
 import multiprocessing
 from tools.simpleSub import a_star_submission_3d, collect_csv_for_submission
+from tools.visualisation import plot_state_action_value
 
 
 def load_a_star_precompute(cf):
@@ -75,12 +76,11 @@ def initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_
                    time_length=int(cf.time_length),
                    start_state=start_loc_3D,
                    goal_states=goal_loc_3D,
-                   return_to_start=cf.return_to_start,
                    reward_goal=cf.reward_goal,
                    reward_move=cf.reward_move,
-                   reward_obstacle=cf.reward_obstacle,
                    maxSteps=cf.maxSteps,
                    wind_real_day_hour_total=wind_real_day_hour_total,
+                   c_baseline=cf.c_baseline_a_star,
                    cf=cf)
 
     model = Dyna_3D(rand=np.random.RandomState(cf.random_state),
@@ -94,6 +94,7 @@ def initialise_maze_and_model(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_
                     priority=cf.priority,
                     theta=cf.theta,
                     optimal_length_relax=cf.optimal_length_relax,
+                    polynomial_alpha=False,
                     heuristic=cf.heuristic)
     return model
 
@@ -249,8 +250,7 @@ def print_predicted_route(cf, day, go_to_all, city_data_df, route_list):
                         p = go_to_sorted[anno_point]
                         # plt.annotate(str(m+1), xy=(p[1], p[0]), color='indigo', fontsize=20)
                     plt.title(title)
-                    plt.waitforbuttonpress(10)
-                    break
+                    plt.waitforbuttonpress()
                     return False
 
         if 30 * (hour - 2) > len(route_list):
@@ -525,7 +525,12 @@ def reinforcement_learning_solution_new(cf):
             model.epsilon = 0
             model.policy_init = go_to_all
             model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
+            model.qlearning = True
+            model.expected = False
             model.double = False
+            # gamma is dependent upon total length, the more lengthy the route is, the small the gamma
+            model.gamma = 1 + 0.01 * (steps_a_star_all_mean - 540) / 540.
+
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
                 model.a_star_model = m
@@ -536,43 +541,68 @@ def reinforcement_learning_solution_new(cf):
                     = model.checkPath(steps_a_star_all_mean, set_wind_to_zeros=False)
                 print('Success in ep: %d, with %d steps. Q: %.2f' % (m, len(came_from), action_value_function_sum[m]))
 
+            # Plot function
+            # plot_state_action_value(model, city_data_df, cf)
+            # how many times we will loop is depend upon the minimum length
+            # a_star_loop = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
+            a_star_loop = int(steps_a_star_all_mean)
+            model.maze.c_baseline = cf.c_baseline_start
+            c_baseline_step = (cf.c_baseline_start - cf.c_baseline_end) / a_star_loop
+
             success_flag = False
-            save_length = int(cf.a_star_loop * cf.optimal_length_relax) + 1
+            save_length = int(a_star_loop * cf.optimal_length_relax) + 1
             total_Q_new = np.zeros(save_length)
             total_reward_new = np.zeros(save_length)
             action_value_function_sum_new = np.zeros(save_length)
             num_episode = 0
             model.policy_init = []
-            alpha_step = (cf.alpha_start - cf.alpha_end) / cf.a_star_loop
-            epsilon_step = (cf.epsilon_start - cf.epsilon_end) / cf.a_star_loop
+            alpha_step = (cf.alpha_start - cf.alpha_end) / a_star_loop
+            epsilon_step = (cf.epsilon_start - cf.epsilon_end) / a_star_loop
             model.epsilon = cf.epsilon_start
             model.alpha = cf.alpha_start
             model.qlearning = cf.qLearning
             model.expected = cf.expected
             model.maze.risky = False
-            model.gamma = cf.gamma_loop
             model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-            model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
+            model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
             model.double = cf.double
             # we need to copy the double Q-learning stateActionValue here
             model.stateActionValues2 = model.stateActionValues.copy()
-            while num_episode < cf.a_star_loop or not success_flag:
-                if num_episode >= cf.a_star_loop * cf.optimal_length_relax:
+
+            # polynomial learning rate for alpha
+            if cf.polynomial_alpha:
+                model.polynomial_alpha = cf.polynomial_alpha
+                model.polynomial_alpha_coefficient = cf.polynomial_alpha_coefficient
+                if not cf.double:
+                    model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+                else:
+                    model.alpha_count_1 = np.zeros(model.stateActionValues.shape).astype(int)
+                    model.alpha_count_2 = np.zeros(model.stateActionValues.shape).astype(int)
+
+            while num_episode < a_star_loop or not success_flag:
+                if num_episode >= a_star_loop * cf.optimal_length_relax:
                     break
                 model.maze.wind_model = model.rand.choice(range(len(cf.model_number)))
-                print("Episode %d, wind model: %d" % (num_episode, model.maze.wind_model+1))
                 steps.append(model.play(environ_step=True))
                 # check whether the (relaxed) optimal path is found
                 came_from, currentState, success_flag, total_Q_new[num_episode], total_reward_new[num_episode], action_value_function_sum_new[num_episode]\
                     = model.checkPath(steps_a_star_all_mean, set_wind_to_zeros=False)
                 if success_flag:
-                    print('Success in ep: %d, with %d steps. sum(Q): %.2f, R: %.4f' %
-                          (num_episode, len(came_from), action_value_function_sum_new[num_episode], total_reward_new[num_episode]))
+                    str2 = 'Success in ep: %d, with %d steps. sum(Q): %.2f, R: %.4f' % (num_episode, len(came_from), action_value_function_sum_new[num_episode], total_reward_new[num_episode])
                 else:
-                    print('Fail in ep: %d, with %d steps' % (num_episode, len(came_from)))
+                    str2 = 'Fail in ep: %d, with %d steps' % (num_episode, len(came_from))
                 num_episode += 1
                 model.epsilon = max(cf.epsilon_end, model.epsilon - epsilon_step)
-                model.alpha = max(cf.alpha_end, model.alpha - alpha_step)  # we don't want our learning rate to be too large
+                model.alpha = max(cf.alpha_end, model.alpha - alpha_step)   # we don't want our learning rate to be too large
+                model.maze.c_baseline = max(cf.c_baseline_end, model.maze.c_baseline - c_baseline_step)
+                # we also require that the model should traverse every state action more than
+                if np.mean(np.array(model.alpha_action)) > 1./model.planningSteps**cf.polynomial_alpha_coefficient:
+                    success_flag = False
+                if cf.polynomial_alpha:
+                    str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, baseline: %2f, alpha(mean): %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.maze.c_baseline, np.mean(np.array(model.alpha_action)), model.epsilon)
+                else:
+                    str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, baseline: %2f, alpha: %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.maze.c_baseline, model.alpha, model.epsilon)
+                print(str1 + str2)
 
             print('Finish, using %.2f sec!, updating %d steps.' % (timer() - start_time, np.sum(steps)))
             route_list = []
@@ -619,37 +649,54 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
     model.epsilon = 0
     model.policy_init = go_to_all
     model.maze.wall_wind = np.inf  # we will ignore strong wind penalty for the moment
+    model.qlearning = True
+    model.expected = False
     model.double = False
+    model.gamma = 1 + 0.01 * (steps_a_star_all_mean - 540) / 540.
+
     # A star model initialisation
     for m in range(len(cf.model_number)):
         model.maze.wind_model = m
         model.a_star_model = m
         steps.append(model.play(environ_step=True))
 
+    a_star_loop = int(steps_a_star_all_mean)
+    model.maze.c_baseline = cf.c_baseline_start
+    c_baseline_step = (cf.c_baseline_start - cf.c_baseline_end) / a_star_loop
+
     success_flag = False
-    save_length = int(cf.a_star_loop * cf.optimal_length_relax) + 1
+    save_length = int(a_star_loop * cf.optimal_length_relax) + 1
     total_Q_new = np.zeros(save_length)
     total_reward_new = np.zeros(save_length)
     action_value_function_sum_new = np.zeros(save_length)
     num_episode = 0
     model.policy_init = []
     model.alpha = cf.alpha_start
-    epsilon_step = (cf.epsilon_start - cf.epsilon_end) / cf.a_star_loop
-    alpha_step = (cf.alpha_start - cf.alpha_end) / cf.a_star_loop
+    epsilon_step = (cf.epsilon_start - cf.epsilon_end) / a_star_loop
+    alpha_step = (cf.alpha_start - cf.alpha_end) / a_star_loop
     model.epsilon = cf.epsilon_start
     # using Expected sarsa to refine
     model.qlearning = cf.qLearning
     model.expected = cf.expected
     model.maze.risky = False
-    model.gamma = cf.gamma_loop
     model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-    model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // len(cf.model_number)
+    model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
     # Double learning
     model.double = cf.double
     model.stateActionValues2 = model.stateActionValues.copy()
+    # polynomial learning rate for alpha
+    if cf.polynomial_alpha:
+        model.polynomial_alpha = cf.polynomial_alpha
+        model.polynomial_alpha_coefficient = cf.polynomial_alpha_coefficient
+        if not cf.double:
+            model.alpha_count = np.zeros(model.stateActionValues.shape).astype(int)
+        else:
+            model.alpha_count_1 = np.zeros(model.stateActionValues.shape).astype(int)
+            model.alpha_count_2 = np.zeros(model.stateActionValues.shape).astype(int)
+
     # weather information fusion
-    while num_episode <= cf.a_star_loop or not success_flag:
-        if num_episode >= cf.a_star_loop * cf.optimal_length_relax:
+    while num_episode <= a_star_loop or not success_flag:
+        if num_episode >= a_star_loop * cf.optimal_length_relax:
             break
         # check whether the (relaxed) optimal path is found
         model.maze.wind_model = model.rand.choice(range(len(cf.model_number)))
@@ -661,7 +708,10 @@ def reinforcement_learning_solution_worker(cf, day, goal_city, A_star_model_prec
         num_episode += 1
         model.epsilon = max(cf.epsilon_end, model.epsilon - epsilon_step)
         model.alpha = max(cf.alpha_end, model.alpha - alpha_step)  # we don't want our learning rate to be too large
-
+        model.maze.c_baseline = max(cf.c_baseline_end, model.maze.c_baseline - c_baseline_step)
+        # we also require that the model should traverse every state action more than
+        if np.mean(np.array(model.alpha_action)) > 1. / model.planningSteps ** cf.polynomial_alpha_coefficient:
+            success_flag = False
     # check whether the (relaxed) optimal path is found
     route_list = []
     current_loc = list(set(goal_loc_3D) & set([currentState]))
@@ -707,6 +757,7 @@ def reinforcement_learning_solution_multiprocessing(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by multiprocessing.
     multiprocessing.log_to_stderr()
     print("Read Precompute A star route...")
+    print(help(cf))
     A_star_model_precompute_csv = load_a_star_precompute(cf)
 
     jobs = []

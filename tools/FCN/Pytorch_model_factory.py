@@ -4,8 +4,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 import numpy as np
 from matplotlib import pyplot as plt
 
-from datetime import datetime
-from FCN.Pytorch_fcn import FeatureResNet, SegResNet
+from tools.FCN.Pytorch_fcn import FeatureResNet, SegResNet
 import torch
 from torch import nn
 from torch import optim

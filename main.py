@@ -1,5 +1,4 @@
 import imp
-import os, sys
 import argparse
 import time
 from datetime import datetime
@@ -7,14 +6,16 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 
-from config.configuration import Configuration, Logger
+from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing, plot_real_wind_multiprocessing, plot_all_wind_new, plot_all_rainfall
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing, A_star_search_3D_multiprocessing_rainfall_wind
+
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 from weather_prediction.wp_predict_weather import wp_predict_weather
+
 
 def process(cf):
     ### Following is the plotting alogrithm #############
@@ -39,12 +40,14 @@ def process(cf):
     if cf.plot_all_wind:
         print('Draw weather')
         plot_all_wind(cf)
+
     if cf.plot_all_wind_new:
         print('Draw weather: wind')
         plot_all_wind_new(cf)
     if cf.plot_all_rainfall:
         print('Draw weather: rainfall')
         plot_all_rainfall(cf)
+
 
     ### Following is the A Star alogrithm #############
     if cf.A_star_search_2D:
@@ -97,15 +100,22 @@ def process(cf):
     ### Following is the evaluation script #############
     if cf.evaluation:
         print('evaluation')
-        total_penalty, crash_time_stamp = evaluation(cf, cf.csv_for_evaluation)
+        total_penalty, crash_time_stamp, average_wind, max_wind = evaluation(cf, cf.csv_for_evaluation)
+
         print(int(np.sum(np.sum(total_penalty))))
         print(total_penalty.astype('int'))
         print(crash_time_stamp.astype('int'))
+        np.set_printoptions(precision=2)
+        print(average_wind)
+        print(max_wind)
         print(np.sum(total_penalty.astype('int') == 1440))
 
     if cf.evaluation_plot:
         print('evaluation_plot')
         evaluation_plot(cf)
+    if cf.evaluation_plot_multi:
+        print('evaluation_plot_multi')
+        evaluation_plot_multi(cf)
 
     ### weather prediction
     if cf.wp_predict_weather:

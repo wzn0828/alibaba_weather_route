@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import multiprocessing
-from multiprocessing import Pool
 import matplotlib
 #matplotlib.use('Agg')
 matplotlib.use('TkAgg')
@@ -573,7 +572,6 @@ def plot_all_wind_new(cf):
             save_fig_name = os.path.join(cf.fig_wind_save_test_path,
                                          '%s.png' % ('Test_models_wind_day_%d_hour_%d' % (d_unique, h_unique)))
             plt.savefig(save_fig_name, dpi=74, bbox_inches='tight')
-
 
 def plot_all_rainfall(cf):
 
