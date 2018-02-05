@@ -489,7 +489,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
         elif cf.costs_sigmoid:
             # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
             costs.dtype = 'float64'
-            costs = sigmoid(costs, 10000, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
+            costs = sigmoid(costs, 10, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
 
 
 
@@ -521,7 +521,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     current_loc = list(set(goal_loc_3D) & set(current))
 
     if not len(current_loc):
-        print('We cannot reach the goal city: %d, continue!' % goal_city)
+        # print('We cannot reach the goal city: %d, continue!' % goal_city)
         return
 
     find_loc = current_loc[0]
@@ -583,7 +583,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
     csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
-    print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
+    # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
     return
 
@@ -604,7 +604,7 @@ def A_star_search_3D_multiprocessing_multicost(cf):
     multiprocessing.log_to_stderr()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-
+            #
             # if day == 3 and goal_city == 6:
             #     continue
             # if day == 3 and goal_city == 8:

@@ -13,6 +13,7 @@
 /Submissions
 /IJCAI_2018
 /Result_analysis
+/result_analysis
 /config/costs_sigmoid
 
 /paper_ploting
@@ -28,5 +29,8 @@ for_wzn
 !/KDD2018/sample-sigconf.tex
 !/KDD2018/samplebody-conf.tex
 
+/weather_prediction_data
 
+main_wzn.py
+config/wzn.py
 
