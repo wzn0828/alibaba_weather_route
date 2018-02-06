@@ -107,7 +107,7 @@ def a_star_search_3D(graph, start, goals):
     wind_costs = {}
     rainfall_costs = {}
     wind_costs[start] = None
-    rainfall_costs[start] =None
+    rainfall_costs[start] = None
 
     while not frontier.empty():
         current = frontier.get()
