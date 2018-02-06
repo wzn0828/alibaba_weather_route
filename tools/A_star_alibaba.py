@@ -611,6 +611,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
         wind_real_day_hour_total[:, :, hour - start_hour] = wind_cost[:, :]  # we replicate the hourly data
         rainfall_real_day_hour_total[:, :, hour - start_hour] = rainfall_cost[:, :] # we replicate the hourly data
 
+
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
