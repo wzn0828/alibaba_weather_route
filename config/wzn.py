@@ -51,9 +51,9 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
+risky                       = True   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
 wall_rainfall               = 4
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
@@ -63,13 +63,13 @@ wind_exp_mean               = 5
 wind_exp_std                = 5
 rainfall_exp_mean           = 1.3
 rainfall_exp_std            = 1.3
-use_real_weather            = False
+use_real_weather            = True
 conservative                = False
 real_hour                   = 3
 
 costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**4
-costs_sigmoid               = True  # sigmoid Costs
+costs_sigmoid               = False  # sigmoid Costs
 costs_sig_speed_time        = 5
 rainfall_costs_sig_speed_time = 1.5
 costs_sig_inter_speed       = 14.5
@@ -81,7 +81,7 @@ colormap                    = 'jet'  #['hot', 'jet']
 colors                      = ['red', 'white']
 wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = 1440  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
-strong_wind_penalty_coeff   = 1440
+strong_rainfall_penalty_coeff   = 1440
 
 # evaluation
 debug_draw                  = False

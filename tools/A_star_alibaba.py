@@ -654,7 +654,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
         find_loc = prev_loc
     num_steps = len(route_list)
 
-    # save costs and num_steps
+    # save costs and num_steps separately
     day_goalcity_starthour = {}
     day_goalcity_starthour['wind_cost'] = wind_cost_sum
     day_goalcity_starthour['rainfall_cost'] = rainfall_cost_sum
@@ -664,6 +664,9 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d.json' % (day, goal_city, start_hour))
     with open(dict_cname, 'w') as fp:
         json.dump(day_goalcity_starthour, fp, indent=4)
+
+    # save costs and num_steps totally
+    cf.costs_and_numsteps[(day, goal_city, start_hour)] = day_goalcity_starthour
 
     # we reverse the route for plotting and saving
     route_list.reverse()
@@ -754,7 +757,7 @@ def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
     # rainfall cost
     rainfall_cost = rainfall_real_day_hour.copy()
     if cf.risky or cf.wind_exp or cf.conservative:
-        rainfall_cost[rainfall_real_day_hour >= cf.wall_rainfall] = cf.strong_wind_penalty_coeff
+        rainfall_cost[rainfall_real_day_hour >= cf.wall_rainfall] = cf.strong_rainfall_penalty_coeff
     if cf.risky:
         rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = 1  # Every movement will have a unit cost
     elif cf.wind_exp:
@@ -892,6 +895,7 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # multiprocessing.
     multiprocessing.log_to_stderr()
 
+    cf.costs_and_numsteps = {}
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
             start_hours, dist_manhattan = extract_start_hours(cf, goal_city)
@@ -903,6 +907,11 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # waiting for the all the job to finish
     for j in jobs:
         j.join()
+
+    # save costs and num_steps
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_goalcity_starthour.json' )
+    with open(dict_cname, 'w') as fp:
+        json.dump(cf.costs_and_numsteps, fp, indent=4)
 
     # sub_csv is for submission
     collect_csv_for_submission(cf)
