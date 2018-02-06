@@ -590,7 +590,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     return
 
 
-def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
+def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, dist_manhattan):
 
     start_time = timer()
     # get the city locations
@@ -617,8 +617,9 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
-    cf.time_length = 30*(21 - start_hour)
-    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total)
+    short_steps = int(np.ceil(start_min/2))
+    cf.time_length = 30*(21 - start_hour) - short_steps
+    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total, short_steps)
     diagram.weights = max_cost
 
     city_start_time = timer()
@@ -655,18 +656,22 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     num_steps = len(route_list)
 
     # save costs and num_steps separately
-    day_goalcity_starthour = {}
-    day_goalcity_starthour['wind_cost'] = wind_cost_sum
-    day_goalcity_starthour['rainfall_cost'] = rainfall_cost_sum
-    day_goalcity_starthour['max_cost'] = max_cost_sum
-    day_goalcity_starthour['num_steps'] = num_steps
+    day_goalcity_starthour_min = {}
+    day_goalcity_starthour_min['wind_cost'] = wind_cost_sum
+    day_goalcity_starthour_min['rainfall_cost'] = rainfall_cost_sum
+    day_goalcity_starthour_min['max_cost'] = max_cost_sum
+    day_goalcity_starthour_min['num_steps'] = num_steps
+    day_goalcity_starthour_min['ave_wind_cost'] = wind_cost_sum/num_steps
+    day_goalcity_starthour_min['ave_rainfall_cost'] = rainfall_cost_sum/num_steps
+    day_goalcity_starthour_min['ave_max_cost'] = max_cost_sum/num_steps
+    day_goalcity_starthour_min['ratio_max_cost_to_manhattan'] = max_cost_sum/dist_manhattan
 
-    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d.json' % (day, goal_city, start_hour))
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d_startmin_%d.json' % (day, goal_city, start_hour, start_min))
     with open(dict_cname, 'w') as fp:
-        json.dump(day_goalcity_starthour, fp, indent=4)
+        json.dump(day_goalcity_starthour_min, fp, indent=4)
 
     # save costs and num_steps totally
-    cf.costs_and_numsteps[(day, goal_city, start_hour)] = day_goalcity_starthour
+    cf.costs_and_numsteps[(day, goal_city, start_hour)] = day_goalcity_starthour_min
 
     # we reverse the route for plotting and saving
     route_list.reverse()
@@ -718,13 +723,13 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
             if 30*(h + 1 - start_hour) > len(route_list):
                 break
 
-    sub_df = a_star_submission_3d(day, goal_city, start_hour, goal_loc, route_list)
-    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d' % (day, goal_city, start_hour) + '.csv'
+    sub_df = a_star_submission_3d(day, goal_city, start_hour, start_min, goal_loc, route_list)
+    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d, start_min: %d' % (day, goal_city, start_hour, start_min) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
 
-    print('Finish route day: %d, city: %d, start_hour: %d, using time: %.2f sec!' % (day, goal_city, start_hour, timer() - start_time))
+    print('Finish route day: %d, city: %d, start_hour: %d, start_min: %d, using time: %.2f sec!' % (day, goal_city, start_hour, start_min, timer() - start_time))
 
     return
 
@@ -898,11 +903,14 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     cf.costs_and_numsteps = {}
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            start_hours, dist_manhattan = extract_start_hours(cf, goal_city)
+            start_hours, mins, dist_manhattan = extract_start_hours(cf, goal_city)
             for start_hour in start_hours:
-                p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour))
-                jobs.append(p)
-                p.start()
+                mins_inter = 10
+                start_mins = extract_mins(mins, start_hour, start_hours, mins_inter)
+                for start_min in start_mins:
+                    p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour, start_min, dist_manhattan))
+                    jobs.append(p)
+                    p.start()
 
     # waiting for the all the job to finish
     for j in jobs:
@@ -928,6 +936,17 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # print(total_penalty[1].astype('int'))
 
 
+def extract_mins(mins, start_hour, start_hours, mins_inter):
+    start_mins = [n * mins_inter for n in range(60 // mins_inter)]
+    if start_hour == start_hours[-1]:
+        if mins == 60:
+            start_mins = [0]
+        else:
+            start_mins = [n * mins_inter for n in range(mins // mins_inter)]
+
+    return start_mins
+
+
 def extract_start_hours(cf, goal_city):
     """
     This script is used to extract start hours
@@ -943,7 +962,10 @@ def extract_start_hours(cf, goal_city):
     dist_manhattan = abs(start_loc[0] - goal_loc[0]) + abs(start_loc[1] - goal_loc[1])
     hours_needed = int(np.ceil(dist_manhattan/30)) - 1
     start_hours = hours_total[:-hours_needed]
-    return start_hours, dist_manhattan
+
+    mins = 60 - np.mod(dist_manhattan, 30)*2
+
+    return start_hours, mins, dist_manhattan
 
 
 def A_star_fix_missing(cf):
