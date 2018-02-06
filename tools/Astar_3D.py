@@ -5,13 +5,15 @@ from mpl_toolkits.mplot3d import proj3d
 
 
 class GridWithWeights_3D():
-    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance):
+    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance, wind_costs, rainfall_costs):
         self.width = width
         self.height = height
         self.time_length = time_length
         self.wall_wind = wall_wind
         self.weights = []
         self.hourly_travel_distance = hourly_travel_distance
+        self.wind_costs = wind_costs
+        self.rainfall_costs = rainfall_costs
 
     def upper_cone(self, id):
         (x, y, t) = id
@@ -41,6 +43,8 @@ class GridWithWeights_3D():
     def cost(self, to_node):
         weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
         cost = self.weights[weight_idx]
+        wind_cost = self.wind_costs[weight_idx]
+        rainfall_cost = self.rainfall_costs[weight_idx]
 
         # remainder = np.mod(to_node[2], self.hourly_travel_distance)
         # if 25 <= remainder:
@@ -53,7 +57,7 @@ class GridWithWeights_3D():
         #     if cost < 2:
         #         cost = np.exp(cost-1)
 
-        return cost
+        return cost, wind_cost, rainfall_cost
 
 
 class PriorityQueue:
@@ -100,6 +104,11 @@ def a_star_search_3D(graph, start, goals):
     cost_so_far[start] = 0
     graph.goal = goals[0]
 
+    wind_costs = {}
+    rainfall_costs = {}
+    wind_costs[start] = None
+    rainfall_costs[start] =None
+
     while not frontier.empty():
         current = frontier.get()
 
@@ -109,14 +118,18 @@ def a_star_search_3D(graph, start, goals):
 
         for next in graph.neighbors(current):
             # print(str(current) + '   ->   ' + str(next))
-            new_cost = cost_so_far[current] + graph.cost(next)
+            costs = graph.cost(next)
+            new_cost = cost_so_far[current] + costs[0]
             if next not in cost_so_far or new_cost < cost_so_far[next]:
                 cost_so_far[next] = new_cost
                 # we use the x,y for goals because if admissible criterion is met, we are A OK!
                 priority = new_cost + heuristic(goals[0], next)
                 frontier.put(next, priority)
                 came_from[next] = current
-    return came_from, cost_so_far, [current]
+                wind_costs[next] = costs[1]
+                rainfall_costs[next] = costs[2]
+
+    return came_from, cost_so_far, [current], wind_costs, rainfall_costs
 
 
 def dijkstra(graph, start, goals):

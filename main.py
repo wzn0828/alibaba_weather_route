@@ -8,8 +8,10 @@ matplotlib.use('TkAgg')
 
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
+
 from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing, plot_real_wind_multiprocessing, plot_all_wind_new, plot_all_rainfall, evaluation_plot_multi, plot_wind_with_rainfall
-from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing
+from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing, A_star_search_3D_multiprocessing_rainfall_wind
+
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
@@ -68,6 +70,10 @@ def process(cf):
     if cf.A_star_search_3D_multiprocessing_multicost:
         print('A_star_search_3D_multiprocessing')
         A_star_search_3D_multiprocessing_multicost(cf)
+
+    if cf.A_star_search_3D_multiprocessing_rainfall_wind:
+        print('A_star_search_3D_multiprocessing')
+        A_star_search_3D_multiprocessing_rainfall_wind(cf)
 
     if cf.A_star_fix_missing:
         print('A_star_fix_missing')
