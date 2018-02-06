@@ -671,7 +671,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
         json.dump(day_goalcity_starthour_min, fp, indent=4)
 
     # save costs and num_steps totally
-    cf.costs_and_numsteps[(day, goal_city, start_hour)] = day_goalcity_starthour_min
+    cf.costs_and_numsteps[(day, goal_city, start_hour, start_min)] = day_goalcity_starthour_min
 
     # we reverse the route for plotting and saving
     route_list.reverse()
