@@ -46,7 +46,7 @@ def process(cf):
         print('Draw weather: rainfall')
         plot_all_rainfall(cf)
 
-    ### Following is the A Star alogrithm #############
+    ####### Following is the A Star alogrithm #############
     if cf.A_star_search_2D:
         print('A_star_search_2D')
         A_star_2d_hourly_update_route(cf)

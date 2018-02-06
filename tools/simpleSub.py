@@ -95,10 +95,10 @@ def a_star_submission(day, goal_city, start_loc, goal_loc, total_path):
     return sub_df
 
 
-def a_star_submission_3d(day, goal_city, goal_loc, route_list):
+def a_star_submission_3d(day, goal_city, start_hour, goal_loc, route_list):
     #### create one submit path
     # A random time to get the time string right
-    ti = datetime(2017, 11, 21, 3, 0)
+    ti = datetime(2017, 11, 21, start_hour, 0)
     row_list = []
 
     for ip in route_list:

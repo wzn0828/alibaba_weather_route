@@ -40,7 +40,7 @@ A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 A_star_search_3D_multiprocessing_multicost = False
 search_method               = 'a_star_search_3D'  #search methods ['a_star_search_3D','dijkstra']
-model_number                = [3]
+model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
 total_hours                 = 20-3+1  # 18 hours to travel
 hourly_travel_distance      = 30
@@ -51,7 +51,7 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [1]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
