@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from timeit import default_timer as timer
 import multiprocessing
+import json
 import logging
 import sys
 import matplotlib
@@ -658,9 +659,9 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     day_goalcity_starthour['max_cost'] = max_cost_sum
     day_goalcity_starthour['num_steps'] = num_steps
 
-    dict_name = os.path.join(cf.exp_dir, 'costs&num_steps_day_%d_goalcity_%d_starthour_%d.pickle' % (day, goal_city, start_hour))
-    with open(dict_name, 'wb') as handle:
-        pickle.dump(day_goalcity_starthour, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d.json' % (day, goal_city, start_hour))
+    with open(dict_cname, 'w') as fp:
+        json.dump(day_goalcity_starthour, fp, indent=4)
 
     # we reverse the route for plotting and saving
     route_list.reverse()
