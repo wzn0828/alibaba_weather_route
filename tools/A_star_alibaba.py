@@ -13,8 +13,8 @@ import pickle
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
-from tools.evaluation import evaluation, evaluation_plot
-from decimal import Decimal
+# from tools.evaluation import evaluation, evaluation_plot
+# from decimal import Decimal
 
 
 

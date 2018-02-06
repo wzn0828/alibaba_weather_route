@@ -70,7 +70,7 @@ real_hour                   = 3
 costs_exponential           = False  #costs
 costs_exp_basenumber        = 10**4
 costs_sigmoid               = False  # sigmoid Costs
-costs_sig_speed_time        = 5
+costs_sig_speed_time        = 4
 rainfall_costs_sig_speed_time = 1.5
 costs_sig_inter_speed       = 14.5
 rainfall_costs_sig_inter_speed = 3.8
@@ -85,11 +85,12 @@ strong_rainfall_penalty_coeff   = 1440
 
 # evaluation
 debug_draw                  = False
-evaluation_days             = [1, 2, 3]  # [1, 2, 3, 4, 5]
-evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation_days             = [5]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [7]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation_start_hour       = [5]
 evaluation                  = False
 collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10]_____2018-01-29-16-40-37/Train_costsSigmoid_speedTime_5_interSpeed_14.5_model_mean_[1-10].csv'
+csv_for_evaluation          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: 5, city: 7, start_hour: 5.csv'
 
 # evalutation plot
 evaluation_plot             = False  # a flag for visualising predicted route
