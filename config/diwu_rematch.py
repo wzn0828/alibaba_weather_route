@@ -26,7 +26,7 @@ plt_forecast_wind_test_multiprocessing = False
 plot_all_wind               = False
 plot_all_wind_new           = False
 plot_all_rainfall           = False
-plot_wind_with_rainfall     = True
+plot_wind_with_rainfall     = False
 plot_train_model            = False
 plot_test_model             = True
 
@@ -45,6 +45,7 @@ A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 A_star_search_3D_multiprocessing_multicost = False
+A_star_search_3D_multiprocessing_rainfall_wind = True
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
 hourly_travel_distance      = 30
