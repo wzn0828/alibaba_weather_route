@@ -28,7 +28,7 @@ plot_all_wind_new           = False
 plot_all_rainfall           = False
 plot_wind_with_rainfall     = False
 plot_train_model            = False
-plot_test_model             = True
+plot_test_model             = False
 
 model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
@@ -45,7 +45,7 @@ A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 A_star_search_3D_multiprocessing_multicost = False
-A_star_search_3D_multiprocessing_rainfall_wind = True
+A_star_search_3D_multiprocessing_rainfall_wind = False
 model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
 hourly_travel_distance      = 30
@@ -95,16 +95,6 @@ markers                     = [">", (5, 0), (5, 1), '+', (5, 2)]
 wind_penalty_coeff          = 1
 strong_wind_penalty_coeff   = time_length  # this ensure that the wind hard threshold, we will not trespass the wind wall unless not viable route was found.
 
-########################################################################################################################
-# evaluation
-debug_draw                  = False
-evaluation_plot             = False  # a flag for visualising predicted route
-evaluation_days             = [6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5]
-evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-evaluation                  = False
-collect_csv_for_submission_fraction = False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star/Train_A_star_search_3D_conservative_wall_wind_15_model_number_[10].csv'
-
 
 # visualisation
 evaluation_plot_multi        = False
@@ -118,11 +108,12 @@ csvs_for_evaluation          = ['/home/stevenwudi/PycharmProjects/alibaba_weathe
                                '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_costTime10_speedTime5_interSpeed_15_model_number_[3]_____2018-01-31-11-59-29/Test_a_star_search_3D_costsSigmoid_model_number_[3].csv',
                                 '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/Test_a_star_search_3D_costsSigmoid_speedTime5_interspeed14.5_model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv']
 csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000, c2: 5, c3: 14.5']
+collect_csv_for_submission_fraction = False
+evaluation                  = False
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
-goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
@@ -181,4 +172,28 @@ valid_days                      = [5]
 random_crop                     = 416   # We choose 64 here because 30*2+1=61 is the expansion and 64 is the closest to resnet input requirement to integer
 random_crop_valid               = 416
 batch_size                      = 18
+
+#####################################################################################
+# assignment algorithm.
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+assignment_for_A_star_route     = True
+#cost_num_steps_dir              = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51'
+cost_num_steps_dir              = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_risky_use_real_weather_____2018-02-06-17-57-32'
+file_patterns                   = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
+csv_patterns                    = 'Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d'
+#csv_patterns                    = 'Test_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d'
+
+combined_csv_name               = 'A_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
+threshold_manhattan_distance    = 3.0  # if cost is larger than this distance, we will not consider this route first
+
+########################################################################################################################
+# evaluation
+debug_draw                  = False
+evaluation_plot             = False  # a flag for visualising predicted route
+evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
+evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evaluation_with_rainfall    =  True
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
 
