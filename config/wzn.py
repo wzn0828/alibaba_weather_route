@@ -19,12 +19,12 @@ plot_real_wind_multiprocessing = False
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
 plt_forecast_wind_train_multiprocessing = False
-plt_forecast_wind_test_multiprocessing = True
+plt_forecast_wind_test_multiprocessing = False
 plot_all_wind               = False
 plot_train_model            = False
 plot_test_model             = False
-plot_all_wind_new           = True
-plot_all_rainfall           = True
+plot_all_wind_new           = False
+plot_all_rainfall           = False
 model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
 # submission
@@ -51,7 +51,7 @@ model_description           = search_method  #['A_star_search_3D_risky', 'A_star
 A_star_fix_missing          = False
 
 # important parameters
-day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!

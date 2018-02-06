@@ -591,6 +591,8 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
 
 def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
+
+    start_time = timer()
     # get the city locations
     if cf.debug_draw:
         # draw figure maximum
@@ -718,6 +720,9 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
+
+    print('Finish route day: %d, city: %d, start_hour: %d, using time: %.2f sec!' % (day, goal_city, start_hour, timer() - start_time))
+
     return
 
 
