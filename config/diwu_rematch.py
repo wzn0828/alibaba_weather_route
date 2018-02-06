@@ -1,23 +1,35 @@
 savepath                    = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments'
-dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/downloaded_data/'
-fig_save_path               = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/Figure_post_12_05'
-fig_save_train_path         = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/train_models_post_12_05'
-fig_save_test_path          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Figures/test_models_post_12_05'
-wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/wind_numpy_12_05_multiprocessing_float32'
-A_star_precompute_path      = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Precomputed_A_star'
-TrainRealFile               = 'In_situMeasurementforTraining_201712.csv'
-TrainForecastFile           = 'ForecastDataforTraining_201712.csv'
-TestForecastFile            = 'ForecastDataforTesting_201712.csv'
+dataroot_dir                = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rematch_downloaded_data/'
+
+wind_save_path              = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/wind_numpy_2018_02'
+rainfall_save_path          = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/rainfall_numpy_2018_02'
+
+fig_wind_train_path         = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/train_wind'
+fig_wind_test_path          = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/test_wind'
+fig_rainfall_train_path     = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/train_rainfall'
+fig_rainfall_test_path      = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/test_rainfall'
+fig_wind_with_rainfall_train_path = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/train_wind_with_rainfall'
+fig_wind_with_rainfall_test_path = '/media/samsumg_1tb/Alibaba_tianchi_RL/Rematch/Figures/test_wind_with_rainfall'
+
+
+TrainRealFile               = 'In_situMeasurementforTraining_201802.csv'
+TrainForecastFile           = 'ForecastDataforTraining_201802.csv'
+TestForecastFile            = 'ForecastDataforTesting_201802.csv'
 
 ########################################################################################################################
 plot_real_wind              = False
 plt_forecast_wind_train     = False
 plt_forecast_wind_test      = False
+plot_real_wind_multiprocessing          = False
 plt_forecast_wind_train_multiprocessing = False
 plt_forecast_wind_test_multiprocessing = False
 plot_all_wind               = False
-plot_train_model            = True
-plot_test_model             = False
+plot_all_wind_new           = False
+plot_all_rainfall           = False
+plot_wind_with_rainfall     = True
+plot_train_model            = False
+plot_test_model             = True
+
 model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
 # submission
@@ -33,7 +45,7 @@ A_star_search_2D            = False
 A_star_search_3D            = False
 A_star_search_3D_multiprocessing = False
 A_star_search_3D_multiprocessing_multicost = False
-model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+model_number                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 grid_world_shape            = (548, 421)
 hourly_travel_distance      = 30
 total_hours                 = 20-3+1  # 18 hours to travel
@@ -43,6 +55,7 @@ A_star_fix_missing          = False
 
 risky                       = False   # this flag will set the path weight to 1 to let A star choose the most efficient(risky) path
 wall_wind                   = 15    # Set this lower will also reduce the risk!
+wall_rainbfall              = 4
 risky_coeff                 = 15.  # This will only take effect is risky is set to False
 wind_exp                    = False
 wind_exp_mean               = 10
@@ -102,7 +115,7 @@ csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000,
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [1, 2, 3, 4]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
@@ -141,6 +154,8 @@ increase_epsilon                = 1.5  # for every maxSteps fail to reach the go
 
 ################################f########################################################################################
 ## FCN
+wp_predict_weather              = False
+
 fully_convolutional_wind_pred   = False
 go_to_all_dir                   = None
 #go_to_all_dir                   = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/go_to_all.npy'
