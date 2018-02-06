@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
@@ -598,21 +599,23 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
         mng.resize(*mng.window.maxsize())
 
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
-    wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - cf.hour_unique[0] + 1))
-    rainfall_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - cf.hour_unique[0] + 1))
+    wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
+    rainfall_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
     # deal weather data
-    for hour in range(3, 21):
+    for hour in range(start_hour, 21):
         # --------extract weather data ---------#
         wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
         # --------set cost ---------#
         wind_cost, rainfall_cost = set_costs(cf, wind_real_day_hour, rainfall_real_day_hour)
         # we replicate the weather for the whole hour
-        wind_real_day_hour_total[:, :, hour - 3] = wind_cost[:, :]  # we replicate the hourly data
-        rainfall_real_day_hour_total[:, :, hour - 3] = rainfall_cost[:, :]  # we replicate the hourly data
+        wind_real_day_hour_total[:, :, hour - start_hour] = wind_cost[:, :]  # we replicate the hourly data
+        rainfall_real_day_hour_total[:, :, hour - start_hour] = rainfall_cost[:, :] # we replicate the hourly data
+
 
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
+    cf.time_length = 30*(21 - start_hour)
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total)
     diagram.weights = max_cost
 
@@ -650,12 +653,20 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     num_steps = len(route_list)
 
     # save costs and num_steps
+    day_goalcity_starthour = {}
+    day_goalcity_starthour['wind_cost'] = wind_cost_sum
+    day_goalcity_starthour['rainfall_cost'] = rainfall_cost_sum
+    day_goalcity_starthour['max_cost'] = max_cost_sum
+    day_goalcity_starthour['num_steps'] = num_steps
 
+    dict_name = os.path.join(cf.exp_dir, 'costs&num_steps_day_%d_goalcity_%d_starthour_%d.pickle' % (day, goal_city, start_hour))
+    with open(dict_name, 'wb') as handle:
+        pickle.dump(day_goalcity_starthour, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # we reverse the route for plotting and saving
     route_list.reverse()
     if cf.debug_draw:
-        for hour in range(3, 21):
+        for hour in range(start_hour, 21):
             if day < 6:  # meaning this is a training day
                 weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
@@ -691,15 +702,15 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
 
             plt.clabel(CS, inline=1, fontsize=10)
             plt.title(weather_name[:-4])
-            for h in range(3, hour+1):
-                for p in route_list[(h - 3) * 30:(h - 2) * 30]:
+            for h in range(start_hour, hour+1):
+                for p in route_list[(h - start_hour) * 30:(h + 1 - start_hour) * 30]:
                     plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
 
             for p in route_list:
                 plt.scatter(p[1], p[0],  c='yellow', s=1)
 
             plt.waitforbuttonpress(1)
-            if 30*(hour-2) > len(route_list):
+            if 30*(h + 1 - start_hour) > len(route_list):
                 break
 
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
@@ -875,6 +886,7 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     # multiprocessing.
     multiprocessing.log_to_stderr()
+
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
             start_hours, dist_manhattan = extract_start_hours(cf, goal_city)
