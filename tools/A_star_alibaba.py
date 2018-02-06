@@ -714,7 +714,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
                 break
 
     sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
-    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d' % (day, goal_city, start_hour) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
