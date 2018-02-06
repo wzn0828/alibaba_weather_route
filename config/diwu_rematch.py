@@ -65,19 +65,24 @@ low_wind_pass               = 10
 conservative                = False
 costs_linear                = False
 costs_exponential           = False  #costs
-costs_sigmoid               = False  # sigmoid Costs
+costs_sigmoid               = True  # sigmoid Costs
 costs_exponential_upper     = 16
 costs_exponential_lower     = 13
 costs_exp_basenumber        = 100
 cost_sigmoid                = True
 #  c1 * (1 / (1 + np.exp(-c2 * (wind_speed - c3)))) + c4
-c1                          = -10   #-1
+c1                          = 100   #-1
 c2                          = 1
 c3                          = 15
 c_baseline_a_star           = 0
 # c_baseline_start            = c1 * (-1) /2
 c_baseline_start            = 0
 c_baseline_end              = 0
+
+# wzn nomenclature
+inter_speed                 = 15
+costs_sig_speed_time        = 5
+
 
 
 use_real_weather            = False
