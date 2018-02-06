@@ -27,7 +27,7 @@ class Configuration():
         print(self.config_path)
         cf = imp.load_source('config', self.config_path)
 
-        if cf.A_star_search_3D_multiprocessing_multicost:
+        if cf.A_star_search_3D_multiprocessing_multicost or cf.A_star_search_3D_multiprocessing_rainfall_wind:
             if cf.risky:
                 cf.model_description += '_risky'
             elif cf.wind_exp:

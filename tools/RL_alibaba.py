@@ -9,7 +9,7 @@ from tools.Dyna_3D import Dyna_3D
 from tools.Maze3D import Maze_3D
 import multiprocessing
 from tools.simpleSub import a_star_submission_3d, collect_csv_for_submission
-from tools.visualisation import plot_state_action_value
+# from tools.visualisation import plot_state_action_value
 
 
 def load_a_star_precompute(cf):
