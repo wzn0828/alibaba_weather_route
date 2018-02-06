@@ -16,7 +16,7 @@ plt_forecast_wind_test      = False
 plt_forecast_wind_train_multiprocessing = False
 plt_forecast_wind_test_multiprocessing = False
 plot_all_wind               = False
-plot_train_model            = False
+plot_train_model            = True
 plot_test_model             = False
 model_unique                = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 hour_unique                 = (3, 20)
@@ -102,11 +102,11 @@ csv_names = ['Model 3', 'sig: mean c1: 10, c2: 5, c3: 15', 'sig: mean c1: 10000,
 ########################################################################################################################
 # reinforcement_learning solution
 # important parameters
-day_list                    = [1, 2, 3]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
-reinforcement_learning_solution_multiprocessing = True
+reinforcement_learning_solution_multiprocessing = False
 loop_switch_to_linear_cost      = 50
 return_to_start                 = False
 strong_wind_return              = False     # will go back to the previous state

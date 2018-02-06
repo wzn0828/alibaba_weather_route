@@ -588,7 +588,7 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     return
 
 
-def A_star_3D_worker_rainfall_wind(cf, day, goal_city, star_hour):
+def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     # get the city locations
     if cf.debug_draw:
         # draw figure maximum
@@ -604,13 +604,12 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, star_hour):
     for hour in range(3, 21):
         # --------extract weather data ---------#
         wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
-
         # --------set cost ---------#
         wind_cost, rainfall_cost = set_costs(cf, wind_real_day_hour, rainfall_real_day_hour)
-
         # we replicate the weather for the whole hour
         wind_real_day_hour_total[:, :, hour - 3] = wind_cost[:, :]  # we replicate the hourly data
-        rainfall_real_day_hour_total[:, :, hour - 3] = rainfall_cost[:, :] # we replicate the hourly data
+        rainfall_real_day_hour_total[:, :, hour - 3] = rainfall_cost[:, :]  # we replicate the hourly data
+
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
@@ -720,22 +719,17 @@ def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
     if cf.risky:
         wind_cost[wind_real_day_hour < cf.wall_wind] = 1  # Every movement will have a unit cost
     elif cf.wind_exp:
-        wind_cost[
-            wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-        wind_cost[
-            wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        wind_cost[wind_real_day_hour < cf.wall_wind] -= cf.wind_exp_mean  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        wind_cost[wind_real_day_hour < cf.wall_wind] /= cf.wind_exp_std  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
         wind_cost[wind_real_day_hour < cf.wall_wind] = np.exp(wind_cost[wind_real_day_hour < cf.wall_wind])
     elif cf.conservative:
-        wind_cost[
-            wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        wind_cost[wind_real_day_hour < cf.wall_wind] /= cf.risky_coeff  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
         wind_cost[wind_real_day_hour < cf.wall_wind] += 1
     elif cf.costs_exponential:
         wind_cost.dtype = 'float64'
         wind_cost[wind_real_day_hour <= 13] = np.float64(cf.costs_exp_basenumber ** (0))
         wind_cost[wind_real_day_hour >= 16] = np.float64(cf.costs_exp_basenumber ** (3))
-        wind_cost[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(
-            cf.costs_exp_basenumber ** (
-            wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
+        wind_cost[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] = np.float64(cf.costs_exp_basenumber ** (wind_real_day_hour[np.logical_and(13 < wind_real_day_hour, wind_real_day_hour < 16)] - 13))
     elif cf.costs_sigmoid:
         # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
         wind_cost.dtype = 'float64'
@@ -748,22 +742,17 @@ def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
     if cf.risky:
         rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = 1  # Every movement will have a unit cost
     elif cf.wind_exp:
-        rainfall_cost[
-            rainfall_real_day_hour < cf.wall_rainfall] -= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
-        rainfall_cost[
-            rainfall_real_day_hour < cf.wall_rainfall] /= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
+        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] -= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
+        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] /= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
         rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = np.exp(rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall])
     elif cf.conservative:
-        rainfall_cost[
-            rainfall_real_day_hour < cf.wall_rainfall] /= cf.risky_coeff_rainfall  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
+        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] /= cf.risky_coeff_rainfall  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
         rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] += 1
     elif cf.costs_exponential:
         rainfall_cost.dtype = 'float64'
         rainfall_cost[rainfall_real_day_hour <= 3.5] = np.float64(cf.costs_exp_basenumber ** (0))
         rainfall_cost[rainfall_real_day_hour >= 4.5] = np.float64(cf.costs_exp_basenumber ** (3))
-        rainfall_cost[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] = np.float64(
-            cf.costs_exp_basenumber ** (
-                rainfall_real_day_hour[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] - 3.5))
+        rainfall_cost[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] = np.float64(cf.costs_exp_basenumber ** (rainfall_real_day_hour[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] - 3.5))
     elif cf.costs_sigmoid:
         # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
         rainfall_cost.dtype = 'float64'
@@ -888,10 +877,11 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     multiprocessing.log_to_stderr()
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-
-            p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city))
-            jobs.append(p)
-            p.start()
+            start_hours, dist_manhattan = extract_start_hours(cf, goal_city)
+            for start_hour in start_hours:
+                p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour))
+                jobs.append(p)
+                p.start()
 
     # waiting for the all the job to finish
     for j in jobs:
@@ -911,6 +901,23 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # print(np.sum(total_penalty[0].astype('int') == 1440))
     # print(total_penalty[1].astype('int'))
 
+
+def extract_start_hours(cf, goal_city):
+    """
+    This script is used to extract start hours
+    :param cf:
+    :param goal_city:
+    :return:
+    """
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    start_loc = (int(city_data_df.iloc[0]['xid']) - 1, int(city_data_df.iloc[0]['yid']) - 1)
+    goal_loc = (int(city_data_df.iloc[goal_city]['xid']) - 1, int(city_data_df.iloc[goal_city]['yid']) - 1)
+    hours_total = np.array((range(cf.hour_unique[0], cf.hour_unique[1]+1)))
+
+    dist_manhattan = abs(start_loc[0] - goal_loc[0]) + abs(start_loc[1] - goal_loc[1])
+    hours_needed = int(np.ceil(dist_manhattan/30)) - 1
+    start_hours = hours_total[:-hours_needed]
+    return start_hours, dist_manhattan
 
 
 def A_star_fix_missing(cf):
