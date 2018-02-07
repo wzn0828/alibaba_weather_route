@@ -916,8 +916,8 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
                     jobs.append(p)
                     p.start()
 
-                    # if len(jobs) > cf.num_threads:
-                    #     jobs[-cf.num_threads].join()
+                    if len(jobs) > cf.num_threads:
+                        jobs[-cf.num_threads].join()
 
     # waiting for the all the job to finish
     for j in jobs:

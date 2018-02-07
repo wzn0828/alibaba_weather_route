@@ -61,11 +61,11 @@ def process(cf):
         A_star_search_3D_multiprocessing(cf)
 
     if cf.A_star_search_3D_multiprocessing_multicost:
-        print('A_star_search_3D_multiprocessing')
+        print('A_star_search_3D_multiprocessing_multicost')
         A_star_search_3D_multiprocessing_multicost(cf)
 
     if cf.A_star_search_3D_multiprocessing_rainfall_wind:
-        print('A_star_search_3D_multiprocessing')
+        print('A_star_search_3D_multiprocessing_rainfall_wind')
         A_star_search_3D_multiprocessing_rainfall_wind(cf)
 
     if cf.A_star_fix_missing:

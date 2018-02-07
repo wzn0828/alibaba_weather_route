@@ -31,7 +31,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1 #[1| 6]
 submission_path             = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 20
+num_threads                 = 25
 
 ########################################################################################################################
 # A star search
