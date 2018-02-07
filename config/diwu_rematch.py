@@ -80,8 +80,8 @@ c_baseline_start            = 0
 c_baseline_end              = 0
 
 # wzn nomenclature
-inter_speed                 = 15
-costs_sig_speed_time        = 5
+costs_sig_inter_speed       = 14.5
+costs_sig_speed_time        = 4
 
 
 
