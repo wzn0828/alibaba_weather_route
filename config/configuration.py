@@ -88,7 +88,7 @@ class Configuration():
                 and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
                 and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
                 not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new\
-                and not cf.assignment_for_A_star_route and not cf.evaluation_with_rainfall:
+                and not cf.assignment_for_A_star_route and not cf.evaluation_with_rainfall and not cf.assignment_for_A_star_route_10min:
             # Enable log file
             os.mkdir(cf.exp_dir)
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")

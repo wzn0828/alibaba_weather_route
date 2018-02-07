@@ -16,7 +16,7 @@ from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
 from tools.evaluation import evaluation, evaluation_plot, evaluation_with_rainfall
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 from weather_prediction.wp_predict_weather import wp_predict_weather
-from tools.Assignment_for_A_star_route import assignment_for_A_star_route
+from tools.Assignment_for_A_star_route import assignment_for_A_star_route, assignment_for_A_star_route_10min
 from tools.Assignment_for_A_star_route_min import assignment_for_A_star_route_min
 
 
@@ -145,6 +145,10 @@ def process(cf):
     if cf.assignment_for_A_star_route:
         print('assignment_for_A_star_route')
         assignment_for_A_star_route(cf)
+
+    if cf.assignment_for_A_star_route_10min:
+        print('assignment_for_A_star_route_10min')
+        assignment_for_A_star_route_10min(cf)
 
     if cf.assignment_for_A_star_route_min:
         print('assignment_for_A_star_route')
