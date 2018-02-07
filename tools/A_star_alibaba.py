@@ -946,6 +946,62 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
 
 
 
+def A_star_search_3D_multiprocessing_rainfall_wind_hour_min(cf):
+    """
+    This is a 3D A star algorithm:
+    The whole diagram is expanded with a third dimension T which has length 18*30 = 540
+    :param cf:
+    :return:
+    """
+
+    with open(cf.start_hour_min_filename, 'rb') as handle:
+        start_hour_min = pickle.load(handle)
+
+    start_time = timer()
+    jobs = []
+    # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
+    # multiprocessing.
+    multiprocessing.log_to_stderr()
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+
+    cf.costs_and_numsteps = {}
+    costs_method = "costsSigmoid_" + "speedTime_" + str(cf.costs_sig_speed_time) + "_interSpeed_" + str(cf.costs_sig_inter_speed)
+    for (day_city, hour_min) in start_hour_min.items():
+        start_hours, mins, dist_manhattan = extract_start_hours(cf, city_data_df, day_city[1])
+        for i in range(1, 11):
+            cf.model_number = list([i])
+            cf.model_description = costs_method + '_model_number_' + str(cf.model_number)
+            cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
+            p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day_city[0], day_city[1], hour_min[0], hour_min[1], dist_manhattan))
+            jobs.append(p)
+            p.start()
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
+
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+
+    # save costs and num_steps
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_goalcity_starthour.json' )
+    with open(dict_cname, 'w') as fp:
+        json.dump(cf.costs_and_numsteps, fp, indent=4)
+
+    # sub_csv is for submission
+    collect_csv_for_submission(cf)
+    # sub_csv = pd.DataFrame(columns=['target', 'date', 'time', 'xid', 'yid'])
+    # sub_csv.to_csv(cf.csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
+    print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
+
+    # print('evaluation')
+    # print(cf.csv_file_name)
+    # total_penalty = evaluation(cf, cf.csv_file_name)
+    # print(int(np.sum(np.sum(total_penalty[0]))))
+    # print(total_penalty[0].astype('int'))
+    # print(np.sum(total_penalty[0].astype('int') == 1440))
+    # print(total_penalty[1].astype('int'))
+
 def extract_mins(mins, start_hour, start_hours, mins_inter):
     start_mins = [n * mins_inter for n in range(60 // mins_inter)]
     if start_hour == start_hours[-1]:

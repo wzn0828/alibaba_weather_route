@@ -84,6 +84,10 @@ class Configuration():
             cf.exp_dir = os.path.join(cf.savepath, 'Train_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Train_' + cf.model_description + '.csv')
 
+        if cf.A_star_search_3D_multiprocessing_rainfall_wind_hour_min:
+            cf.exp_dir = os.path.join(cf.savepath, cf.start_hour_min_filename.split('/')[-1].split('.')[0] + cf.model_description + '_' * 5 + datetime.now().strftime(
+                "%Y-%m-%d-%H-%M-%S"))
+
         if not cf.evaluation and not cf.plot_real_wind and not cf.plt_forecast_wind_train and not cf.plt_forecast_wind_test \
                 and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
                 and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \

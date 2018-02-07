@@ -36,7 +36,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1   #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 3
+num_threads                 = 5
 
 ########################################################################################################################
 # A star search
@@ -189,9 +189,11 @@ combined_csv_name               = 'A_star_search_3D_costsSigmoid_5_14.5__model_n
 threshold_manhattan_distance    = 3.0  # if cost is larger than this distance, we will not consider this route first
 
 # assignment mins algorithm.
-assignment_for_A_star_route_min = True
+assignment_for_A_star_route_min = False
 file_patterns_min               = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
 cost_num_steps_dir_min          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-09-56-56'
+csv_patterns_min                = 'Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d, start_min: %d'
+combined_csv_name_min           = 'A_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
 
 ########################################################################################################################
 # evaluation
@@ -201,4 +203,10 @@ evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 evaluation_with_rainfall    =  False
 csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
+
+########################################################################################################################
+# start_hour_min
+A_star_search_3D_multiprocessing_rainfall_wind_hour_min = True
+start_hour_min_filename     = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/assignment_dict_all_2018_02_07_diwu.pickle'
+
 

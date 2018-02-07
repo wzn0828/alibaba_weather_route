@@ -83,7 +83,65 @@ def assignment_for_A_star_route_min(cf):
     # Now we read the assignment matrix and combine the csv files:
     # write_combined_csv_file(cf, assignment_dict)
 
-    return assignment_dict
+    route_selection_result = {}
+    route_selection_result[(6, 1)] = (12, 50)
+    route_selection_result[(6, 2)] = (16, 40)
+    route_selection_result[(6, 3)] = (15, 40)
+    route_selection_result[(6, 4)] = (14, 30)
+    route_selection_result[(6, 5)] = (13, 30)
+    route_selection_result[(6, 6)] = (4, 10)
+    route_selection_result[(6, 7)] = (4, 0)
+    route_selection_result[(6, 8)] = (5, 20)
+    route_selection_result[(6, 9)] = (16, 0)
+    route_selection_result[(6, 10)] = (15, 20)
+
+    route_selection_result[(7, 1)] = (9, 50)
+    route_selection_result[(7, 2)] = (17, 30)
+    route_selection_result[(7, 3)] = (6, 40)
+    route_selection_result[(7, 4)] = (3, 0)
+    route_selection_result[(7, 5)] = (11, 10)
+    route_selection_result[(7, 6)] = (9, 30)
+    route_selection_result[(7, 7)] = (10, 10)
+    route_selection_result[(7, 8)] = (9, 20)
+    route_selection_result[(7, 9)] = (10, 50)
+    route_selection_result[(7, 10)] = (16, 0)
+
+    route_selection_result[(8, 1)] = (13, 0)
+    route_selection_result[(8, 2)] = (16, 40)
+    route_selection_result[(8, 3)] = (16, 0)
+    route_selection_result[(8, 4)] = (14, 40)
+    route_selection_result[(8, 5)] = (13, 30)
+    route_selection_result[(8, 6)] = (9, 10)
+    route_selection_result[(8, 7)] = (10, 20)
+    route_selection_result[(8, 8)] = (3, 10)
+    route_selection_result[(8, 9)] = (18, 40)
+    route_selection_result[(8, 10)] = (16, 30)
+
+    route_selection_result[(9, 1)] = (3, 0)
+    route_selection_result[(9, 2)] = (5, 30)
+    route_selection_result[(9, 3)] = (3, 10)
+    route_selection_result[(9, 4)] = (9, 50)
+    route_selection_result[(9, 5)] = (7, 50)
+    route_selection_result[(9, 6)] = (6, 30)
+    route_selection_result[(9, 7)] = (7, 40)
+    route_selection_result[(9, 8)] = (8, 0)
+    route_selection_result[(9, 9)] = (4, 0)
+    route_selection_result[(9, 10)] = (3, 20)
+
+    route_selection_result[(10, 1)] = (3, 20)
+    route_selection_result[(10, 2)] = (11, 10)
+    route_selection_result[(10, 3)] = (3, 10)
+    route_selection_result[(10, 4)] = (3, 50)
+    route_selection_result[(10, 5)] = (11, 40)
+    route_selection_result[(10, 6)] = (3, 40)
+    route_selection_result[(10, 7)] = (8, 30)
+    route_selection_result[(10, 8)] = (3, 30)
+    route_selection_result[(10, 9)] = (11, 50)
+    route_selection_result[(10, 10)] = (11, 0)
+
+    write_combined_csv_file_min(cf, route_selection_result)
+
+    # return assignment_dict
 
 
 def sort_dicts(day_goalcity_dict, sorted_key):
@@ -172,10 +230,29 @@ def write_combined_csv_file(cf, assignment_dict):
     sub_csv.to_csv(os.path.join(cf.cost_num_steps_dir, cf.combined_csv_name), header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
 
 
-def a_star_submission_3d(day, goal_city, city_data_hour_df, start_hour, slot):
+def write_combined_csv_file_min(cf, assignment_dict):
+    """
+    This script is used to collect all the generated csv files (days, cities) to generate the required submission file
+    :param cf:
+    :return:
+    """
+    frames = []
+    for day in cf.day_list:
+        for goal_city in cf.goal_city_list:
+            start_hour = assignment_dict[(day, goal_city)][0]
+            start_min = assignment_dict[(day, goal_city)][1]
+            csv_file_name_hour_min = cf.csv_patterns_min % (day, goal_city, start_hour, start_min) + '.csv'
+            city_data_hour_df = pd.read_csv(os.path.join(cf.cost_num_steps_dir_min, csv_file_name_hour_min), index_col=None, names=['target', 'date', 'time', 'xid', 'yid'])
+            sub_df = a_star_submission_3d(day, goal_city, city_data_hour_df, start_hour, start_min)
+            frames.append(sub_df)
+    sub_csv = pd.concat(frames, axis=0)
+    sub_csv.to_csv(os.path.join(cf.cost_num_steps_dir_min, cf.combined_csv_name_min), header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
+
+
+def a_star_submission_3d(day, goal_city, city_data_hour_df, start_hour, start_min):
     #### create one submit path
     # A random time to get the time string right
-    ti = datetime(2017, 11, 21, start_hour, slot*10)
+    ti = datetime(2017, 11, 21, start_hour, start_min)
     row_list = []
 
     for ip in range(len(city_data_hour_df)):
