@@ -36,7 +36,7 @@ hour_unique                 = (3, 20)
 submission_dummy            = False
 add_day                     = 1   #[1| 6]
 submission_path             = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions'
-num_threads                 = 5
+num_threads                 = 25
 
 ########################################################################################################################
 # A star search
@@ -207,6 +207,9 @@ csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_
 ########################################################################################################################
 # start_hour_min
 A_star_search_3D_multiprocessing_rainfall_wind_hour_min = True
-start_hour_min_filename     = '/home/wzn/PycharmProjects/alibaba_weather_route/Submissions/assignment_dict_all_2018_02_07_diwu.pickle'
+start_hour_min_filename     = '/home/wzn/PycharmProjects/alibaba_weather_route/Submission/assignment_dict_all_2018_02_07_diwu.pickle'
 
-
+########################################################################################################################
+# sigmoid_cost
+costs_sig_speed_time = 4
+costs_sig_inter_speed = 14.5
