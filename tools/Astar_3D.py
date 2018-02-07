@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import proj3d
 
 
 class GridWithWeights_3D():
-    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance, wind_costs, rainfall_costs):
+    def __init__(self, width, height, time_length, wall_wind, hourly_travel_distance, wind_costs, rainfall_costs, short_steps):
         self.width = width
         self.height = height
         self.time_length = time_length
@@ -14,6 +14,7 @@ class GridWithWeights_3D():
         self.hourly_travel_distance = hourly_travel_distance
         self.wind_costs = wind_costs
         self.rainfall_costs = rainfall_costs
+        self.short_steps = short_steps
 
     def upper_cone(self, id):
         (x, y, t) = id
@@ -41,7 +42,7 @@ class GridWithWeights_3D():
         return results
 
     def cost(self, to_node):
-        weight_idx = to_node[0], to_node[1], to_node[2]//self.hourly_travel_distance
+        weight_idx = to_node[0], to_node[1], (to_node[2]+self.short_steps)//self.hourly_travel_distance
         cost = self.weights[weight_idx]
         wind_cost = self.wind_costs[weight_idx]
         rainfall_cost = self.rainfall_costs[weight_idx]

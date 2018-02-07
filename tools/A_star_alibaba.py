@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from timeit import default_timer as timer
 import multiprocessing
+import json
 import logging
 import sys
 import matplotlib
@@ -12,8 +13,8 @@ import pickle
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
-from tools.evaluation import evaluation, evaluation_plot
-from decimal import Decimal
+# from tools.evaluation import evaluation, evaluation_plot
+# from decimal import Decimal
 
 
 
@@ -589,7 +590,14 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
     return
 
 
-def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
+def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, dist_manhattan):
+
+    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d, start_min: %d' % (day, goal_city, start_hour, start_min) + '.csv'
+    if os.path.exists(csv_file_name):
+        print('%s has existed' % csv_file_name)
+        return
+
+    start_time = timer()
     # get the city locations
     if cf.debug_draw:
         # draw figure maximum
@@ -615,8 +623,9 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
-    cf.time_length = 30*(21 - start_hour)
-    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total)
+    short_steps = int(np.ceil(start_min/2))
+    cf.time_length = 30*(21 - start_hour) - short_steps
+    diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total, short_steps)
     diagram.weights = max_cost
 
     city_start_time = timer()
@@ -652,16 +661,23 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
         find_loc = prev_loc
     num_steps = len(route_list)
 
-    # save costs and num_steps
-    day_goalcity_starthour = {}
-    day_goalcity_starthour['wind_cost'] = wind_cost_sum
-    day_goalcity_starthour['rainfall_cost'] = rainfall_cost_sum
-    day_goalcity_starthour['max_cost'] = max_cost_sum
-    day_goalcity_starthour['num_steps'] = num_steps
+    # save costs and num_steps separately
+    day_goalcity_starthour_min = {}
+    day_goalcity_starthour_min['wind_cost'] = wind_cost_sum
+    day_goalcity_starthour_min['rainfall_cost'] = rainfall_cost_sum
+    day_goalcity_starthour_min['max_cost'] = max_cost_sum
+    day_goalcity_starthour_min['num_steps'] = num_steps
+    day_goalcity_starthour_min['ave_wind_cost'] = wind_cost_sum/num_steps
+    day_goalcity_starthour_min['ave_rainfall_cost'] = rainfall_cost_sum/num_steps
+    day_goalcity_starthour_min['ave_max_cost'] = max_cost_sum/num_steps
+    day_goalcity_starthour_min['ratio_max_cost_to_manhattan'] = max_cost_sum/dist_manhattan
 
-    dict_name = os.path.join(cf.exp_dir, 'costs&num_steps_day_%d_goalcity_%d_starthour_%d.pickle' % (day, goal_city, start_hour))
-    with open(dict_name, 'wb') as handle:
-        pickle.dump(day_goalcity_starthour, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d_startmin_%d.json' % (day, goal_city, start_hour, start_min))
+    with open(dict_cname, 'w') as fp:
+        json.dump(day_goalcity_starthour_min, fp, indent=4)
+
+    # save costs and num_steps totally
+    cf.costs_and_numsteps[(day, goal_city, start_hour, start_min)] = day_goalcity_starthour_min
 
     # we reverse the route for plotting and saving
     route_list.reverse()
@@ -713,11 +729,13 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour):
             if 30*(h + 1 - start_hour) > len(route_list):
                 break
 
-    sub_df = a_star_submission_3d(day, goal_city, goal_loc, route_list)
-    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d' % (day, goal_city) + '.csv'
+    sub_df = a_star_submission_3d(day, goal_city, start_hour, start_min, goal_loc, route_list)
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
+
+    print('Finish route day: %d, city: %d, start_hour: %d, start_min: %d, using time: %.2f sec!' % (day, goal_city, start_hour, start_min, timer() - start_time))
+
     return
 
 
@@ -749,7 +767,7 @@ def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
     # rainfall cost
     rainfall_cost = rainfall_real_day_hour.copy()
     if cf.risky or cf.wind_exp or cf.conservative:
-        rainfall_cost[rainfall_real_day_hour >= cf.wall_rainfall] = cf.strong_wind_penalty_coeff
+        rainfall_cost[rainfall_real_day_hour >= cf.wall_rainfall] = cf.strong_rainfall_penalty_coeff
     if cf.risky:
         rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = 1  # Every movement will have a unit cost
     elif cf.wind_exp:
@@ -888,17 +906,29 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     multiprocessing.log_to_stderr()
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
 
+    cf.costs_and_numsteps = {}
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            start_hours, dist_manhattan = extract_start_hours(cf, city_data_df, goal_city)
+            start_hours, mins, dist_manhattan = extract_start_hours(cf, city_data_df, goal_city)
             for start_hour in start_hours:
-                p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour))
-                jobs.append(p)
-                p.start()
+                mins_inter = 10
+                start_mins = extract_mins(mins, start_hour, start_hours, mins_inter)
+                for start_min in start_mins:
+                    p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour, start_min, dist_manhattan))
+                    jobs.append(p)
+                    p.start()
+
+                    if len(jobs) > cf.num_threads:
+                        jobs[-cf.num_threads].join()
 
     # waiting for the all the job to finish
     for j in jobs:
         j.join()
+
+    # save costs and num_steps
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_goalcity_starthour.json' )
+    with open(dict_cname, 'w') as fp:
+        json.dump(cf.costs_and_numsteps, fp, indent=4)
 
     # sub_csv is for submission
     collect_csv_for_submission(cf)
@@ -915,6 +945,18 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # print(total_penalty[1].astype('int'))
 
 
+
+def extract_mins(mins, start_hour, start_hours, mins_inter):
+    start_mins = [n * mins_inter for n in range(60 // mins_inter)]
+    if start_hour == start_hours[-1]:
+        if mins == 60:
+            start_mins = [0]
+        else:
+            start_mins = [n * mins_inter for n in range(mins // mins_inter)]
+
+    return start_mins
+
+
 def extract_start_hours(cf, city_data_df, goal_city):
     """
     This script is used to extract start hours
@@ -929,7 +971,10 @@ def extract_start_hours(cf, city_data_df, goal_city):
     dist_manhattan = abs(start_loc[0] - goal_loc[0]) + abs(start_loc[1] - goal_loc[1])
     hours_needed = int(np.ceil(dist_manhattan/30)) - 1
     start_hours = hours_total[:-hours_needed]
-    return start_hours, dist_manhattan
+
+    mins = 60 - np.mod(dist_manhattan, 30)*2
+
+    return start_hours, mins, dist_manhattan
 
 
 def A_star_fix_missing(cf):

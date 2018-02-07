@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-
+from tools.A_star_alibaba import extract_weather_data
 
 def evaluation(cf, csv_for_evaluation):
     """
@@ -257,137 +257,163 @@ def evaluation_plot(cf):
 
     for day in cf.evaluation_days:
         for goal_city in cf.evaluation_goal_cities:
-            print('Day: %d, city: %d' % (day, goal_city))
-            route_list = []
-            start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))
-            goal_loc = (int(city_data_df.iloc[goal_city]['xid']), int(city_data_df.iloc[goal_city]['yid']))
-            predicted_df_idx = 0
-            if predicted_df_idx >= len(predicted_df) - 1:
-                # meaining the rest of the goals are not reached (e.g., day 4, and 5)
-                break
+            for start_hour in cf.evaluation_start_hour:
+                print('Day: %d, city: %d, start_hour: %d' % (day, goal_city, start_hour))
+                route_list = []
+                start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))
+                goal_loc = (int(city_data_df.iloc[goal_city]['xid']), int(city_data_df.iloc[goal_city]['yid']))
+                predicted_df_idx = 0
+                if predicted_df_idx >= len(predicted_df) - 1:
+                    # meaining the rest of the goals are not reached (e.g., day 4, and 5)
+                    break
 
-            start_loc_pred = (predicted_df.iloc[predicted_df_idx]['xid'], predicted_df.iloc[predicted_df_idx]['yid'])
-            predicted_df_now = predicted_df.loc[(predicted_df['date']==day) & (predicted_df['target']==goal_city)]
+                start_loc_pred = (predicted_df.iloc[predicted_df_idx]['xid'], predicted_df.iloc[predicted_df_idx]['yid'])
+                predicted_df_now = predicted_df.loc[(predicted_df['date']==day) & (predicted_df['target']==goal_city)]
 
-            day_pred = predicted_df_now.iloc[predicted_df_idx]['date']
-            target_pred = predicted_df_now.iloc[predicted_df_idx]['target']
+                day_pred = predicted_df_now.iloc[predicted_df_idx]['date']
+                target_pred = predicted_df_now.iloc[predicted_df_idx]['target']
 
-            if goal_city != predicted_df_now.iloc[predicted_df_idx]['target']:
-                print('Sadly, we never reached the goal: %d' % goal_city)
-                print('#' * 20 + '5' * 20 + '#' * 20)
-                continue
+                if goal_city != predicted_df_now.iloc[predicted_df_idx]['target']:
+                    print('Sadly, we never reached the goal: %d' % goal_city)
+                    print('#' * 20 + '5' * 20 + '#' * 20)
+                    continue
 
-            assert start_loc == start_loc_pred, "Starting x, y not the same!"
-            assert day_pred == day, "Starting day not the same!"
-            assert target_pred == goal_city, "Starting city not the same!"
-            min = 0
-            acc_min = 0
-            hour = 3
-            if day < 6:  # meaning this is a training day
-                weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
-            else:
-                weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+                assert start_loc == start_loc_pred, "Starting x, y not the same!"
+                assert day_pred == day, "Starting day not the same!"
+                assert target_pred == goal_city, "Starting city not the same!"
+                min = 0
+                acc_min = 0
+                hour = start_hour
 
-            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-
-            # begin to draw
-            plt.clf()
-            plt.imshow(wind_real_day_hour, cmap=cf.colormap)
-            plt.colorbar()
-            # we also plot the city location
-            for idx in range(city_data_df.index.__len__()):
-                x_loc = int(city_data_df.iloc[idx]['xid']) - 1
-                y_loc = int(city_data_df.iloc[idx]['yid']) - 1
-                cid = int(city_data_df.iloc[idx]['cid'])
-                plt.scatter(y_loc, x_loc, c='r', s=40)
-                plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
-            # we also draw some contours
-            x = np.arange(0, wind_real_day_hour.shape[1], 1)
-            y = np.arange(0, wind_real_day_hour.shape[0], 1)
-            X, Y = np.meshgrid(x, y)
-            CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
-            plt.clabel(CS, inline=1, fontsize=10)
-            plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
-
-            next_loc_pred = start_loc_pred
-
-            while not next_loc_pred == goal_loc:
-                route_list.append(next_loc_pred)
-                min += 2
-                acc_min += 2
-                predicted_df_idx += 1
-                next_loc_pred = (predicted_df_now.iloc[predicted_df_idx]['xid'], predicted_df_now.iloc[predicted_df_idx]['yid'])
-                day_pred_next = predicted_df_now.iloc[predicted_df_idx]['date']
-                target_pred_next = predicted_df_now.iloc[predicted_df_idx]['target']
-                assert day_pred_next == day_pred, "Predict day not the same!"
-                assert target_pred_next == target_pred, "Predict city not the same!"
-                assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
-
-                if min >= 60:
-                    #plt.waitforbuttonpress()
-                    min = 0
-                    hour += 1
-                    if day < 6:  # meaning this is a training day
-                        weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
-                    else:
-                        weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
-                    wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-                    plt.clf()
-                    # we plot every hour
-                    for h in range(3, hour):
-                        for p in route_list[(h-3)*30:(h-2)*30]:
-                            plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
-
-                    plt.imshow(wind_real_day_hour, cmap=cf.colormap)
-                    plt.colorbar()
-                    # we also plot the city location
-                    for idx in range(city_data_df.index.__len__()):
-                        x_loc = int(city_data_df.iloc[idx]['xid']) - 1
-                        y_loc = int(city_data_df.iloc[idx]['yid']) - 1
-                        cid = int(city_data_df.iloc[idx]['cid'])
-                        plt.scatter(y_loc, x_loc, c='r', s=40)
-                        plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
-                    # we also draw some contours
-                    x = np.arange(0, wind_real_day_hour.shape[1], 1)
-                    y = np.arange(0, wind_real_day_hour.shape[0], 1)
-                    X, Y = np.meshgrid(x, y)
-                    CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
-                    plt.clabel(CS, inline=1, fontsize=10)
-                    plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
-                    plt.waitforbuttonpress(0.1)
-                # Now we check whether the aircraft crash or not
-                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
-                    print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
-                    # we break the loop
-                    # break
-                    plt.title('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
-                    plt.waitforbuttonpress(0.001)
-                    start_loc_pred = next_loc_pred
+                if day < 6:  # meaning this is a training day
+                    weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
                 else:
-                    start_loc_pred = next_loc_pred
+                    weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+                #
+                # wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
 
-            # plot the last bit route
-            for h in range(3, hour):
-                for p in route_list[(h - 3) * 30:(h - 2) * 30]:
-                    plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+                wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
+                wind_real_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour*15.0/4)
+                wind_real_day_hour[wind_real_day_hour>=30] = 30
+                # begin to draw
+                plt.clf()
+                plt.imshow(wind_real_day_hour, cmap=cf.colormap)
+                plt.colorbar()
+                # we also plot the city location
+                for idx in range(city_data_df.index.__len__()):
+                    x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                    y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                    cid = int(city_data_df.iloc[idx]['cid'])
+                    plt.scatter(y_loc, x_loc, c='r', s=40)
+                    plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
+                # we also draw some contours
+                x = np.arange(0, wind_real_day_hour.shape[1], 1)
+                y = np.arange(0, wind_real_day_hour.shape[0], 1)
+                X, Y = np.meshgrid(x, y)
+                CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
+                plt.clabel(CS, inline=1, fontsize=10)
+                plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
 
-            for p in route_list[(hour-3)*30:]:
-                plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
 
-            plt.waitforbuttonpress(3)
+                next_loc_pred = start_loc_pred
 
-            if predicted_df_idx < len(predicted_df):
-                if next_loc_pred == goal_loc:
-                    print('Goal reached in %d mins' % acc_min)
+                while not next_loc_pred == goal_loc:
+                    route_list.append(next_loc_pred)
+                    min += 2
+                    acc_min += 2
                     predicted_df_idx += 1
-                else:
-                    # it is a crash, we need to iterate
-                    if predicted_df_idx < len(predicted_df)-1:
-                        while predicted_df.iloc[predicted_df_idx+1]['target'] == predicted_df.iloc[predicted_df_idx]['target']:
-                            predicted_df_idx += 1
-                            if predicted_df_idx >= len(predicted_df)-1:
-                                break
+                    next_loc_pred = (predicted_df_now.iloc[predicted_df_idx]['xid'], predicted_df_now.iloc[predicted_df_idx]['yid'])
+                    day_pred_next = predicted_df_now.iloc[predicted_df_idx]['date']
+                    target_pred_next = predicted_df_now.iloc[predicted_df_idx]['target']
+                    assert day_pred_next == day_pred, "Predict day not the same!"
+                    assert target_pred_next == target_pred, "Predict city not the same!"
+                    assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
+
+                    if min >= 60:
+                        #plt.waitforbuttonpress()
+                        min = 0
+                        hour += 1
+
+                        # we plot every hour
+                        for h in range(start_hour, hour):
+                            for p in route_list[(h - start_hour) * 30:(h - start_hour + 1) * 30]:
+                                plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+
+                        plt.waitforbuttonpress(100)
+
+
+                        # if day < 6:  # meaning this is a training day
+                        #     weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                        # else:
+                        #     weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
+                        # wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+
+                        wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
+                        wind_real_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour * 15.0 / 4)
+                        wind_real_day_hour[wind_real_day_hour >= 30] = 30
+
+                        plt.clf()
+                        # # we plot every hour
+                        # for h in range(start_hour, hour):
+                        #     for p in route_list[(h-start_hour)*30:(h- start_hour + 1)*30]:
+                        #         plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+
+                        plt.imshow(wind_real_day_hour, cmap=cf.colormap)
+                        plt.colorbar()
+                        # we also plot the city location
+                        for idx in range(city_data_df.index.__len__()):
+                            x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                            y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                            cid = int(city_data_df.iloc[idx]['cid'])
+                            plt.scatter(y_loc, x_loc, c='r', s=40)
+                            plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=20)
+                        # we also draw some contours
+                        x = np.arange(0, wind_real_day_hour.shape[1], 1)
+                        y = np.arange(0, wind_real_day_hour.shape[0], 1)
+                        X, Y = np.meshgrid(x, y)
+                        CS = plt.contour(X, Y, wind_real_day_hour, (15,), colors='k')
+                        plt.clabel(CS, inline=1, fontsize=10)
+                        plt.title(weather_name[:-6] + str(hour) + '_' + '_goal city' + str(goal_city))
+
+                        # we plot every hour
+                        for h in range(start_hour, hour+1):
+                            for p in route_list[(h - start_hour) * 30:(h - start_hour + 1) * 30]:
+                                plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+
+                        # plt.waitforbuttonpress(100)
+                    # Now we check whether the aircraft crash or not
+                    if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15.:
+                        print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                        # we break the loop
+                        # break
+                        plt.title('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                        plt.waitforbuttonpress(100)
+                        start_loc_pred = next_loc_pred
+                    else:
+                        start_loc_pred = next_loc_pred
+
+                # plot the last bit route
+                for h in range(start_hour, hour+1):
+                    for p in route_list[(h - start_hour) * 30:(h - start_hour +1) * 30]:
+                        plt.scatter(p[1], p[0], c=cf.colors[np.mod(h, 2)], s=10)
+
+                for p in route_list[(hour-start_hour)*30:]:
+                    plt.scatter(p[1], p[0], c=cf.colors[np.mod(hour, 2)], s=10)
+
+                plt.waitforbuttonpress(100)
+
+                if predicted_df_idx < len(predicted_df):
+                    if next_loc_pred == goal_loc:
+                        print('Goal reached in %d mins' % acc_min)
                         predicted_df_idx += 1
+                    else:
+                        # it is a crash, we need to iterate
+                        if predicted_df_idx < len(predicted_df)-1:
+                            while predicted_df.iloc[predicted_df_idx+1]['target'] == predicted_df.iloc[predicted_df_idx]['target']:
+                                predicted_df_idx += 1
+                                if predicted_df_idx >= len(predicted_df)-1:
+                                    break
+                            predicted_df_idx += 1
 
 
 def evaluation_with_rainfall(cf):

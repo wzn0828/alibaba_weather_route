@@ -73,6 +73,8 @@ class Configuration():
 
         if cf.day_list[0] > 5:  # This is for submitting test file
             cf.exp_dir = os.path.join(cf.savepath, 'Test_' + cf.model_description + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+            # ad_hoc for testing
+            # cf.exp_dir = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-09-56-56'
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
         elif cf.fully_convolutional_wind_pred:
             cf.exp_dir = os.path.join(cf.savepath, 'FCN_' + cf.model_name + '_' * 5 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))

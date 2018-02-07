@@ -109,6 +109,7 @@ def collec_json_file(cf):
             files = fnmatch.filter(os.listdir(cf.cost_num_steps_dir), file_patterns)
             for f in files:
                 start_hour = int(f[len(file_patterns)-6:-5])
+                print(start_hour)
                 cost_dict[day][goal_city][start_hour] = {}
                 data = json.load(open(os.path.join(cf.cost_num_steps_dir, f)))
                 cost_dict[day][goal_city][start_hour]['max_cost'] = data['max_cost']
