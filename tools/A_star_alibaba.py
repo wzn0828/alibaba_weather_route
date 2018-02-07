@@ -672,7 +672,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
     day_goalcity_starthour_min['ave_max_cost'] = max_cost_sum/num_steps
     day_goalcity_starthour_min['ratio_max_cost_to_manhattan'] = max_cost_sum/dist_manhattan
 
-    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d_startmin_%d.json' % (day, goal_city, start_hour, start_min))
+    dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d_startmin_%d_model_number_%s.json' % (day, goal_city, start_hour, start_min, str(cf.model_number)))
     with open(dict_cname, 'w') as fp:
         json.dump(day_goalcity_starthour_min, fp, indent=4)
 
@@ -973,6 +973,7 @@ def A_star_search_3D_multiprocessing_rainfall_wind_hour_min(cf):
             cf.model_description = costs_method + '_model_number_' + str(cf.model_number)
             cf.csv_file_name = os.path.join(cf.exp_dir, 'Test_' + cf.model_description + '.csv')
             p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day_city[0], day_city[1], hour_min[0], hour_min[1], dist_manhattan))
+
             jobs.append(p)
             p.start()
             if len(jobs) > cf.num_threads:
