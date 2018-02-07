@@ -619,6 +619,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
         wind_real_day_hour_total[:, :, hour - start_hour] = wind_cost[:, :]  # we replicate the hourly data
         rainfall_real_day_hour_total[:, :, hour - start_hour] = rainfall_cost[:, :] # we replicate the hourly data
 
+
     max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
@@ -903,11 +904,12 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
     # multiprocessing.
     multiprocessing.log_to_stderr()
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
 
     cf.costs_and_numsteps = {}
     for day in cf.day_list:
         for goal_city in cf.goal_city_list:
-            start_hours, mins, dist_manhattan = extract_start_hours(cf, goal_city)
+            start_hours, mins, dist_manhattan = extract_start_hours(cf, city_data_df, goal_city)
             for start_hour in start_hours:
                 mins_inter = 10
                 start_mins = extract_mins(mins, start_hour, start_hours, mins_inter)
@@ -943,6 +945,7 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
     # print(total_penalty[1].astype('int'))
 
 
+
 def extract_mins(mins, start_hour, start_hours, mins_inter):
     start_mins = [n * mins_inter for n in range(60 // mins_inter)]
     if start_hour == start_hours[-1]:
@@ -954,14 +957,13 @@ def extract_mins(mins, start_hour, start_hours, mins_inter):
     return start_mins
 
 
-def extract_start_hours(cf, goal_city):
+def extract_start_hours(cf, city_data_df, goal_city):
     """
     This script is used to extract start hours
     :param cf:
     :param goal_city:
     :return:
     """
-    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     start_loc = (int(city_data_df.iloc[0]['xid']) - 1, int(city_data_df.iloc[0]['yid']) - 1)
     goal_loc = (int(city_data_df.iloc[goal_city]['xid']) - 1, int(city_data_df.iloc[goal_city]['yid']) - 1)
     hours_total = np.array((range(cf.hour_unique[0], cf.hour_unique[1]+1)))

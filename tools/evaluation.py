@@ -416,3 +416,83 @@ def evaluation_plot(cf):
                             predicted_df_idx += 1
 
 
+def evaluation_with_rainfall(cf):
+    """
+    This is a script for evaluating predicted route's length
+    :param cf:
+    :param csv_for_evaluation:
+    :return:
+    """
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    predicted_df = pd.read_csv(cf.csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid'])
+
+    total_penalty = np.ones(shape=(5, 10)) * 24 * 60
+    crash_time_stamp = np.zeros(shape=(5, 10)).astype(int)
+
+    average_wind = np.zeros(shape=(5, 10))
+    average_rain = np.zeros(shape=(5, 10))
+    max_wind = np.zeros(shape=(5, 10))
+    max_rain = np.zeros(shape=(5, 10))
+
+    for day in cf.evaluation_days:
+        for goal_city in cf.evaluation_goal_cities:
+            # print('Day: %d, city: %d' % (day, goal_city))\
+
+            df = predicted_df.loc[(predicted_df['date'] == day) & (predicted_df['target']==goal_city)]
+            predicted_df_idx = 0
+            # For evaluation, we don't need to substract 1 here because we have add 1 one submission
+            start_loc = (int(city_data_df.iloc[0]['xid']), int(city_data_df.iloc[0]['yid']))
+            goal_loc = (int(city_data_df.iloc[goal_city]['xid']), int(city_data_df.iloc[goal_city]['yid']))
+            start_loc_pred = (int(df.iloc[0]['xid']), int(df.iloc[0]['yid']))
+            target_pred = (int(df.tail(1)['xid']), int(df.tail(1)['yid']))
+
+            assert start_loc == start_loc_pred, "Starting x, y not the same!"
+            assert target_pred == goal_loc, "Goal city not the same!"
+
+            min = int(df.iloc[0]['time'][-2:])
+            acc_min = 0
+            hour = int(df.iloc[0]['time'][:2])
+            weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+            rainfall_name = 'real_rainfall_day_%d_hour_%d.npy' % (day, hour)
+            wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+            rain_real_day_hour = np.load(os.path.join(cf.rainfall_save_path, rainfall_name))
+
+            start_loc_pred = (df.iloc[predicted_df_idx]['xid'], df.iloc[predicted_df_idx]['yid'])
+            next_loc_pred = start_loc_pred
+
+            while not next_loc_pred == goal_loc:
+                min += 2
+                acc_min += 2
+                predicted_df_idx += 1
+                next_loc_pred = (df.iloc[predicted_df_idx]['xid'], df.iloc[predicted_df_idx]['yid'])
+                assert np.sum(np.abs(next_loc_pred[0] - start_loc_pred[0]) + np.abs(next_loc_pred[1] - start_loc_pred[1])) <=1, "Unlawful move!"
+
+                if min >= 60:
+                    min = 0
+                    hour += 1
+                    weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
+                    rainfall_name = 'real_rainfall_day_%d_hour_%d.npy' % (day, hour)
+                    wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
+                    rain_real_day_hour = np.load(os.path.join(cf.rainfall_save_path, rainfall_name))
+
+                # Now we check whether the aircraft crash or not
+                if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15. or rain_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 4.0:
+                    # print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
+                    total_penalty[day-1, goal_city-1] = 24 * 60
+                    crash_time_stamp[day-1, goal_city-1] = hour*30 + min
+                    # we break the loop
+                    break
+                else:
+                    start_loc_pred = next_loc_pred
+                    average_wind[day-1, goal_city-1] += wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1]
+                    max_wind[day-1, goal_city-1] = max(max_wind[day-1, goal_city-1], wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1])
+
+                    average_rain[day - 1, goal_city - 1] += rain_real_day_hour[next_loc_pred[0] - 1, next_loc_pred[1] - 1]
+                    max_rain[day - 1, goal_city - 1] = max(max_rain[day - 1, goal_city - 1], rain_real_day_hour[next_loc_pred[0] - 1, next_loc_pred[1] - 1])
+
+            if next_loc_pred == goal_loc:
+                total_penalty[day - 1, goal_city - 1] = acc_min
+
+    average_wind = np.divide(average_wind, total_penalty)
+    average_rain = np.divide(average_rain, total_penalty)
+    return total_penalty, crash_time_stamp, average_wind, max_wind, average_rain, max_rain

@@ -13,9 +13,10 @@ from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_for
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing, A_star_search_3D_multiprocessing_rainfall_wind
 
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
-from tools.evaluation import evaluation, evaluation_plot
+from tools.evaluation import evaluation, evaluation_plot, evaluation_with_rainfall
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 from weather_prediction.wp_predict_weather import wp_predict_weather
+from tools.Assignment_for_A_star_route import assignment_for_A_star_route
 
 
 def process(cf):
@@ -120,11 +121,29 @@ def process(cf):
     if cf.evaluation_plot_multi:
         print('evaluation_plot_multi')
         evaluation_plot_multi(cf)
+    if cf.evaluation_with_rainfall:
+        print('evaluation_with_rainfall')
+        total_penalty, crash_time_stamp, average_wind, max_wind, average_rain, max_rain = evaluation_with_rainfall(cf)
+        print(int(np.sum(np.sum(total_penalty))))
+        print(total_penalty.astype('int'))
+        print(crash_time_stamp.astype('int'))
+        np.set_printoptions(precision=2)
+        print(average_wind)
+        print(max_wind)
+        print(average_rain)
+        print(max_rain)
+        print(np.sum(total_penalty.astype('int') == 1440))
+
 
     ### weather prediction
     if cf.wp_predict_weather:
         print('weather: predict weather data')
         wp_predict_weather(cf)
+
+    #### assignment algorithm #############
+    if cf.assignment_for_A_star_route:
+        print('assignment_for_A_star_route')
+        assignment_for_A_star_route(cf)
 
 
 def main():
