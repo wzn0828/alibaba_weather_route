@@ -592,6 +592,11 @@ def A_star_3D_worker_multicost(cf, day, goal_city):
 
 def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, dist_manhattan):
 
+    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d, start_min: %d' % (day, goal_city, start_hour, start_min) + '.csv'
+    if os.path.exists(csv_file_name):
+        print('%s has existed' % csv_file_name)
+        return
+
     start_time = timer()
     # get the city locations
     if cf.debug_draw:
@@ -724,7 +729,6 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
                 break
 
     sub_df = a_star_submission_3d(day, goal_city, start_hour, start_min, goal_loc, route_list)
-    csv_file_name = cf.csv_file_name[:-4] + '_day: %d, city: %d, start_hour: %d, start_min: %d' % (day, goal_city, start_hour, start_min) + '.csv'
     sub_df.to_csv(csv_file_name, header=False, index=False, columns=['target', 'date', 'time', 'xid', 'yid'])
     # print('We reach the goal for day: %d, city: %d with: %d steps, using %.2f sec!' % (day, goal_city, len(route_list), timer() - city_start_time))
     sys.stdout.flush()
@@ -911,6 +915,9 @@ def A_star_search_3D_multiprocessing_rainfall_wind(cf):
                     p = multiprocessing.Process(target=A_star_3D_worker_rainfall_wind, args=(cf, day, goal_city, start_hour, start_min, dist_manhattan))
                     jobs.append(p)
                     p.start()
+
+                    # if len(jobs) > cf.num_threads:
+                    #     jobs[-cf.num_threads].join()
 
     # waiting for the all the job to finish
     for j in jobs:
