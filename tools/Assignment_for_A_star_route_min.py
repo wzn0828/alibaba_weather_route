@@ -2,6 +2,7 @@ import numpy as np
 import os
 import fnmatch
 import json
+import pickle
 import pandas as pd
 from pprint import pprint
 from datetime import *
@@ -138,6 +139,10 @@ def assignment_for_A_star_route_min(cf):
     route_selection_result[(10, 8)] = (3, 30)
     route_selection_result[(10, 9)] = (11, 50)
     route_selection_result[(10, 10)] = (11, 0)
+
+    with open(cf.start_hour_min_filename, 'wb') as handle:
+        pickle.dump(route_selection_result, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
     write_combined_csv_file_min(cf, route_selection_result)
 

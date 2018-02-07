@@ -11,7 +11,6 @@
 /Figures
 /Experiments
 /Submissions
-/Submission
 /IJCAI_2018
 /Result_analysis
 /result_analysis
@@ -35,5 +34,4 @@ for_wzn
 main_wzn.py
 config/wzn.py
 task_for_wzn
-
 
