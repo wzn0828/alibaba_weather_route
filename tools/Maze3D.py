@@ -117,7 +117,9 @@ class Maze_3D:
                 reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
         elif self.costs_linear:
             if current_loc_time_wind < self.wall_wind:
-                reward_move = (current_loc_time_wind - self.risky_coeff) / self.risky_coeff
+                reward_move_wind = -1.0 * current_loc_time_wind / self.wall_wind
+                reward_move_rainfall = -1.0 * current_loc_time_rainfall / 4
+                reward_move = min(reward_move_wind, reward_move_rainfall)
             else:
                 reward_move = -1.0 * self.reward_goal
         elif self.cost_sigmoid:
