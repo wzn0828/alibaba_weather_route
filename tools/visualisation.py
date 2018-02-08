@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from timeit import default_timer as timer
 import matplotlib.gridspec as gridspec
+from tools.extract_multation import extract_multation
+from tools.A_star_alibaba import extract_weather_data
 
 
 def plot_real_wind(cf):
@@ -984,3 +986,102 @@ def plot_wind_with_rainfall(cf):
                 plt.waitforbuttonpress(0.01)
                 save_fig_name = os.path.join(cf.fig_wind_with_rainfall_test_path, '%s.png' % ('Test_wind_with_rainfall_day_%d_hour_%d' % (d_unique, h_unique)))
                 plt.savefig(save_fig_name, dpi=74, bbox_inches='tight')
+
+
+
+def plot_multation(cf):
+
+    # # Create the data generators
+    # fig = plt.figure(num=1)
+    # fig.clf()
+    # mng = plt.get_current_fig_manager()
+    # mng.resize(*mng.window.maxsize())
+    # left = gridspec.GridSpec(1, 1)
+    # left.update(left=0.05, right=0.2, hspace=0.05)
+    # right = gridspec.GridSpec(2, 5)
+    # right.update(left=0.25, right=0.98, hspace=0.05)
+
+    # real & train data
+    total_weather_multation = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], len(cf.model_unique) + 1))
+
+    for d_unique in [1, 2, 3, 4, 5]:
+        for h_unique in range(cf.hour_unique[0], cf.hour_unique[1] + 1):
+            print('Processing multation data for  date: %d, hour: %d' % (d_unique, h_unique))
+
+            use_real_weather_state = cf.use_real_weather
+            cf.use_real_weather = True
+
+            # real_weather_multation = extract_multation(cf, d_unique, h_unique)
+            # total_weather_multation[:, :, 0] = real_weather_multation
+
+            models = cf.model_number
+            cf.use_real_weather = False
+            # for model_num in cf.model_number:
+            #     cf.model_number = list([model_num])
+            #     total_weather_multation[:, :, model_num] = extract_multation(cf, d_unique, h_unique)
+
+            cf.model_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, d_unique, h_unique)
+            weather_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour * 15.0 / 4)
+            mean_weather_multation = extract_multation(weather_day_hour, cf.radius)
+
+
+
+            cf.model_number = models
+            cf.use_real_weather = use_real_weather_state
+
+            # We need to normalise the map to standardize visualisation
+            # total_weather_max = np.max(total_weather_multation)
+            # mean_motation = total_weather_multation.mean()
+            # total_weather_multation = (total_weather_multation - mean_motation) / total_weather_max
+
+
+            # mean_weather_multation = (mean_weather_multation - mean_motation) / total_weather_max
+
+            # plot all the real and forecast model here:
+            # fig.clf()
+            # plt.subplot(left[:, :])
+            # plt.imshow(total_weather_multation[:, :, 0], cmap='jet')
+            # plt.colorbar()
+            # plt.title('real_weather_multation_day_%d_hour_%d' % (d_unique, h_unique))
+            #
+            # total_diff = np.zeros_like(real_weather_multation)
+            # for model_num in cf.model_number:
+            #     # # plot all the real and forecast model here:
+            #     # plt.subplot(right[(model_num - 1) // 5, np.mod(model_num, 5) - 1])
+            #     # # plt.imshow(total_weather_multation[:, :, model_num], cmap='jet')
+            #     # plt.imshow(mean_weather_multation, cmap='jet')
+            #     total_diff += total_weather_multation[:, :, model_num]
+            #     diff = np.abs(total_weather_multation[:, :, model_num] - real_weather_multation).sum()
+            #     print('Model_num_'+str(model_num)+':'+str(diff))
+            #     # plt.title('Model %d' % model_num)
+            #
+            #
+            # diff = np.abs(total_diff/10 - real_weather_multation).sum()
+            # print('Mean_diff' + str(model_num) + ':' + str(diff))
+
+
+            # diff =  np.abs(mean_weather_multation - real_weather_multation).sum()
+            # print('Mean_Model_' + str(model_num) + ':' + str(diff))
+
+            print('Mean_Model_max:'+str(mean_weather_multation.max()))
+            print('Mean_Model_min:' + str(mean_weather_multation.min()))
+            print('Mean_Model_mean:' + str(mean_weather_multation.mean()))
+
+
+            # fig.clf()
+            # plt.subplot(right[0, 0])
+            # plt.imshow(mean_weather_multation, cmap='jet')
+            # plt.title('Model mean' )
+            #
+            # mng = plt.get_current_fig_manager()
+            # mng.resize(*mng.window.maxsize())
+            # plt.waitforbuttonpress(100)
+            # plt.show()
+            # save_fig_name = os.path.join(cf.fig_wind_save_train_path,
+            #                              '%s.png' % ('Train_real_models_wind_day_%d_hour_%d' % (d_unique, h_unique)))
+            # plt.savefig(save_fig_name, dpi=74, bbox_inches='tight')
+
+
+
+

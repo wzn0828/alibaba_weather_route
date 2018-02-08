@@ -13,6 +13,7 @@ import pickle
 from tools.Astar import GridWithWeights, a_star_search
 from tools.simpleSub import a_star_submission, a_star_submission_3d, collect_csv_for_submission
 from tools.Astar_3D import a_star_search_3D, GridWithWeights_3D, dijkstra
+from tools.extract_multation import extract_multation
 # from tools.evaluation import evaluation, evaluation_plot
 # from decimal import Decimal
 
@@ -609,26 +610,39 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     wind_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
     rainfall_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
+    cost_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
+
+    # rainfall_real_day_hour_total = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], cf.hour_unique[1] - start_hour + 1))
     # deal weather data
     for hour in range(start_hour, 21):
-        # --------extract weather data ---------#
-        wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
-        # --------set cost ---------#
-        wind_cost, rainfall_cost = set_costs(cf, wind_real_day_hour, rainfall_real_day_hour)
-        # we replicate the weather for the whole hour
-        wind_real_day_hour_total[:, :, hour - start_hour] = wind_cost[:, :]  # we replicate the hourly data
-        rainfall_real_day_hour_total[:, :, hour - start_hour] = rainfall_cost[:, :] # we replicate the hourly data
+        # # --------extract weather data ---------#
+        #
+        # wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
+        # weather_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour * 15.0 / 4)
+        # --------extract cost ---------#
+        # weather_cost = set_weather_cost(cf, weather_day_hour)
+        # multation_cost = set_multation_cost(cf, weather_day_hour)
+        weather_cost_name = os.path.join(cf.mean_weather_cost_path, 'mean_weather_cost_day_%d_hour_%d.npy' % (day, hour))
+        motation_cost_name = os.path.join(cf.multation_cost_path, 'multation_cost_day_%d_hour_%d.npy' % (day, hour))
+        weather_cost = np.load(weather_cost_name)
+        motation_cost = np.load(motation_cost_name)
+
+        cost_total[:, :, hour - start_hour] = (weather_cost + motation_cost)[:, :]
+
+        # # we replicate the weather for the whole hour
+        # wind_real_day_hour_total[:, :, hour - start_hour] = wind_cost[:, :]  # we replicate the hourly data
+        # rainfall_real_day_hour_total[:, :, hour - start_hour] = rainfall_cost[:, :] # we replicate the hourly data
 
 
-    max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
+    # max_cost = np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total)
 
     # construct the 3d diagram
     short_steps = int(np.ceil(start_min/2))
     cf.time_length = 30*(21 - start_hour) - short_steps
     diagram = GridWithWeights_3D(cf.grid_world_shape[0], cf.grid_world_shape[1], int(cf.time_length), cf.wall_wind, cf.hourly_travel_distance, wind_real_day_hour_total, rainfall_real_day_hour_total, short_steps)
-    diagram.weights = max_cost
+    diagram.weights = cost_total
 
-    city_start_time = timer()
+    # city_start_time = timer()
     start_loc = (int(city_data_df.iloc[0]['xid']) - 1, int(city_data_df.iloc[0]['yid']) - 1)
     goal_loc = (int(city_data_df.iloc[goal_city]['xid']) - 1, int(city_data_df.iloc[goal_city]['yid']) - 1)
     # initiate a star 3d search
@@ -652,7 +666,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
     find_loc = current_loc[0]
     wind_cost_sum = 0
     rainfall_cost_sum = 0
-    max_cost_sum = cost_so_far[find_loc]
+    cost_sum = cost_so_far[find_loc]
     while came_from[find_loc] is not None:
         prev_loc = came_from[find_loc]
         wind_cost_sum += wind_costs[find_loc]
@@ -663,14 +677,14 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
 
     # save costs and num_steps separately
     day_goalcity_starthour_min = {}
-    day_goalcity_starthour_min['wind_cost'] = wind_cost_sum
-    day_goalcity_starthour_min['rainfall_cost'] = rainfall_cost_sum
-    day_goalcity_starthour_min['max_cost'] = max_cost_sum
+    # day_goalcity_starthour_min['wind_cost'] = wind_cost_sum
+    # day_goalcity_starthour_min['rainfall_cost'] = rainfall_cost_sum
+    day_goalcity_starthour_min['total_cost'] = cost_sum
     day_goalcity_starthour_min['num_steps'] = num_steps
-    day_goalcity_starthour_min['ave_wind_cost'] = wind_cost_sum/num_steps
-    day_goalcity_starthour_min['ave_rainfall_cost'] = rainfall_cost_sum/num_steps
-    day_goalcity_starthour_min['ave_max_cost'] = max_cost_sum/num_steps
-    day_goalcity_starthour_min['ratio_max_cost_to_manhattan'] = max_cost_sum/dist_manhattan
+    # day_goalcity_starthour_min['ave_wind_cost'] = wind_cost_sum/num_steps
+    # day_goalcity_starthour_min['ave_rainfall_cost'] = rainfall_cost_sum/num_steps
+    day_goalcity_starthour_min['ave_cost'] = cost_sum/num_steps
+    day_goalcity_starthour_min['ratio_cost_to_manhattan'] = cost_sum/dist_manhattan
 
     dict_cname = os.path.join(cf.exp_dir, 'costs_num_steps_day_%d_goalcity_%d_starthour_%d_startmin_%d.json' % (day, goal_city, start_hour, start_min))
     with open(dict_cname, 'w') as fp:
@@ -739,7 +753,7 @@ def A_star_3D_worker_rainfall_wind(cf, day, goal_city, start_hour, start_min, di
     return
 
 
-def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
+def set_weather_cost(cf, wind_real_day_hour):
 
     # wind cost
     wind_cost = wind_real_day_hour.copy()
@@ -764,30 +778,7 @@ def set_costs(cf, wind_real_day_hour, rainfall_real_day_hour):
         wind_cost.dtype = 'float64'
         wind_cost = sigmoid(wind_cost, 100, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
 
-    # rainfall cost
-    rainfall_cost = rainfall_real_day_hour.copy()
-    if cf.risky or cf.wind_exp or cf.conservative:
-        rainfall_cost[rainfall_real_day_hour >= cf.wall_rainfall] = cf.strong_rainfall_penalty_coeff
-    if cf.risky:
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = 1  # Every movement will have a unit cost
-    elif cf.wind_exp:
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] -= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] /= cf.rainfall_exp_mean  # Movement will have a cost proportional to the speed of rainfall. Here we used linear relationship
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] = np.exp(rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall])
-    elif cf.conservative:
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] /= cf.risky_coeff_rainfall  # Movement will have a cost proportional to the speed of wind. Here we used linear relationship
-        rainfall_cost[rainfall_real_day_hour < cf.wall_rainfall] += 1
-    elif cf.costs_exponential:
-        rainfall_cost.dtype = 'float64'
-        rainfall_cost[rainfall_real_day_hour <= 3.5] = np.float64(cf.costs_exp_basenumber ** (0))
-        rainfall_cost[rainfall_real_day_hour >= 4.5] = np.float64(cf.costs_exp_basenumber ** (3))
-        rainfall_cost[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] = np.float64(cf.costs_exp_basenumber ** (rainfall_real_day_hour[np.logical_and(3.5 < rainfall_real_day_hour, rainfall_real_day_hour < 4.5)] - 3.5))
-    elif cf.costs_sigmoid:
-        # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
-        rainfall_cost.dtype = 'float64'
-        rainfall_cost = sigmoid(rainfall_cost*15.0/4, 100, cf.costs_sig_speed_time, cf.costs_sig_inter_speed)
-
-    return wind_cost, rainfall_cost
+    return wind_cost
 
 
 def extract_weather_data(cf, day, hour):
@@ -1077,6 +1068,49 @@ def A_star_fix_missing(cf):
         collect_csv_for_submission(cf)
     print('Finish writing submission, using %.2f sec!' % (timer() - start_time))
 
+
 def sigmoid(speeds, cost_time, speed_time, inter_speed):
     # variant of sigmoid function: y = cost_time*[1/(1+exp(-speed_time*(x-inter_speed)))]
     return cost_time * (1 / (1 + np.exp(-speed_time * (speeds - inter_speed)))) + 1
+
+
+def save_costs_multiprocessing(cf):
+    start_time = timer()
+    jobs = []
+    # when debugging concurrenty issues, it can be useful to have access to the internals of the objects provided by
+    # multiprocessing.
+    multiprocessing.log_to_stderr()
+
+    for day in cf.day_list:
+        for hour in range(cf.hour_unique[0], cf.hour_unique[1]+1):
+            p = multiprocessing.Process(target=save_costs_worker, args=(cf, day, hour))
+            jobs.append(p)
+            p.start()
+
+            if len(jobs) > cf.num_threads:
+                jobs[-cf.num_threads].join()
+
+    # waiting for the all the job to finish
+    for j in jobs:
+        j.join()
+
+    print('Finish writing cost, using time %s!' % (timer() - start_time))
+
+def save_costs_worker(cf, day, hour):
+    # extract weather
+    wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
+    weather_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour * 15.0 / 4)
+    # --------set cost ---------#
+    weather_cost = set_weather_cost(cf, weather_day_hour)
+
+    multation = extract_multation(weather_day_hour, cf.radius)
+    multation_cost = set_multation_cost(multation, weather_day_hour)
+
+    np.save(os.path.join(cf.mean_weather_cost_path, 'mean_weather_cost_day_%d_hour_%d.npy' % (day, hour)), weather_cost)
+    np.save(os.path.join(cf.multation_cost_path, 'multation_cost_day_%d_hour_%d.npy' % (day, hour)), multation_cost)
+
+    print('Finish writing cost day_%d_hour_%d!' % (day, hour))
+
+def set_multation_cost(multation, weather):
+    multation = multation/np.sqrt(np.abs(15-weather)+1)
+    return sigmoid(multation, 300, 1.5, 2) - 1

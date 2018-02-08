@@ -290,8 +290,6 @@ def evaluation_plot(cf):
                 else:
                     weather_name = 'Test_forecast_wind_model_%d_day_%d_hour_%d.npy' % (3, day, hour)
                 #
-                # wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, weather_name))
-
                 wind_real_day_hour, rainfall_real_day_hour = extract_weather_data(cf, day, hour)
                 wind_real_day_hour = np.maximum(wind_real_day_hour, rainfall_real_day_hour*15.0/4)
                 wind_real_day_hour[wind_real_day_hour>=30] = 30
@@ -299,6 +297,7 @@ def evaluation_plot(cf):
                 plt.clf()
                 plt.imshow(wind_real_day_hour, cmap=cf.colormap)
                 plt.colorbar()
+
                 # we also plot the city location
                 for idx in range(city_data_df.index.__len__()):
                     x_loc = int(city_data_df.iloc[idx]['xid']) - 1

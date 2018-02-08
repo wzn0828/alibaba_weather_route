@@ -46,6 +46,9 @@ def assignment_for_A_star_route_min(cf):
             assignment_dict[day]['max_cost'][goal_city] = sorted_max_cost[:10]
             assignment_dict[day]['num_steps'][goal_city] = sorted_num_steps[:10]
 
+    with open(cf.start_hour_min_filename, 'rb') as handle:
+            start_hour_min_diwu = pickle.load(handle)
+
         # assignment_dict[day] = {}
         # # First we constract a cost matrix with dim: num_cities (10) * num_timeslots (18 *6)
         # cost_matrix = np.ones(shape=(10, 18)) * np.inf
