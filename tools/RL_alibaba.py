@@ -999,8 +999,8 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
     """
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
-    cf.day_list = [5]
-    cf.goal_city_list = [1]
+    cf.day_list = [1]
+    cf.goal_city_list = [10]
     cf.risky = False
     cf.model_number = list(range(1, 12))
 
@@ -1054,7 +1054,7 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
             model.expected = False
             model.double = False
             # gamma is dependent upon total length, the more lengthy the route is, the small the gamma
-            model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
+            #model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
 
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
@@ -1276,7 +1276,7 @@ def reinforcement_learning_solution_worker_wind_and_rainfall(cf, day, goal_city,
     model.qlearning = True
     model.expected = False
     model.double = False
-    model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
+    #model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
 
     # A star model initialisation
     for m in range(len(cf.model_number)):
