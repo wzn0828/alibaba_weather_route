@@ -175,32 +175,34 @@ batch_size                      = 18
 
 #####################################################################################
 # assignment algorithm.
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 assignment_for_A_star_route     = False
-assignment_for_A_star_route_10min = True
+assignment_for_A_star_route_10min = False
 #cost_num_steps_dir              = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51'
-cost_num_steps_dir              = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-09-56-56'
+cost_num_steps_dir           = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-07-01-19-40'
 #file_patterns                   = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
-file_patterns                   = 'costs_num_steps_day_%d_goalcity_%d_starthour_*_startmin.json'
-#csv_patterns                    = 'Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d'
+file_patterns                   = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
+file_patterns_min                   = 'costs_num_steps_day_%d_goalcity_%d_starthour_*_startmin_*.json'
+csv_patterns                    = 'Train_a_star_search_3D_risky_use_real_weather_day: %d, city: %d, start_hour: %d'
+csv_patterns                    = 'Train_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d, start_min: %d.csv'
 #csv_patterns                    = 'Test_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d, start_min: %d'
-csv_patterns  ='Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d, start_min: %d.csv'
+#csv_patterns  ='Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_day: %d, city: %d, start_hour: %d, start_min: %d.csv'
 combined_csv_name               = 'A_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
 threshold_manhattan_distance    = 3.0  # if cost is larger than this distance, we will not consider this route first
 
 # assignment mins algorithm.
 assignment_for_A_star_route_min = False
-file_patterns_min               = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
-cost_num_steps_dir_min          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-09-56-56'
+#file_patterns_min               = 'costs_num_steps_day_%d_goalcity_%d_starthour_*.json'
+#cost_num_steps_dir_min          = '/home/wzn/PycharmProjects/alibaba_weather_route/Experiments/Test_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-09-56-56'
 
 ########################################################################################################################
 # evaluation
 debug_draw                  = False
 evaluation_plot             = False  # a flag for visualising predicted route
-evaluation_days             = [1, 2, 3, 4, 5]  # [1, 2, 3, 4, 5]
+evaluation_days             = [2, 3, 4, 5]  # [1, 2, 3, 4, 5]
 evaluation_goal_cities      = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  #  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-evaluation_with_rainfall    =  False
-csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-06-12-15-51/Train_a_star_search_3D_costsSigmoid_5_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
-
+evaluation_with_rainfall    = False
+csv_for_evaluation          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Experiments/Train_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-07-01-19-40/Train_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].csv'
+evaluation_plot_real_with_mean = True

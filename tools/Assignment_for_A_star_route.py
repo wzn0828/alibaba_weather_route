@@ -27,6 +27,7 @@ def assignment_for_A_star_route(cf):
     cost_dict = collec_json_file(cf)
     assignment_dict = {}
     for day in cf.day_list:
+        print('############day: %d#############' % day)
         assignment_dict[day] = {}
         # First we constract a cost matrix with dim: num_cities (10) * num_timeslots (18 *6)
         cost_matrix = np.ones(shape=(10, 18)) * np.inf
@@ -47,7 +48,7 @@ def assignment_for_A_star_route(cf):
         dist_manhattan = np.zeros(10)
         city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
         for goal_city in range(1, 11):
-            start_hours, dist_manhattan[goal_city-1] = extract_start_hours(cf, city_data_df, goal_city)
+            _, _, dist_manhattan[goal_city-1] = extract_start_hours(cf, city_data_df, goal_city)
 
         # this will sort the distance from small to large
         assignment_dict_day = {}
@@ -57,7 +58,6 @@ def assignment_for_A_star_route(cf):
         # Now we dot the unreachable cities:
         assignment_dict_day, assignment_matrix, cities_cannot_reach = get_assignment(cf, cities_cannot_reach, cost_matrix, dist_manhattan, assignment_dict_day, assignment_matrix, cannot_reach_flag=True)
 
-        print('day: %d' % day)
         pprint(assignment_dict_day)
         assignment_dict[day] = assignment_dict_day
 
@@ -124,29 +124,35 @@ def assignment_for_A_star_route_10min(cf):
 def get_assignment(cf, city_list, cost_matrix, dist_manhattan, assignment_dict, assignment_matrix, cannot_reach_flag=False):
     cities_cannot_reach = []
     for goal_city in city_list:
-        goal_city_min_start_hour = np.argmin(cost_matrix[goal_city])
+        flag_assigned = False
+        goal_city_min_start_hour_index = np.argsort(cost_matrix[goal_city])
+        index = 0
+        goal_city_min_start_hour = goal_city_min_start_hour_index[index]
         if cost_matrix[goal_city][goal_city_min_start_hour] > dist_manhattan[goal_city] * cf.threshold_manhattan_distance\
                 and not cannot_reach_flag:
             cities_cannot_reach.append(goal_city)
             print('Cannot reach the goal city: %d (manhattan dist: %d) with cost %2.f, we will consider its route later'
                   % (goal_city+1, int(dist_manhattan[goal_city]), cost_matrix[goal_city][goal_city_min_start_hour]))
         else:
-            for s in range(6):
-                if np.sum(assignment_matrix[:, goal_city_min_start_hour*6 + s]) >= 1:
-                    print("Hour %d, slot %d has been occupied" % (goal_city_min_start_hour + cf.hour_unique[0], s))
-                else:
-                    # we assign this slot for this city
-                    assignment_matrix[goal_city, goal_city_min_start_hour*6 + s] = 1
-                    assignment_dict[goal_city] = {}
-                    assignment_dict[goal_city]['hour'] = goal_city_min_start_hour + cf.hour_unique[0]
-                    assignment_dict[goal_city]['slot'] = s
-                    print('Assigning city %d, to hour: %d, slot: %d, with manhattan distance: %d and cost: %.2f.'
-                          % (goal_city + 1, goal_city_min_start_hour + cf.hour_unique[0], s, dist_manhattan[goal_city],
-                             cost_matrix[goal_city][goal_city_min_start_hour]))
-                    break
-            if s == 5:
-                assert('All the slot has been occupied, choose next possible!')
-
+            while not flag_assigned:
+                for s in range(6):
+                    if np.sum(assignment_matrix[:, goal_city_min_start_hour*6 + s]) >= 1:
+                        print("Hour %d, slot %d has been occupied" % (goal_city_min_start_hour + cf.hour_unique[0], s))
+                    else:
+                        # we assign this slot for this city
+                        flag_assigned = True
+                        assignment_matrix[goal_city, goal_city_min_start_hour*6 + s] = 1
+                        assignment_dict[goal_city] = {}
+                        assignment_dict[goal_city]['hour'] = goal_city_min_start_hour + cf.hour_unique[0]
+                        assignment_dict[goal_city]['slot'] = s
+                        print('Assigning city %d, to hour: %d, slot: %d, with manhattan distance: %d and cost: %.2f.'
+                              % (goal_city + 1, goal_city_min_start_hour + cf.hour_unique[0], s, dist_manhattan[goal_city],
+                                 cost_matrix[goal_city][goal_city_min_start_hour]))
+                        break
+                if s == 5:
+                    print('Hour %d, slot is full, choose next minimum.' % goal_city_min_start_hour)
+                    index += 1
+                    goal_city_min_start_hour = goal_city_min_start_hour_index[index]
 
     return assignment_dict, assignment_matrix, cities_cannot_reach
 
@@ -200,7 +206,6 @@ def collec_json_file(cf):
             files = fnmatch.filter(os.listdir(cf.cost_num_steps_dir), file_patterns)
             for f in files:
                 start_hour = int(f[len(file_patterns)-6:-5])
-                print(start_hour)
                 cost_dict[day][goal_city][start_hour] = {}
                 data = json.load(open(os.path.join(cf.cost_num_steps_dir, f)))
                 cost_dict[day][goal_city][start_hour]['max_cost'] = data['max_cost']
@@ -267,5 +272,4 @@ def a_star_submission_3d(day, goal_city, city_data_hour_df, start_hour, slot):
 
     sub_df = pd.DataFrame(row_list)
     return sub_df
-
 

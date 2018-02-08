@@ -42,6 +42,7 @@ def plot_real_wind(cf):
             np.save(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy'%(d_unique, h_unique)), wind_real_day_hour)
             np.save(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)), rainfall_real_day_hour)
 
+
 def plot_real_wind_worker(cf, wind_real_df_day_hour, d_unique, h_unique, x_unique, y_unique):
     start_time = timer()
     if not len(x_unique) * len(y_unique) == wind_real_df_day_hour.index.__len__():
@@ -62,6 +63,7 @@ def plot_real_wind_worker(cf, wind_real_df_day_hour, d_unique, h_unique, x_uniqu
     np.save(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)),
             rainfall_real_day_hour)
     print('Finish writing Real weather, using %.2f sec!' % (timer() - start_time))
+
 
 def plot_real_wind_multiprocessing(cf):
     # Create the data generators
@@ -98,6 +100,7 @@ def plot_real_wind_multiprocessing(cf):
         j.join()
 
     print('Finish writing Real weather, using %.2f sec!' % (timer() - start_time))
+
 
 def plt_forecast_wind_train(cf):
     # Create the data generators
@@ -984,3 +987,221 @@ def plot_wind_with_rainfall(cf):
                 plt.waitforbuttonpress(0.01)
                 save_fig_name = os.path.join(cf.fig_wind_with_rainfall_test_path, '%s.png' % ('Test_wind_with_rainfall_day_%d_hour_%d' % (d_unique, h_unique)))
                 plt.savefig(save_fig_name, dpi=74, bbox_inches='tight')
+
+
+def evaluation_plot_real_with_mean(cf):
+    """
+    This is a script for visualising predicted route's length with real weather juxtaposing
+    with mean prediction
+    :param cf:
+    :param csvd_for_evaluation:
+    :return:
+    """
+
+    city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
+    predicted_df = pd.read_csv(cf.csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid'])
+    # for csv_for_evaluation in cf.csv_for_evaluation:
+    #     predicted_dfs.append(pd.read_csv(csv_for_evaluation, names=['target', 'date', 'time', 'xid', 'yid']))
+
+    # plot figures here
+
+    fig = plt.figure(num=1)
+    fig.clf()
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize())
+
+    for day in cf.evaluation_days:
+        for goal_city in cf.evaluation_goal_cities:
+            # begin to draw
+            plt.clf()
+            df = predicted_df.loc[(predicted_df['date'] == day) & (predicted_df['target'] == goal_city)]
+            crash_wind = False
+            crash_rainfall = False
+            starting_hour = int(df.iloc[0]['time'][:2])
+
+            for step in range(1, len(df)):
+                hour = int(df.iloc[step]['time'][:2])
+                hour_prev_step = int(df.iloc[step-1]['time'][:2])
+                if hour != hour_prev_step:
+                    real_weather, mean_weather, real_wind, real_rainfall = get_wind_rainfall(cf, day, hour_prev_step)
+                    # so we finish prevous hour, draw it!
+                    clim_max = real_weather.max()
+                    plt.clf()
+                    weather_names = ['date: %d, city: %d, hour: %d' % (day, goal_city, hour_prev_step) + '_real-weather',
+                                     'mean weather', 'real wind', 'real rainfall']
+
+                    for (plot_number, im) in zip(range(4), [real_weather, mean_weather, real_wind, real_rainfall]):
+                        plt.subplot(2, 2, plot_number+1)
+                        plt.imshow(im, cmap=cf.colormap)
+                        if plot_number < 2:
+                            plt.clim(0, clim_max)
+                        plt.colorbar()
+                        # we also plot the city location
+                        for idx in range(city_data_df.index.__len__()):
+                            x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                            y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                            cid = int(city_data_df.iloc[idx]['cid'])
+                            plt.scatter(y_loc, x_loc, c='r', s=40)
+                            plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=10)
+                        # we also draw some contours
+                        x = np.arange(0, im.shape[1], 1)
+                        y = np.arange(0, im.shape[0], 1)
+                        X, Y = np.meshgrid(x, y)
+                        if plot_number==3:
+                            CS = plt.contour(X, Y, im, (4,), colors='white')
+                            plt.clabel(CS, inline=1, fontsize=10)
+                        else:
+                            CS = plt.contour(X, Y, im, (15,), colors='k')
+                            plt.clabel(CS, inline=1, fontsize=10)
+                        plt.title(weather_names[plot_number])
+
+                        # we plot every hour
+                        crash_wind = False
+                        crash_rainfall = False
+                        for i in range(step):
+                            if i <= step-30:
+                                plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='orange', s=1)
+                            else:
+                                # check whether we have crashed!
+                                if real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 15:
+                                    crash_wind = True
+                                elif real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 4.0:
+                                    crash_rainfall = True
+                                if not crash_wind or crash_rainfall:
+                                    plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='orange', s=1)
+                                else:
+                                    plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='red', s=1)
+
+                    plt.waitforbuttonpress(0.1)
+                    crash_wind = False
+                    crash_rainfall = False
+                    for i in range(max(0, step-30), step):
+                        # check whether we have crashed!
+                        min = int(df.iloc[i]['time'][3:])
+                        if real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 15:
+                            crash_wind = True
+                            plt.suptitle('Crash on wind:  Day: %d, city: %d, starting hour: %d, hour: %d, min: %d, xid: %d, yid : %d with cost: %.2f, mean cost: %2.f'
+                                         % (day, goal_city, starting_hour, hour_prev_step, min, df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1], mean_weather[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1]))
+                            plt.scatter(df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, c='r', s=10)
+                        elif real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 4.0:
+                            crash_rainfall = True
+                            plt.suptitle('Crash on rainfall: Day: %d, city: %d, starting hour: %d, hour: %d, min: %d, xid: %d, yid : %d with cost: %.2f, mean cost: %2.f'
+                                         % (day, goal_city, starting_hour, hour_prev_step, min, df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1], mean_weather[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1]))
+                            plt.scatter(df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, c='r', s=10)
+
+                        if crash_wind or crash_rainfall:
+                            break
+
+                if crash_wind or crash_rainfall:
+                    plt.waitforbuttonpress(0)
+                    break
+
+            # The following code it the copy of previous code apart from the loop
+            # We still need to plot the last bit
+            if not (crash_wind or crash_rainfall):
+                hour_prev_step = int(df.iloc[-1]['time'][:2])
+                # so we finish prevous hour, draw it!
+                clim_max = real_weather.max()
+                plt.clf()
+                weather_names = ['date: %d, city: %d, hour: %d' % (day, goal_city, hour_prev_step) + '_real-weather', 'mean weather', 'real wind', 'real rainfall']
+                real_weather, mean_weather, real_wind, real_rainfall = get_wind_rainfall(cf, day, hour_prev_step)
+
+                for (plot_number, im) in zip(range(4), [real_weather, mean_weather, real_wind, real_rainfall]):
+                    plt.subplot(2, 2, plot_number + 1)
+                    plt.imshow(im, cmap=cf.colormap)
+                    if plot_number < 2:
+                        plt.clim(0, clim_max)
+                    plt.colorbar()
+                    # we also plot the city location
+                    for idx in range(city_data_df.index.__len__()):
+                        x_loc = int(city_data_df.iloc[idx]['xid']) - 1
+                        y_loc = int(city_data_df.iloc[idx]['yid']) - 1
+                        cid = int(city_data_df.iloc[idx]['cid'])
+                        plt.scatter(y_loc, x_loc, c='r', s=40)
+                        plt.annotate(str(cid), xy=(y_loc, x_loc), color='white', fontsize=10)
+                    # we also draw some contours
+                    x = np.arange(0, im.shape[1], 1)
+                    y = np.arange(0, im.shape[0], 1)
+                    X, Y = np.meshgrid(x, y)
+                    if plot_number == 3:
+                        CS = plt.contour(X, Y, im, (4,), colors='white')
+                        plt.clabel(CS, inline=1, fontsize=10)
+                    else:
+                        CS = plt.contour(X, Y, im, (15,), colors='k')
+                        plt.clabel(CS, inline=1, fontsize=10)
+                    plt.title(weather_names[plot_number])
+
+                    # we plot every hour
+                    crash_wind = False
+                    crash_rainfall = False
+                    for i in range(len(df)):
+                        if i <= len(df) - 30:
+                            plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='orange', s=1)
+                        else:
+                            # check whether we have crashed!
+                            if real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 15:
+                                crash_wind = True
+                            elif real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 4.0:
+                                crash_rainfall = True
+                            if not crash_wind or crash_rainfall:
+                                plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='orange', s=1)
+                            else:
+                                plt.scatter(df.iloc[i]['yid'], df.iloc[i]['xid'], c='red', s=1)
+
+                plt.waitforbuttonpress(1)
+                crash_wind = False
+                crash_rainfall = False
+                for i in range(max(0, len(df) - 30), len(df)):
+                    # check whether we have crashed!
+                    min = int(df.iloc[i]['time'][3:])
+                    if real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 15:
+                        crash_wind = True
+                        plt.suptitle('Crash on wind:  Day: %d, city: %d, starting hour: %d, hour: %d, min: %d, xid: %d, yid : %d with cost: %.2f, mean cost: %2.f' %
+                                     (day, goal_city, starting_hour, hour_prev_step, min, df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, real_wind[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1],mean_weather[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1]))
+                        plt.scatter(df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, c='r', s=10)
+                    elif real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1] >= 4.0:
+                        crash_rainfall = True
+                        plt.suptitle('Crash on rainfall: Day: %d, city: %d, starting hour: %d, hour: %d, min: %d, xid: %d, yid : %d with cost: %.2f, mean cost: %2.f'
+                            % (day, goal_city, starting_hour, hour_prev_step, min, df.iloc[i]['yid'] - 1,
+                               df.iloc[i]['xid'] - 1, real_rainfall[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1],
+                               mean_weather[df.iloc[i]['xid'] - 1, df.iloc[i]['yid'] - 1]))
+                        plt.scatter(df.iloc[i]['yid'] - 1, df.iloc[i]['xid'] - 1, c='r', s=10)
+
+                    if crash_wind or crash_rainfall:
+                        plt.waitforbuttonpress(0)
+                        break
+
+
+def get_wind_rainfall(cf, d_unique, h_unique):
+    # left is the real
+    # we plot wind
+    print('Processing forecast data for  date: %d, hour: %d' % (d_unique, h_unique))
+    total_wind = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], len(cf.model_unique) + 1))
+    total_rainfall = np.zeros(shape=(cf.grid_world_shape[0], cf.grid_world_shape[1], len(cf.model_unique) + 1))
+
+    wind_real_day_hour = np.load(os.path.join(cf.wind_save_path, 'real_wind_day_%d_hour_%d.npy' % (d_unique, h_unique)))
+    total_wind[:, :, 0] = wind_real_day_hour
+    for m_unique in cf.model_number:
+        np_file = os.path.join(cf.wind_save_path,'Train_forecast_wind_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))
+        total_wind[:, :, m_unique] = np.load(np_file)
+
+    # We plot rainfall
+    rainfall_real_day_hour = np.load(os.path.join(cf.rainfall_save_path, 'real_rainfall_day_%d_hour_%d.npy' % (d_unique, h_unique)))
+    total_rainfall[:, :, 0] = rainfall_real_day_hour
+    for m_unique in cf.model_unique:
+        np_file = os.path.join(cf.rainfall_save_path, 'Train_forecast_rainfall_model_%d_day_%d_hour_%d.npy' % (m_unique, d_unique, h_unique))
+        total_rainfall[:, :, m_unique] = np.load(np_file)
+
+    # we have maximum of 30
+    # total_weather = np.minimum(total_weather, 30)
+
+    real_weather = np.minimum(np.maximum(wind_real_day_hour, rainfall_real_day_hour * 15. / 4), 30)
+    mean_weather = np.maximum(np.mean(total_wind[:, :, 1:], axis=2), np.mean(total_rainfall[:, :, 1:], axis=2) * 15. / 4)
+
+    real_wind = wind_real_day_hour
+    real_rainfall = rainfall_real_day_hour
+
+    return real_weather, mean_weather, real_wind, real_rainfall
+
+
+

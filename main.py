@@ -9,11 +9,12 @@ matplotlib.use('TkAgg')
 from config.configuration import Configuration
 from tools.utils import HMS, configurationPATH
 
-from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing, plot_real_wind_multiprocessing, plot_all_wind_new, plot_all_rainfall, evaluation_plot_multi, plot_wind_with_rainfall
+from tools.visualisation import plot_real_wind, plt_forecast_wind_train, plt_forecast_wind_test, plot_all_wind, plt_forecast_wind_test_multiprocessing,plt_forecast_wind_train_multiprocessing, plot_real_wind_multiprocessing, plot_all_wind_new, \
+    plot_all_rainfall, evaluation_plot_multi, plot_wind_with_rainfall, evaluation_plot_real_with_mean
 from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D, A_star_search_3D_multiprocessing, A_star_search_3D_multiprocessing_multicost, A_star_fix_missing, A_star_search_3D_multiprocessing_rainfall_wind
+from tools.evaluation import evaluation, evaluation_plot, evaluation_with_rainfall
 
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
-from tools.evaluation import evaluation, evaluation_plot, evaluation_with_rainfall
 from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
 from weather_prediction.wp_predict_weather import wp_predict_weather
 from tools.Assignment_for_A_star_route import assignment_for_A_star_route, assignment_for_A_star_route_10min
@@ -115,13 +116,6 @@ def process(cf):
         print(average_wind)
         print(max_wind)
         print(np.sum(total_penalty.astype('int') == 1440))
-
-    if cf.evaluation_plot:
-        print('evaluation_plot')
-        evaluation_plot(cf)
-    if cf.evaluation_plot_multi:
-        print('evaluation_plot_multi')
-        evaluation_plot_multi(cf)
     if cf.evaluation_with_rainfall:
         print('evaluation_with_rainfall')
         total_penalty, crash_time_stamp, average_wind, max_wind, average_rain, max_rain = evaluation_with_rainfall(cf)
@@ -135,6 +129,16 @@ def process(cf):
         print(max_rain)
         print(np.sum(total_penalty.astype('int') == 1440))
 
+    # visualisation for evaluation
+    if cf.evaluation_plot:
+        print('evaluation_plot')
+        evaluation_plot(cf)
+    if cf.evaluation_plot_multi:
+        print('evaluation_plot_multi')
+        evaluation_plot_multi(cf)
+    if cf.evaluation_plot_real_with_mean:
+        print('evaluation_plot_real_with_mean')
+        evaluation_plot_real_with_mean(cf)
 
     ### weather prediction
     if cf.wp_predict_weather:
