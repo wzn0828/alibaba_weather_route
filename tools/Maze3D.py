@@ -18,8 +18,11 @@ class Maze_3D:
                  reward_move=-1.0,
                  maxSteps=1e5,
                  wind_real_day_hour_total=None,
+                 rainfall_real_day_hour_total=None,
                  c_baseline=0,
-                 cf={}):
+                 cf={},
+                 start_min=0,
+                 ):
 
         self.WORLD_WIDTH = width
         self.WORLD_HEIGHT = height
@@ -40,6 +43,7 @@ class Maze_3D:
         self.reward_move = reward_move
 
         self.wind_real_day_hour_total = wind_real_day_hour_total
+        self.rainfall_real_day_hour_total = rainfall_real_day_hour_total
         self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
         self.wall_wind = cf.wall_wind
@@ -61,6 +65,9 @@ class Maze_3D:
         self.c2 = cf.c2
         self.c3 = cf.c3
         self.c_baseline = c_baseline
+
+        self.start_min = start_min
+        self.short_steps = start_min/2
 
     def takeAction(self, state, action):
         """
@@ -97,7 +104,10 @@ class Maze_3D:
             # terminal_flag = True
             # return [x, y, t], reward, terminal_flag
 
-        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t // self.hourly_travel_distance)]
+        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
+        if self.rainfall_real_day_hour_total.any():
+            current_loc_time_rainfall = self.rainfall_real_day_hour_total[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
+
         if self.costs_exponential:
             if current_loc_time_wind <= 13:
                 reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
@@ -111,7 +121,12 @@ class Maze_3D:
             else:
                 reward_move = -1.0 * self.reward_goal
         elif self.cost_sigmoid:
-            reward_move = self.sigmoid_cost(current_loc_time_wind)
+            if self.rainfall_real_day_hour_total.any():
+                reward_move_wind = self.sigmoid_cost(current_loc_time_wind)
+                reward_move_rainall = self.sigmoid_cost(current_loc_time_rainfall*15/4.)
+                reward_move = -max(reward_move_wind, reward_move_rainall)
+            else:
+                reward_move = -self.sigmoid_cost(current_loc_time_wind)
 
         if tuple([x, y, t]) in self.GOAL_STATES:
             # We add reward move because the goal state could have wind speed larger than 13...

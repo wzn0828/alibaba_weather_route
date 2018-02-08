@@ -145,6 +145,7 @@ class Dyna_3D:
         if self.ucb:
             self.time = 0
             self.name += '_UCB'
+
         self.name = self.name + '_planning:_%d' % planningSteps
 
     def insert(self, priority, state, action):

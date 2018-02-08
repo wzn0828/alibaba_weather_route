@@ -15,7 +15,8 @@ from tools.A_star_alibaba import A_star_2d_hourly_update_route, A_star_search_3D
 from tools.evaluation import evaluation, evaluation_plot, evaluation_with_rainfall
 
 from tools.simpleSub import submit_phase, collect_csv_for_submission_fraction
-from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new
+from tools.RL_alibaba import reinforcement_learning_solution, reinforcement_learning_solution_multiprocessing, reinforcement_learning_solution_new, \
+    reinforcement_learning_solution_wind_and_rainfall, reinforcement_learning_solution_multiprocessing_wind_and_rainfall
 from weather_prediction.wp_predict_weather import wp_predict_weather
 from tools.Assignment_for_A_star_route import assignment_for_A_star_route, assignment_for_A_star_route_10min
 from tools.Assignment_for_A_star_route_min import assignment_for_A_star_route_min
@@ -94,6 +95,14 @@ def process(cf):
     if cf.reinforcement_learning_solution_multiprocessing:
         print("reinforcement_learning_solution_multiprocessing")
         reinforcement_learning_solution_multiprocessing(cf)
+
+    if cf.reinforcement_learning_solution_wind_and_rainfall:
+        print('reinforcement_learning_solution_wind_and_rainfall')
+        reinforcement_learning_solution_wind_and_rainfall(cf)
+
+    if cf.reinforcement_learning_solution_multiprocessing_wind_and_rainfall:
+        print('reinforcement_learning_solution_multiprocessing_wind_and_rainfall')
+        reinforcement_learning_solution_multiprocessing_wind_and_rainfall(cf)
 
     ### Following is the submission script #############
     if cf.submission_dummy:
