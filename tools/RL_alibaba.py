@@ -304,6 +304,7 @@ def print_predicted_route_wind_and_rainfall(cf, day, goal_city, df):
     :return:
     """
     from tools.visualisation import get_wind_rainfall
+    cf.model_number = list(range(1, 11))
     city_data_df = pd.read_csv(os.path.join(cf.dataroot_dir, 'CityData.csv'))
     fig = plt.figure(num=1)
     fig.clf()
