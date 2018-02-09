@@ -13,13 +13,10 @@ class Maze_3D:
                  time_length,
                  start_state,
                  goal_states,
-                 strong_wind_return=False,
                  reward_goal=0.0,
                  reward_move=-1.0,
                  maxSteps=1e5,
-                 wind_real_day_hour_total=None,
-                 rainfall_real_day_hour_total=None,
-                 c_baseline=0,
+                 cost_matrix=None,
                  cf={},
                  start_min=0,
                  ):
@@ -42,32 +39,11 @@ class Maze_3D:
         self.reward_goal = reward_goal
         self.reward_move = reward_move
 
-        self.wind_real_day_hour_total = wind_real_day_hour_total
-        self.rainfall_real_day_hour_total = rainfall_real_day_hour_total
-        self.strong_wind_return = strong_wind_return
         self.maxSteps = maxSteps
-        self.wall_wind = cf.wall_wind
-        self.risky = cf.risky
-        self.wind_exp = cf.wind_exp
-        self.risky_coeff = cf.risky_coeff
         self.hourly_travel_distance = cf.hourly_travel_distance
-        self.low_wind_pass = cf.low_wind_pass
-        # cost naming
-        self.costs_linear = cf.costs_linear
-        self.conservative = cf.conservative
-        self.costs_exponential = cf.costs_exponential
-        self.costs_exp_basenumber = cf.costs_exp_basenumber
-        self.costs_exponential_upper = cf.costs_exponential_upper
-        self.costs_exponential_lower = cf.costs_exponential_lower
-        # sigmoid cost hyperparameters
-        self.cost_sigmoid = cf.cost_sigmoid
-        self.c1 = cf.c1
-        self.c2 = cf.c2
-        self.c3 = cf.c3
-        self.c_baseline = c_baseline
-
         self.start_min = start_min
         self.short_steps = start_min/2
+        self.cost_matrix = cost_matrix
 
     def takeAction(self, state, action):
         """
@@ -104,32 +80,7 @@ class Maze_3D:
             # terminal_flag = True
             # return [x, y, t], reward, terminal_flag
 
-        current_loc_time_wind = self.wind_real_day_hour_total[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
-        if self.rainfall_real_day_hour_total.any():
-            current_loc_time_rainfall = self.rainfall_real_day_hour_total[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
-
-        if self.costs_exponential:
-            if current_loc_time_wind <= 13:
-                reward_move = 1.0 * self.costs_exp_basenumber ** ((self.costs_exponential_lower - current_loc_time_wind)/self.costs_exponential_lower)
-            elif current_loc_time_wind >= 16:
-                reward_move = -1.0 * self.costs_exp_basenumber ** (self.costs_exponential_upper - self.costs_exponential_lower)
-            else:
-                reward_move = -1.0 * self.costs_exp_basenumber ** (current_loc_time_wind - self.costs_exponential_lower)
-        elif self.costs_linear:
-            if current_loc_time_wind < self.wall_wind:
-                reward_move_wind = -1.0 * current_loc_time_wind / self.wall_wind
-                reward_move_rainfall = -1.0 * current_loc_time_rainfall / 4
-                reward_move = min(reward_move_wind, reward_move_rainfall)
-            else:
-                reward_move = -1.0 * self.reward_goal
-        elif self.cost_sigmoid:
-            if self.rainfall_real_day_hour_total.any():
-                reward_move_wind = self.sigmoid_cost(current_loc_time_wind)
-                reward_move_rainall = self.sigmoid_cost(current_loc_time_rainfall*15/4.)
-                reward_move = -max(reward_move_wind, reward_move_rainall)
-            else:
-                reward_move = -self.sigmoid_cost(current_loc_time_wind)
-
+        reward_move = self.cost_matrix[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
         if tuple([x, y, t]) in self.GOAL_STATES:
             # We add reward move because the goal state could have wind speed larger than 13...
             reward = self.reward_goal
@@ -197,5 +148,3 @@ class Maze_3D:
 
         return np.array(viable_actions)
 
-    def sigmoid_cost(self, wind_speed):
-        return self.c1 * (1 / (1 + np.exp(-self.c2 * (wind_speed - self.c3)))) + self.c_baseline

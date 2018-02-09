@@ -633,8 +633,7 @@ class Dyna_3D:
         if set_wind_to_zeros:
             wind_real_day_hour_total = self.maze.wind_real_day_hour_total
             self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
-        #maxSteps = optimal_length * self.optimal_length_relax
-        maxSteps = self.optimal_length_relax
+        maxSteps = optimal_length * self.optimal_length_relax
 
         currentState = self.maze.START_STATE
         steps = 0

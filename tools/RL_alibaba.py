@@ -1000,8 +1000,8 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
     """
     # we use A -star algorithm for deciding when to stop running the model
     # get the city locations
-    cf.day_list = [1]
-    cf.goal_city_list = [10]
+    cf.day_list = [2]
+    cf.goal_city_list = [4]
     cf.risky = False
     cf.model_number = list(range(1, 12))
 
@@ -1055,7 +1055,7 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
             model.expected = False
             model.double = False
             # gamma is dependent upon total length, the more lengthy the route is, the small the gamma
-            #model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
+            model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
 
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
@@ -1071,7 +1071,7 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
             # plot_state_action_value(model, city_data_df, cf)
             # how many times we will loop is depend upon the minimum length
             # a_star_loop = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
-            a_star_loop = int(steps_a_star_all_mean)
+            a_star_loop = 100
             success_flag = False
             save_length = int(a_star_loop * cf.optimal_length_relax) + 1
             total_Q_new = np.zeros(save_length)
@@ -1105,7 +1105,7 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
                 model.epsilon = max(cf.epsilon_end, model.epsilon - epsilon_step)
                 model.alpha = max(cf.alpha_end, model.alpha - alpha_step)   # we don't want our learning rate to be too large
                 # we also require that the model should traverse every state action more than
-                str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, baseline: %2f, alpha: %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.maze.c_baseline, model.alpha, model.epsilon)
+                str1 = "Day: %d, City: %d, Episode %d/%d, wind model: %d, alpha: %2f, epsilon: %2f. ### " % (day, goal_city, num_episode, a_star_loop, model.maze.wind_model+1, model.alpha, model.epsilon)
                 print(str1 + str2)
 
             print('Finish, using %.2f sec!, updating %d steps.' % (timer() - start_time, np.sum(steps)))
@@ -1185,14 +1185,15 @@ def extract_a_star_wind_and_rainfall(A_star_model_precompute_csv, day, goal_city
 
 def initialise_maze_and_model_wind_and_rainfall(cf, start_loc_3D, goal_loc_3D, wind_real_day_hour_total,
                                                 rainfall_real_day_hour_total, time_length, start_min):
+    cost_matrix = set_cost(cf, wind_real_day_hour_total, rainfall_real_day_hour_total, time_length)
+
     maze = Maze_3D(height=cf.grid_world_shape[0],
                    width=cf.grid_world_shape[1],
                    time_length=int(time_length),
                    start_state=start_loc_3D,
                    goal_states=goal_loc_3D,
                    reward_goal=time_length,
-                   wind_real_day_hour_total=wind_real_day_hour_total,
-                   rainfall_real_day_hour_total=rainfall_real_day_hour_total,
+                   cost_matrix=cost_matrix,
                    cf=cf,
                    start_min=start_min)
 
@@ -1209,6 +1210,21 @@ def initialise_maze_and_model_wind_and_rainfall(cf, start_loc_3D, goal_loc_3D, w
                     optimal_length_relax=cf.optimal_length_relax,
                     polynomial_alpha=False)
     return model
+
+
+def set_cost(cf, wind_real_day_hour_total, rainfall_real_day_hour_total, time_length):
+    def sigmoid_cost(cf, real_weather):
+        return  (-1) * cf.c1 * (1 / (1 + np.exp(-cf.c2 * (real_weather - cf.c3))))
+    real_weather = np.minimum(np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total * 15. / 4), 30)
+    cost_matrix = np.zeros(shape=real_weather.shape)
+    if cf.costs_linear:
+        cost_matrix[real_weather >= cf.wall_wind] = -1 * time_length
+        cost_matrix[real_weather < cf.wall_wind] = -1.0 * real_weather[real_weather < cf.wall_wind] / cf.wall_wind
+    elif cf.costs_sigmoid:
+        cost_matrix = sigmoid_cost(cf, real_weather)
+
+    return cost_matrix
+
 
 
 def reinforcement_learning_solution_multiprocessing_wind_and_rainfall(cf):
@@ -1277,7 +1293,7 @@ def reinforcement_learning_solution_worker_wind_and_rainfall(cf, day, goal_city,
     model.qlearning = True
     model.expected = False
     model.double = False
-    #model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
+    model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
 
     # A star model initialisation
     for m in range(len(cf.model_number)):
