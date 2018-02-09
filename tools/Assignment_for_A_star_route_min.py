@@ -203,12 +203,12 @@ def collec_json_file_min(cf):
         for goal_city in cf.goal_city_list:
             cost_dict[day][goal_city] = {}
             file_patterns = cf.file_patterns_min % (day, goal_city)
-            files = fnmatch.filter(os.listdir(cf.cost_num_steps_dir_min), file_patterns)
+            files = fnmatch.filter(os.listdir(cf.cost_num_steps_dir), file_patterns)
             for f in files:
                 _splits = f.split('_')
                 start_hour = int(_splits[8])
                 start_min = int(_splits[10].split('.')[0])
-                data = json.load(open(os.path.join(cf.cost_num_steps_dir_min, f)))
+                data = json.load(open(os.path.join(cf.cost_num_steps_dir, f)))
                 dict = {}
                 dict['max_cost'] = data['max_cost']
                 dict['ave_max_cost'] = data['ave_max_cost']

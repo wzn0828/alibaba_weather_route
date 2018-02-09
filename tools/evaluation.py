@@ -449,6 +449,7 @@ def evaluation_with_rainfall(cf):
             assert target_pred == goal_loc, "Goal city not the same!"
 
             min = int(df.iloc[0]['time'][-2:])
+            #min = 0
             acc_min = 0
             hour = int(df.iloc[0]['time'][:2])
             weather_name = 'real_wind_day_%d_hour_%d.npy' % (day, hour)
@@ -478,7 +479,7 @@ def evaluation_with_rainfall(cf):
                 if wind_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 15. or rain_real_day_hour[next_loc_pred[0]-1, next_loc_pred[1]-1] >= 4.0:
                     # print('Crash! Day: %d, city: %d, hour: %d, min: %d' % (day, goal_city, hour, min))
                     total_penalty[day-1, goal_city-1] = 24 * 60
-                    crash_time_stamp[day-1, goal_city-1] = hour*30 + min
+                    crash_time_stamp[day-1, goal_city-1] = hour*100 + min
                     # we break the loop
                     break
                 else:

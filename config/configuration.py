@@ -46,7 +46,7 @@ class Configuration():
             elif cf.model_number:
                 cf.model_description += '_model_number_' + str(cf.model_number)
 
-        if cf.reinforcement_learning_solution_multiprocessing:
+        if cf.reinforcement_learning_solution_multiprocessing or cf.reinforcement_learning_solution_multiprocessing_wind_and_rainfall:
             cf.model_description = 'reinforcement_learning_solution_multiprocessing'
             if cf.qLearning:
                 cf.model_description += '_qLearning'
@@ -92,7 +92,8 @@ class Configuration():
                 and not cf.plt_forecast_wind_train_multiprocessing and not cf.plt_forecast_wind_test_multiprocessing \
                 and not cf.reinforcement_learning_solution and not cf.evaluation_plot and \
                 not cf.collect_csv_for_submission_fraction and not cf.A_star_fix_missing and not cf.reinforcement_learning_solution_new\
-                and not cf.assignment_for_A_star_route and not cf.evaluation_with_rainfall:
+                and not cf.assignment_for_A_star_route and not cf.evaluation_with_rainfall and not cf.assignment_for_A_star_route_10min\
+                and not cf.evaluation_plot_real_with_mean and not cf.reinforcement_learning_solution_wind_and_rainfall:
             # Enable log file
             os.mkdir(cf.exp_dir)
             cf.log_file = os.path.join(cf.exp_dir, "logfile.log")

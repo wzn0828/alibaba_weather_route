@@ -145,6 +145,7 @@ class Dyna_3D:
         if self.ucb:
             self.time = 0
             self.name += '_UCB'
+
         self.name = self.name + '_planning:_%d' % planningSteps
 
     def insert(self, priority, state, action):
@@ -632,8 +633,7 @@ class Dyna_3D:
         if set_wind_to_zeros:
             wind_real_day_hour_total = self.maze.wind_real_day_hour_total
             self.maze.wind_real_day_hour_total = 0 * wind_real_day_hour_total
-        #maxSteps = optimal_length * self.optimal_length_relax
-        maxSteps = self.optimal_length_relax
+        maxSteps = optimal_length * self.optimal_length_relax
 
         currentState = self.maze.START_STATE
         steps = 0
@@ -656,7 +656,7 @@ class Dyna_3D:
             currentState = nextState
             steps += 1
 
-            if steps > maxSteps or currentState[2] >= self.maze.TIME_LENGTH-1:
+            if steps > maxSteps or currentState[2] >= self.maze.TIME_LENGTH:
                 if set_wind_to_zeros:
                     self.maze.wind_real_day_hour_total = wind_real_day_hour_total
                 return came_from, tuple(currentState), False, total_Q, total_reward, stateActionValues.sum()
