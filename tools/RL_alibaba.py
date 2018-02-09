@@ -1304,6 +1304,7 @@ def reinforcement_learning_solution_worker_wind_and_rainfall(cf, day, goal_city,
         model.a_star_model = m
         steps.append(model.play(environ_step=True))
 
+    #a_star_loop = int(steps_a_star_all_mean)
     a_star_loop = int(steps_a_star_all_mean)
     success_flag = False
     save_length = int(a_star_loop * cf.optimal_length_relax) + 1
@@ -1321,7 +1322,7 @@ def reinforcement_learning_solution_worker_wind_and_rainfall(cf, day, goal_city,
     model.expected = cf.expected
     model.maze.risky = False
     model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-    model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
+    model.planningSteps = int(model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // 10)
     # Double learning
     if cf.double:
         model.double = cf.double

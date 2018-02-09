@@ -113,13 +113,13 @@ evaluation                  = False
 # reinforcement_learning solution
 # important parameters
 # assignment algorithm.
-day_list                    = [6, 7, 8, 9, 10]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
+day_list                    = [1, 2, 3, 4, 5]  # train [1, 2, 3, 4, 5]  # test [6, 7, 8, 9, 10]
 goal_city_list              = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 reinforcement_learning_solution = False
 reinforcement_learning_solution_new = False
 reinforcement_learning_solution_multiprocessing = False
-reinforcement_learning_solution_wind_and_rainfall = True
-reinforcement_learning_solution_multiprocessing_wind_and_rainfall = False
+reinforcement_learning_solution_wind_and_rainfall = False
+reinforcement_learning_solution_multiprocessing_wind_and_rainfall = True
 # For train
 A_star_precompute_path          = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Precomputed_A_star/train_diwu_assignment_dict_allA_star_search_3D_____2018-02-08-01-57-18'
 A_star_precompute_mean_path     = '/home/stevenwudi/PycharmProjects/alibaba_weather_route/Submissions/Precomputed_A_star/train_diwu_assignment_dict_allA_star_search_3D_____2018-02-08-01-57-18/Train_a_star_search_3D_costsSigmoid_4_14.5__model_number_[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]_____2018-02-07-01-19-40'
