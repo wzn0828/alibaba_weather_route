@@ -74,13 +74,15 @@ class Maze_3D:
         dist_manhantan = self.heuristic_fn((x, y, t), self.GOAL_STATES)
         time_remain = self.TIME_LENGTH - t
         if time_remain < dist_manhantan:
-            assert "OMG this should never happened, check bug in the code!"
+            print("OMG this should never happened, check bug in the code!")
             # # we can no longer reach the goal from this point
-            # reward = self.reward_obstacle
-            # terminal_flag = True
-            # return [x, y, t], reward, terminal_flag
+            reward = -1 * self.reward_goal
+            terminal_flag = True
+            return [x, y, t], reward, terminal_flag
 
-        reward_move = self.cost_matrix[self.wind_model, x, y, int(t + self.short_steps) // self.hourly_travel_distance]
+        # This is a bug...Di Wu should fix it, but he does not have time now...
+        reward_move = self.cost_matrix[self.wind_model, x, y,
+                                       min(int(t + self.short_steps) // self.hourly_travel_distance, self.cost_matrix.shape[-1]-1)]
         if tuple([x, y, t]) in self.GOAL_STATES:
             # We add reward move because the goal state could have wind speed larger than 13...
             reward = self.reward_goal
