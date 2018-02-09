@@ -191,7 +191,5 @@ def main():
     print('\n   ET: ' + HMS(end_time - start_time))
 
 
-
-
 if __name__ == "__main__":
     main()

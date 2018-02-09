@@ -47,7 +47,6 @@ hourly_travel_distance      = 30
 time_length                 = 30 * 18  # total number of unit time (2 min is a unit time). We can fly maximum 18 hours which is 18 *30 unit time
 model_description           = search_method  #['A_star_search_3D_risky', 'A_star_search_3D_conservative']
 
-
 A_star_fix_missing          = False
 
 # important parameters
