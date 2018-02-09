@@ -656,7 +656,7 @@ class Dyna_3D:
             currentState = nextState
             steps += 1
 
-            if steps > maxSteps or currentState[2] >= self.maze.TIME_LENGTH-1:
+            if steps > maxSteps or currentState[2] >= self.maze.TIME_LENGTH:
                 if set_wind_to_zeros:
                     self.maze.wind_real_day_hour_total = wind_real_day_hour_total
                 return came_from, tuple(currentState), False, total_Q, total_reward, stateActionValues.sum()

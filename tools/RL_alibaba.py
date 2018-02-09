@@ -467,6 +467,11 @@ def print_predicted_route_wind_and_rainfall(cf, day, goal_city, df):
                 plt.waitforbuttonpress(0)
                 break
 
+    if not (crash_wind or crash_rainfall):
+        return True
+    else:
+        return False
+
 
 def reinforcement_learning_solution(cf):
     """
@@ -1055,7 +1060,6 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
             model.expected = False
             model.double = False
             # gamma is dependent upon total length, the more lengthy the route is, the small the gamma
-            model.gamma = 1 + 0.01 * (steps_a_star_all_mean - time_length) / time_length
 
             for m in range(len(cf.model_number)):
                 model.maze.wind_model = m
@@ -1087,7 +1091,7 @@ def reinforcement_learning_solution_wind_and_rainfall(cf):
             model.expected = cf.expected
             model.maze.risky = False
             model.maze.wall_wind = cf.wall_wind   # restore the penalty for the wind
-            model.planningSteps = model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES)
+            model.planningSteps = int(model.heuristic_fn(model.maze.START_STATE, model.maze.GOAL_STATES) // 10)
 
             while num_episode < a_star_loop or not success_flag:
                 if num_episode >= a_star_loop * cf.optimal_length_relax:
@@ -1192,7 +1196,7 @@ def initialise_maze_and_model_wind_and_rainfall(cf, start_loc_3D, goal_loc_3D, w
                    time_length=int(time_length),
                    start_state=start_loc_3D,
                    goal_states=goal_loc_3D,
-                   reward_goal=time_length,
+                   reward_goal=1000,
                    cost_matrix=cost_matrix,
                    cf=cf,
                    start_min=start_min)
@@ -1214,17 +1218,16 @@ def initialise_maze_and_model_wind_and_rainfall(cf, start_loc_3D, goal_loc_3D, w
 
 def set_cost(cf, wind_real_day_hour_total, rainfall_real_day_hour_total, time_length):
     def sigmoid_cost(cf, real_weather):
-        return  (-1) * cf.c1 * (1 / (1 + np.exp(-cf.c2 * (real_weather - cf.c3))))
+        return (-1) * cf.c1 * (1 / (1 + np.exp(-cf.c2 * (real_weather - cf.c3))))
     real_weather = np.minimum(np.maximum(wind_real_day_hour_total, rainfall_real_day_hour_total * 15. / 4), 30)
     cost_matrix = np.zeros(shape=real_weather.shape)
     if cf.costs_linear:
-        cost_matrix[real_weather >= cf.wall_wind] = -1 * time_length
+        cost_matrix[real_weather >= cf.wall_wind] = -1.0 * time_length
         cost_matrix[real_weather < cf.wall_wind] = -1.0 * real_weather[real_weather < cf.wall_wind] / cf.wall_wind
     elif cf.costs_sigmoid:
         cost_matrix = sigmoid_cost(cf, real_weather)
 
     return cost_matrix
-
 
 
 def reinforcement_learning_solution_multiprocessing_wind_and_rainfall(cf):

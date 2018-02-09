@@ -146,7 +146,7 @@ epsilon                         = 0.01
 # the following are the parameters for second round update
 epsilon_start                   = 0.1
 epsilon_end                     = 0.01
-alpha_start                     = 0.1
+alpha_start                     = 0.5
 alpha_end                       = 0.01
 polynomial_alpha                = False
 polynomial_alpha_coefficient    = 0.8
